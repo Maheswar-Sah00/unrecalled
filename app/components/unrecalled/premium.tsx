@@ -7,13 +7,17 @@ import { cn } from "@/lib/utils";
 export function BrandMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={cn("size-7", className)} aria-hidden="true">
-      <path
-        d="M16 2.5l3.1 2.6 4-.6 1.5 3.8 3.8 1.5-.6 4 2.6 3.1-2.6 3.1.6 4-3.8 1.5-1.5 3.8-4-.6L16 29.5l-3.1-2.6-4 .6-1.5-3.8-3.8-1.5.6-4L1.6 16l2.6-3.1-.6-4 3.8-1.5 1.5-3.8 4 .6z"
-        fill="hsl(var(--ur-blue))"
-      />
-      <circle cx="12.4" cy="14.6" r="1.7" fill="#fff" />
-      <circle cx="19.6" cy="14.6" r="1.7" fill="#fff" />
-      <path d="M12.6 19.4c1.9 1.6 4.9 1.6 6.8 0" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+      <rect x="1" y="1" width="30" height="30" rx="9" fill="hsl(var(--ur-blue))" />
+      {/* scales on the roof */}
+      <path d="M16 10.4V5.6M11.2 6.2h9.6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M9.4 8.6h3.6q-.5 1.7-1.8 1.7t-1.8-1.7zM19 8.6h3.6q-.5 1.7-1.8 1.7T19 8.6z" fill="#F2B33D" />
+      {/* car front */}
+      <path d="M10.2 16.6l1.5-4.3q.5-1.3 1.9-1.3h4.8q1.4 0 1.9 1.3l1.5 4.3z" fill="#fff" fillOpacity="0.55" />
+      <rect x="7.4" y="16" width="17.2" height="8" rx="3.2" fill="#fff" />
+      <circle cx="11.3" cy="19.8" r="1.8" fill="hsl(var(--ur-blue))" />
+      <circle cx="20.7" cy="19.8" r="1.8" fill="hsl(var(--ur-blue))" />
+      <rect x="9" y="24" width="3" height="2.8" rx="1" fill="#fff" />
+      <rect x="20" y="24" width="3" height="2.8" rx="1" fill="#fff" />
     </svg>
   );
 }

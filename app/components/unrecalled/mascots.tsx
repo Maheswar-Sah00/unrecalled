@@ -1,8 +1,11 @@
-// Unrecalled mascot: a round scalloped "safety seal" with big eyes, stubby ink
-// limbs and a prop per pose. Original artwork (not anyone else's character).
-// API: <Mascot pose="wave|read|write|alert|watch|sit" color="blue|coral|violet|teal|amber" />
-// Optional hooks for motion (styled in app/styles/landing.css, inert elsewhere):
-//   .ur-m-eyes (blink), .ur-m-wave (waving arm), .ur-m-legs (swinging legs).
+// Unrecalled mascot: "Docket", a little car seen from the front. Headlights
+// are its eyes (steady, slightly lidded: an inspector, not a toy), the grille
+// is its mouth, the scales of justice ride on the roof like a taxi sign, and
+// the plate reads 552 (49 CFR Part 552, the defect-petition rule).
+// When something is wrong ("alert") the scales tip out of balance.
+// Original artwork. API unchanged:
+//   <Mascot pose="wave|read|write|alert|watch|sit" color="blue|coral|violet|teal|amber" />
+// Motion hooks (styled in app/styles/landing.css): .ur-m-eyes (blink), .ur-m-wave.
 import { type CSSProperties, useId } from "react";
 
 import { cn } from "@/lib/utils";
@@ -12,34 +15,31 @@ export type MascotColor = "blue" | "coral" | "violet" | "teal" | "amber";
 
 /** [highlight, base, shade] */
 const FILL: Record<MascotColor, [string, string, string]> = {
-  blue: ["#7AA6FF", "#4C82F5", "#3466DB"],
-  coral: ["#FF9A8C", "#FF6B5C", "#E84E43"],
-  violet: ["#C4AEFF", "#A285F7", "#8264E6"],
-  teal: ["#6FE0D3", "#2CC3B4", "#169C90"],
-  amber: ["#FFD57A", "#FFBA3B", "#EE9B12"],
+  blue: ["#6F9BFA", "#3F72E6", "#2A55BF"],
+  coral: ["#F79486", "#E8604F", "#C9473A"],
+  violet: ["#B29CF5", "#8C6FE6", "#6C50C7"],
+  teal: ["#5ED2C4", "#22AE9F", "#14887C"],
+  amber: ["#FFCF6E", "#F5A623", "#D4860B"],
 };
 
-/** Pupils, mouth: always dark (they sit on white / colour). */
-const EYE = "#0D1633";
+const DARK = "#141C33"; // pupils, grille, tyres
+const GOLD = "#F2B33D";
 
-/** Rounded scallops (cubic bumps) with a little hand-made irregularity. */
-function scallop(cx: number, cy: number, rIn: number, rOut: number, n: number) {
-  const wob = [1, 0.97, 1.03, 0.99, 1.02, 0.96, 1.01, 1.03, 0.98, 1, 0.97, 1.02, 0.99];
-  const step = (Math.PI * 2) / n;
-  const off = -Math.PI / 2 + step / 2;
-  const pt = (r: number, a: number) =>
-    `${(cx + r * Math.cos(a)).toFixed(2)},${(cy + r * Math.sin(a)).toFixed(2)}`;
-  let d = `M${pt(rIn, off)}`;
-  for (let i = 0; i < n; i++) {
-    const a0 = off + i * step;
-    const a1 = a0 + step;
-    const ro = rOut * (wob[i % wob.length] ?? 1);
-    const rc = (ro - 0.25 * rIn * Math.cos(step / 2)) / 0.75;
-    d += ` C${pt(rc, a0 + step * 0.16)} ${pt(rc, a1 - step * 0.16)} ${pt(rIn, a1)}`;
-  }
-  return `${d}Z`;
-}
-const BODY = scallop(60, 52, 30.8, 34.6, 13);
+/** Where the headlights look, and how low the lids sit, per pose. */
+const LOOK: Record<MascotPose, { x: number; y: number; lid: number }> = {
+  wave: { x: 1.2, y: 0.6, lid: 3.4 },
+  read: { x: 2.6, y: -1.2, lid: 4.4 },
+  write: { x: 2.8, y: 1.6, lid: 4 },
+  alert: { x: 0, y: 0, lid: 1.4 },
+  watch: { x: 3, y: -0.6, lid: 3.8 },
+  sit: { x: -1, y: 1.6, lid: 5.4 },
+};
+
+const EYE_R = 8.6;
+const EYES: [number, number][] = [
+  [37, 70],
+  [83, 70],
+];
 
 export function Mascot({
   pose = "wave",
@@ -54,21 +54,11 @@ export function Mascot({
 }) {
   const gid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [hi, base, shade] = FILL[color];
-  // Limbs are navy on paper, pale on midnight so they never disappear.
   const limb: CSSProperties = { stroke: "var(--ur-m-ink)" };
   const limbFill: CSSProperties = { fill: "var(--ur-m-ink)" };
-  const sitting = pose === "sit";
-
-  // Where the pupils look, per pose.
-  const look: Record<MascotPose, [number, number]> = {
-    wave: [1.4, 0.6],
-    read: [2.2, -1.4],
-    write: [1.2, 2.2],
-    alert: [0, 0],
-    watch: [0, 0],
-    sit: [-1.2, 1.2],
-  };
-  const [lx, ly] = look[pose];
+  const look = LOOK[pose];
+  // Scales: level when calm, tipped when there's a defect.
+  const tilt = pose === "alert" ? 14 : pose === "read" ? -5 : 0;
 
   return (
     <svg
@@ -82,177 +72,228 @@ export function Mascot({
       aria-hidden={title ? undefined : true}
     >
       <defs>
-        <radialGradient id={`b${gid}`} cx="36%" cy="28%" r="80%">
+        <linearGradient id={`b${gid}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={hi} />
-          <stop offset="55%" stopColor={base} />
+          <stop offset="45%" stopColor={base} />
           <stop offset="100%" stopColor={shade} />
-        </radialGradient>
+        </linearGradient>
+        <linearGradient id={`g${gid}`} x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0%" stopColor="#F2F7FF" />
+          <stop offset="100%" stopColor="#B7CFF7" />
+        </linearGradient>
+        {EYES.map(([cx, cy], i) => (
+          <clipPath key={i} id={`e${gid}${i}`}>
+            <circle cx={cx} cy={cy} r={EYE_R} />
+          </clipPath>
+        ))}
       </defs>
 
-      {/* ground shadow, tinted like the body */}
-      {sitting ? null : <ellipse cx="60" cy="108" rx="27" ry="4.6" fill={base} opacity="0.2" />}
+      {/* ground shadow */}
+      <ellipse cx="60" cy="104.5" rx="42" ry="4.2" fill={base} opacity="0.18" />
 
-      {/* legs + feet (behind the body) */}
-      <g className="ur-m-legs" strokeLinecap="round" strokeLinejoin="round" fill="none" strokeWidth="5.6" style={limb}>
-        {sitting ? (
-          <>
-            <path d="M51 78 Q49 88 47 98" />
-            <path d="M69 78 Q72 88 74 98" />
-          </>
-        ) : pose === "wave" ? (
-          <>
-            <path d="M52 78 Q49 90 45 101" />
-            <path d="M68 78 Q73 88 79 98" />
-          </>
-        ) : (
-          <>
-            <path d="M52 79 Q51 91 49 102" />
-            <path d="M68 79 Q70 91 71 102" />
-          </>
-        )}
-      </g>
-      <g style={limbFill} className="ur-m-legs">
-        {sitting ? (
-          <>
-            <path d="M40 98.5 q0 -4.5 6 -4.5 q6.5 0 6.5 4 q0 3.2 -6 3.2 h-3.5 q-3 0 -3 -2.7z" />
-            <path d="M69 98 q0 -4 6.5 -4 q6 0 6 4.5 q0 2.7 -3 2.7 h-3.5 q-6 0 -6 -3.2z" />
-          </>
-        ) : pose === "wave" ? (
-          <>
-            <path d="M37 101.5 q0 -4.5 6.5 -4.5 q6.5 0 6.5 4 q0 3.4 -6 3.4 h-4 q-3 0 -3 -2.9z" />
-            <path d="M76 98.5 q1 -4.6 7 -3.9 q6 .8 5.4 4.8 q-.5 3 -3.4 2.6 l-4.4 -.6 q-5 -.7 -4.6 -2.9z" />
-          </>
-        ) : (
-          <>
-            <path d="M41 102.5 q0 -4.5 6.5 -4.5 q6.5 0 6.5 4 q0 3.4 -6 3.4 h-4 q-3 0 -3 -2.9z" />
-            <path d="M66 102.5 q0 -4 6.5 -4 q6.5 0 6.5 4.5 q0 2.9 -3 2.9 h-4 q-6 0 -6 -3.4z" />
-          </>
-        )}
-      </g>
+      {/* tyres (behind the body) */}
+      <rect x="25" y="84" width="14" height="19" rx="4.5" fill={DARK} />
+      <rect x="81" y="84" width="14" height="19" rx="4.5" fill={DARK} />
 
-      {/* back arm (left side of the character) */}
-      <g strokeLinecap="round" fill="none" strokeWidth="5.2" style={limb}>
-        {pose === "wave" ? (
-          <g className="ur-m-wave" style={{ transformOrigin: "34px 58px" }}>
-            <path d="M34 58 Q22 49 23 33" />
-            <path d="M14 30 q-3 4 -2 9 M17 24 q-6 3 -7 10" strokeWidth="2.2" style={{ stroke: base }} opacity="0.85" />
-          </g>
-        ) : pose === "watch" ? (
-          <path d="M35 60 Q38 50 46 47" />
-        ) : pose === "write" ? (
-          <path d="M35 62 Q42 76 58 75" />
-        ) : pose === "sit" ? (
-          <path d="M34 62 Q30 72 40 80" />
-        ) : pose === "alert" ? (
-          <path d="M34 60 Q24 64 27 74" />
-        ) : (
-          <path d="M34 61 Q25 70 29 80" />
-        )}
-      </g>
+      {/* back arm */}
+      <BackArm pose={pose} base={base} limb={limb} limbFill={limbFill} />
 
-      {/* body */}
-      <path d={BODY} fill={`url(#b${gid})`} />
+      {/* roof scales of justice */}
+      <Scales tilt={tilt} limb={limb} />
+
+      {/* cabin */}
       <path
-        d={BODY}
-        fill="none"
+        d="M29 59 L37 35.5 Q39.2 29 46 29 H74 Q80.8 29 83 35.5 L91 59 Z"
+        fill={`url(#b${gid})`}
         stroke={shade}
-        strokeOpacity="0.35"
         strokeWidth="1"
       />
-      {/* soft top-left sheen */}
-      <ellipse cx="47" cy="33" rx="9" ry="4.5" fill="#fff" opacity="0.22" transform="rotate(-24 47 33)" />
+      {/* windshield */}
+      <path
+        d="M37.5 56 L43 38.5 Q44.3 34.5 48.5 34.5 H71.5 Q75.7 34.5 77 38.5 L82.5 56 Z"
+        fill={`url(#g${gid})`}
+      />
+      <path d="M47 53 L53.5 37.5" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.7" />
+      <path d="M53 53 L57.5 42" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" opacity="0.55" />
 
-      {/* face */}
-      {pose === "watch" ? null : (
+      {/* side mirrors */}
+      <ellipse cx="24" cy="58" rx="5.4" ry="3.6" fill={base} stroke={shade} strokeWidth="1" />
+      <ellipse cx="96" cy="58" rx="5.4" ry="3.6" fill={base} stroke={shade} strokeWidth="1" />
+
+      {/* body */}
+      <rect x="19" y="55" width="82" height="34" rx="13" fill={`url(#b${gid})`} stroke={shade} strokeWidth="1" />
+      <path d="M27 60.5 Q60 56.5 93 60.5" stroke="#fff" strokeOpacity="0.35" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+
+      {/* headlight eyes, with steady lids */}
+      <g className="ur-m-eyes" style={{ transformOrigin: "60px 70px" }}>
+        {EYES.map(([cx, cy], i) => {
+          const inner = i === 0 ? 1 : -1; // inner corner sits a touch lower: focused
+          const top = cy - EYE_R;
+          const yOuter = top + look.lid;
+          const yInner = top + look.lid + 1;
+          const xL = cx - EYE_R - 1;
+          const xR = cx + EYE_R + 1;
+          const yL = inner === 1 ? yOuter : yInner;
+          const yR = inner === 1 ? yInner : yOuter;
+          return (
+            <g key={i}>
+              <circle cx={cx} cy={cy} r={EYE_R + 1.6} fill={shade} opacity="0.55" />
+              <circle cx={cx} cy={cy} r={EYE_R} fill="#fff" />
+              <circle cx={cx + look.x} cy={cy + look.y + 0.8} r="4.1" fill={DARK} />
+              <circle cx={cx + look.x + 1.4} cy={cy + look.y - 0.8} r="1.35" fill="#fff" />
+              <g clipPath={`url(#e${gid}${i})`}>
+                <path d={`M${xL} ${top - 2} H${xR} V${yR} L${xL} ${yL} Z`} fill={shade} />
+                <path d={`M${xL} ${yL} L${xR} ${yR}`} stroke={DARK} strokeWidth="1.7" strokeLinecap="round" />
+              </g>
+            </g>
+          );
+        })}
+      </g>
+
+      {/* grille mouth */}
+      {pose === "alert" ? (
+        <rect x="54.5" y="71.5" width="11" height="10" rx="5" fill={DARK} />
+      ) : (
         <g>
-          <g className="ur-m-eyes" style={{ transformOrigin: "60px 48px" }}>
-            <ellipse cx="51" cy="47" rx="7" ry={pose === "alert" ? 8.6 : 7.9} fill="#fff" />
-            <ellipse cx="69" cy="47" rx="7" ry={pose === "alert" ? 8.6 : 7.9} fill="#fff" />
-            <circle cx={51 + lx} cy={47.8 + ly} r="3.9" fill={EYE} />
-            <circle cx={69 + lx} cy={47.8 + ly} r="3.9" fill={EYE} />
-            <circle cx={52.4 + lx} cy={46.2 + ly} r="1.3" fill="#fff" />
-            <circle cx={70.4 + lx} cy={46.2 + ly} r="1.3" fill="#fff" />
-          </g>
+          <path
+            d="M48.5 72.5 H71.5 Q73.4 72.5 72.9 74.4 Q70.4 81.5 60 81.5 Q49.6 81.5 47.1 74.4 Q46.6 72.5 48.5 72.5 Z"
+            fill={DARK}
+          />
+          <path d="M51.5 75.6 H68.5" stroke="#3E4A6B" strokeWidth="1.3" strokeLinecap="round" />
         </g>
       )}
-      {pose === "alert" ? (
-        <ellipse cx="60" cy="62.5" rx="3" ry="3.6" fill={EYE} />
-      ) : (
-        <path d="M55.5 60.5 Q60 65.5 64.5 60.5" stroke={EYE} strokeWidth="2.5" strokeLinecap="round" fill="none" />
-      )}
-      <ellipse cx="42.5" cy="58" rx="3.8" ry="2.3" fill="#FF8FA8" opacity="0.5" />
-      <ellipse cx="77.5" cy="58" rx="3.8" ry="2.3" fill="#FF8FA8" opacity="0.5" />
 
-      <Front pose={pose} base={base} limb={limb} limbFill={limbFill} />
+      {/* bumper + plate */}
+      <rect x="17" y="84.5" width="86" height="7" rx="3.5" fill="#E2E7F0" stroke="#9AA6BD" strokeWidth="0.8" />
+      <rect x="50.5" y="84.6" width="19" height="7.6" rx="1.4" fill="#fff" stroke="#9AA6BD" strokeWidth="0.8" />
+      <text
+        x="60"
+        y="90.6"
+        textAnchor="middle"
+        fontSize="5.6"
+        fontWeight="800"
+        fill="#13204A"
+        fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
+        letterSpacing="0.4"
+      >
+        552
+      </text>
+
+      <FrontArm pose={pose} base={base} limb={limb} limbFill={limbFill} />
     </svg>
   );
 }
 
-/** Front arm + prop, drawn over the body. */
-function Front({
-  pose,
-  base,
-  limb,
-  limbFill,
-}: {
-  pose: MascotPose;
-  base: string;
-  limb: CSSProperties;
-  limbFill: CSSProperties;
-}) {
-  const arm = (d: string) => (
-    <path d={d} strokeLinecap="round" fill="none" strokeWidth="5.2" style={limb} />
+/** Gold scales on a short roof post. */
+function Scales({ tilt, limb }: { tilt: number; limb: CSSProperties }) {
+  const rad = (tilt * Math.PI) / 180;
+  const half = 14;
+  const dy = Math.sin(rad) * half;
+  const dx = half - Math.cos(rad) * half;
+  const pan = (x: number, y: number) => (
+    <g>
+      <path d={`M${x} ${y} L${x - 4} ${y + 7.5} M${x} ${y} L${x + 4} ${y + 7.5}`} strokeWidth="1.1" style={limb} />
+      <path
+        d={`M${x - 5.6} ${y + 7.5} H${x + 5.6} Q${x + 4.6} ${y + 11.6} ${x} ${y + 11.6} Q${x - 4.6} ${y + 11.6} ${x - 5.6} ${y + 7.5} Z`}
+        fill={GOLD}
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+        style={limb}
+      />
+    </g>
   );
+  return (
+    <g>
+      <path d="M60 29 V12" strokeWidth="2.2" strokeLinecap="round" style={limb} />
+      <path d="M54.5 29.5 L56.5 26.5 H63.5 L65.5 29.5 Z" fill={GOLD} strokeWidth="1.1" strokeLinejoin="round" style={limb} />
+      <path
+        d={`M${60 - half + dx} ${12 - dy} L${60 + half - dx} ${12 + dy}`}
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        style={limb}
+      />
+      {pan(60 - half + dx, 12 - dy)}
+      {pan(60 + half - dx, 12 + dy)}
+      <circle cx="60" cy="11.5" r="2.4" fill={GOLD} strokeWidth="1.1" style={limb} />
+    </g>
+  );
+}
+
+type ArmProps = { pose: MascotPose; base: string; limb: CSSProperties; limbFill: CSSProperties };
+
+function hand(x: number, y: number, limbFill: CSSProperties) {
+  return <circle cx={x} cy={y} r="3.2" style={limbFill} />;
+}
+
+/** Left arm (viewer's left), drawn behind the body. */
+function BackArm({ pose, base, limb, limbFill }: ArmProps) {
+  const arm = (d: string) => <path d={d} strokeLinecap="round" fill="none" strokeWidth="4.6" style={limb} />;
+  if (pose === "wave") {
+    return (
+      <g className="ur-m-wave" style={{ transformOrigin: "22px 70px" }}>
+        {arm("M22 70 Q10 63 11 47")}
+        {hand(11, 46, limbFill)}
+        <path d="M3 44 q-2 4 -1 8 M6 38 q-5 3 -6 9" strokeWidth="2" strokeLinecap="round" fill="none" style={{ stroke: base }} opacity="0.8" />
+      </g>
+    );
+  }
+  return (
+    <g>
+      {arm("M21 72 Q12 78 14 87")}
+      {hand(14, 88, limbFill)}
+    </g>
+  );
+}
+
+/** Right arm + prop, drawn over the body. */
+function FrontArm({ pose, base, limb, limbFill }: ArmProps) {
+  const arm = (d: string) => <path d={d} strokeLinecap="round" fill="none" strokeWidth="4.6" style={limb} />;
   switch (pose) {
-    case "read": // magnifying glass held up beside the face
+    case "read": // magnifying glass
       return (
         <g>
-          {arm("M86 61 Q97 60 99 50")}
-          <path d="M99 50 L102.5 43" strokeWidth="4.4" strokeLinecap="round" style={limb} />
-          <circle cx="106.5" cy="34" r="10" fill="#EAF3FF" fillOpacity="0.75" strokeWidth="3.4" style={limb} />
-          <path d="M101 30.5 a6.5 6.5 0 0 1 7 -3.2" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+          {arm("M99 71 Q107 67 106 58")}
+          <path d="M106 58 L107.5 50.5" strokeWidth="3.8" strokeLinecap="round" style={limb} />
+          <circle cx="109" cy="41.5" r="8.6" fill="#EAF3FF" fillOpacity="0.75" strokeWidth="3" style={limb} />
+          <path d="M104.6 38.6 a5.4 5.4 0 0 1 5.8 -2.7" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" fill="none" />
+          {hand(106, 58, limbFill)}
         </g>
       );
-    case "write": // a petition with a seal, held in front
+    case "write": // the petition, sealed
       return (
         <g>
-          <g transform="rotate(9 82 76)">
-            <rect x="68" y="60" width="28" height="35" rx="3.5" fill="#fff" strokeWidth="2.6" style={limb} />
-            <path d="M73.5 68 h17 M73.5 73.5 h17 M73.5 79 h11" stroke="#9AA6BD" strokeWidth="2.1" strokeLinecap="round" />
-            <circle cx="88" cy="87" r="4.2" fill={base} />
-            <path d="M86.3 87 l1.3 1.3 2.4 -2.6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          <g transform="rotate(8 104 72)">
+            <rect x="93" y="56" width="23" height="30" rx="3" fill="#fff" strokeWidth="2.2" style={limb} />
+            <path d="M97.5 63 h14 M97.5 67.8 h14 M97.5 72.6 h9" stroke="#9AA6BD" strokeWidth="1.8" strokeLinecap="round" />
+            <circle cx="109.5" cy="79.5" r="3.8" fill={base} />
+            <path d="M108 79.5 l1.1 1.1 2.1 -2.3" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
           </g>
-          {/* pencil in the near hand */}
-          <path d="M57 75 L66 67" stroke="#FFC24A" strokeWidth="4" strokeLinecap="round" />
-          <path d="M66 67 L69 64" style={limb} strokeWidth="2.2" strokeLinecap="round" />
-          {arm("M86 62 Q93 66 92 72")}
+          {arm("M99 72 Q102 77 98 82")}
+          {hand(97.5, 82.5, limbFill)}
         </g>
       );
-    case "alert": // a little flag, raised
+    case "alert": // red flag raised
       return (
         <g>
-          {arm("M86 60 Q95 58 95 49")}
-          <path d="M95 74 L95 18" strokeWidth="3.2" strokeLinecap="round" style={limb} />
-          <path d="M96 19 Q106 17 114 22 Q106 27 96 33 Z" fill="#FF6B5C" strokeWidth="2" strokeLinejoin="round" style={limb} />
-          <circle cx="95" cy="49" r="3.3" style={limbFill} />
+          <path d="M106 80 V28" strokeWidth="2.6" strokeLinecap="round" style={limb} />
+          <path d="M107 29 Q114 27.5 119 31.5 Q113.5 35.5 107 39.5 Z" fill="#E8604F" strokeWidth="1.6" strokeLinejoin="round" style={limb} />
+          {arm("M99 70 Q106 66 106 58")}
+          {hand(106, 57.5, limbFill)}
         </g>
       );
-    case "watch": // binoculars over the eyes
+    case "watch": // hand shading the eyes, looking down the road
       return (
         <g>
-          {arm("M85 60 Q82 50 74 47")}
-          <rect x="41" y="38" width="17" height="17" rx="6" style={limbFill} />
-          <rect x="62" y="38" width="17" height="17" rx="6" style={limbFill} />
-          <rect x="55" y="42.5" width="10" height="7" rx="2.5" style={limbFill} />
-          <circle cx="49.5" cy="46.5" r="5" fill="#8DB8FF" />
-          <circle cx="70.5" cy="46.5" r="5" fill="#8DB8FF" />
-          <circle cx="47.6" cy="44.6" r="1.6" fill="#fff" />
-          <circle cx="68.6" cy="44.6" r="1.6" fill="#fff" />
+          {arm("M99 70 Q106 60 97 55")}
+          <path d="M98 55.5 L90 57" strokeWidth="4.6" strokeLinecap="round" style={limb} />
         </g>
       );
-    case "sit":
-      return arm("M86 62 Q90 72 80 80");
-    default: // wave: relaxed near arm
-      return arm("M86 61 Q95 69 91 79");
+    default: // wave / sit: resting
+      return (
+        <g>
+          {arm("M99 72 Q108 78 106 87")}
+          {hand(106, 88, limbFill)}
+        </g>
+      );
   }
 }
