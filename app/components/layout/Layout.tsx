@@ -159,7 +159,7 @@ function LayoutShell({ children }: LayoutProps) {
           onOpenNavigation={openMobileSidebar}
         />
       ) : settingsOwnsChrome ? null : (
-        <Suspense fallback={<div className="h-14 shrink-0" />}>
+        <Suspense fallback={<div className="h-[72px] shrink-0 border-b border-border" />}>
           <Header onOpenMobileSidebar={openMobileSidebar} />
         </Suspense>
       )}
@@ -172,7 +172,9 @@ function LayoutShell({ children }: LayoutProps) {
   return (
     <HeaderActionsProvider>
       <div className="agent-layout-shell chat-layout-shell flex h-screen w-full overflow-hidden bg-background text-foreground">
-        {settingsOwnsChrome ? null : (
+        {/* Product pages use the OpenTag-style top bar; the left rail (chat
+            history) only appears in the chat itself. */}
+        {settingsOwnsChrome || !isChatRoute ? null : (
           <div
             data-collapsed={sidebarCollapsed ? "true" : "false"}
             className="agent-layout-left-drawer hidden md:block"

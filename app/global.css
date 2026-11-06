@@ -624,3 +624,21 @@
   .ur-float, .ur-typing i, .ur-live-dot { animation: none; }
   .ur-reveal, .ur-pop { animation: none; opacity: 1; }
 }
+
+/* Theme switch: the new theme grows as a circle from the toggle (ThemeToggle.tsx). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+/* OpenTag-style top navigation bar. */
+.ur-topnav {
+  background: hsl(var(--background) / 0.82);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  backdrop-filter: saturate(1.4) blur(14px);
+  border-bottom: 1px solid hsl(var(--border) / 0.8);
+}

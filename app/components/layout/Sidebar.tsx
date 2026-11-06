@@ -33,6 +33,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { BrandMark } from "@/components/unrecalled/premium";
+import { ThemeToggle } from "@/components/unrecalled/ThemeToggle";
 import { APP_TITLE } from "@/lib/app-config";
 import { chatThreadPath, threadIdFromPath } from "@/lib/chat-paths";
 import { cn } from "@/lib/utils";
@@ -446,6 +447,7 @@ export function Sidebar({
                 : "min-w-0 flex-1 h-11 rounded-lg bg-transparent px-3 py-2 text-sm text-sidebar-accent-foreground hover:bg-sidebar-accent"
             }
           />
+          <ThemeToggle className="size-8 rounded-lg" />
           {searchButton}
           {collapseButton}
         </div>
