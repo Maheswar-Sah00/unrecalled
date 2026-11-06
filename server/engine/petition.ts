@@ -160,6 +160,15 @@ export function buildPetition(input: PetitionInput): PetitionOutput {
       "",
     );
   }
+  const pr = cluster.postRecall;
+  if (pr && pr.count > 0 && pr.recallId) {
+    L.push(
+      `**Complaints after the recall.** ${pr.count} of these complaints were received more than one year after recall ${cell(pr.recallId)} ` +
+        `(report date ${pr.sinceRecall ?? "n/a"}). Some may come from vehicles that never received the remedy; the rest suggest the remedy ` +
+        "did not resolve the condition or that the recall population was too narrow. Either question warrants review.",
+      "",
+    );
+  }
 
   L.push("### 3.3 Complaint trend", "");
   const s = cluster.signal;

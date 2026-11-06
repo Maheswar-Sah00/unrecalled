@@ -16,6 +16,7 @@ import { fmtDate, fmtInt, fmtMonth, fmtPct, fmtRatio, HarmCounts } from "./forma
 import { SignalBadge } from "./GapBoard";
 import { MonthlyBars } from "./MonthlyBars";
 import { Page, SectionHeading, useCrumbs } from "./page";
+import { PostRecallNote } from "./PostRecallNote";
 import { StatusChip, StatusLegend } from "./status";
 import type { GetClusterResult } from "./types";
 
@@ -150,6 +151,7 @@ export function ClusterDetail({
             activeYear={year}
             onSelectYear={(y) => update({ year: y ? String(y) : null, page: null })}
           />
+          <PostRecallNote postRecall={cluster.postRecall} className="mt-4" />
           <div className="mt-4">
             <CoveragePanel refs={refs} />
           </div>

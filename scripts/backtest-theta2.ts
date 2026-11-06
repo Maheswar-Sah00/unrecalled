@@ -146,6 +146,7 @@ async function main() {
     share: Number(share.toFixed(4)),
     peerShare: Number(peerShare.toFixed(4)),
     monthly,
+    // guard:allow-env-credential — offline script input (precision note text), not a credential
     precisionNote: process.env.PRECISION_NOTE ?? readPrevious()?.precisionNote ?? "Precision not yet spot-checked.",
     patterns: mode.include.concat(mode.exclude.map((p) => `EXCLUDE: ${p}`)),
     notes: [

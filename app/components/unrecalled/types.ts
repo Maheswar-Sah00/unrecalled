@@ -23,6 +23,13 @@ export interface YearCoverage {
   count: number;
   status: CoverageStatus;
   refIds: string[];
+  postRecallCount?: number | undefined;
+}
+
+export interface PostRecall {
+  count: number;
+  recallId: string | null;
+  sinceRecall: string | null;
 }
 
 export interface CoverageRef {
@@ -93,6 +100,7 @@ export interface ClusterRow {
   monthly: MonthCount[];
   byYear: YearCoverage[];
   hazard?: string;
+  postRecall?: PostRecall | undefined;
   firstReported?: string | null;
   lastReported?: string | null;
   refs?: Pick<CoverageRef, "kind" | "id" | "title" | "status" | "years">[];
@@ -124,6 +132,7 @@ export interface ClusterResult {
   byYear: YearCoverage[];
   coverage: { status: CoverageStatus; refs: CoverageRef[] };
   signal: SignalResult;
+  postRecall?: PostRecall | undefined;
 }
 
 export type LabelVerdict = "include" | "exclude";

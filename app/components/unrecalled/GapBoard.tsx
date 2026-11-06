@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { CoverageStrip, Sparkline } from "./charts-small";
 import { fmtInt, fmtMonth, fmtRatio, HarmCounts } from "./format";
 import { Page, SectionHeading, useCrumbs } from "./page";
+import { PostRecallNote } from "./PostRecallNote";
 import { StatusChip, StatusLegend } from "./status";
 import type { ClusterRow, GapBoardResult } from "./types";
 
@@ -25,7 +26,12 @@ export function GapBoard({ vehicleId }: { vehicleId: string }) {
 
   const all = data?.clusters ?? [];
   const uncovered = all.filter((c) => c.uncoveredCount > 0);
-  const rows = show === "all" ? all : uncovered;
+  // "Open gaps" = uncovered years, plus recalled modes still drawing
+  // complaints more than a year after the recall.
+  const openGaps = all.filter(
+    (c) => c.uncoveredCount > 0 || (c.postRecall?.count ?? 0) > 0,
+  );
+  const rows = show === "all" ? all : openGaps;
 
   return (
     <Page wide>
@@ -88,7 +94,7 @@ export function GapBoard({ vehicleId }: { vehicleId: string }) {
               aria-label="Filter failure modes"
             >
               <ToggleGroupItem value="uncovered" className="px-3 text-xs">
-                Uncovered
+                Open gaps
               </ToggleGroupItem>
               <ToggleGroupItem value="all" className="px-3 text-xs">
                 All modes
@@ -179,6 +185,7 @@ function BoardTable({ rows, vehicleId }: { rows: ClusterRow[]; vehicleId: string
                   <div className="mt-1">
                     <StatusChip status={c.status} short />
                   </div>
+                  <PostRecallNote postRecall={c.postRecall} compact className="mt-1.5" />
                 </td>
                 <td className="ur-num py-3 pe-3 text-right align-top">
                   <span
@@ -236,6 +243,7 @@ function BoardCard({
             <StatusChip status={c.status} short />
             <SignalBadge c={c} />
           </div>
+          <PostRecallNote postRecall={c.postRecall} compact className="mt-1.5" />
         </div>
         <div className="ur-num text-right">
           <div

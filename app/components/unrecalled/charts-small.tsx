@@ -154,6 +154,9 @@ export function CoverageStrip({
                 MY{y.year} · {fmtInt(y.count)} complaints
               </div>
               <div>{meta.label}</div>
+              {y.postRecallCount ? (
+                <div>{fmtInt(y.postRecallCount)} filed &gt;1 yr after the recall</div>
+              ) : null}
               {y.refIds.length ? (
                 <ul className="mt-1 space-y-0.5 opacity-90">
                   {y.refIds.map((id) => (

@@ -9,7 +9,9 @@ import { investigationsFor, loadInvestigations } from "../investigations.js";
 import { decodeVin, fetchComplaints, fetchRecalls } from "../nhtsa.js";
 import type { FailureMode } from "../types.js";
 
+// guard:allow-env-credential — test-only switch for live NHTSA tests, not a credential
 const LIVE = process.env.LIVE === "1";
+// guard:allow-env-credential — test-only cache path, not a credential
 const cacheDir = process.env.UNRECALLED_CACHE ?? path.join(os.tmpdir(), "unrecalled-engine-live");
 
 const WOBBLE: FailureMode = {
