@@ -100,6 +100,7 @@ export interface YearCoverage {
   count: number;
   status: CoverageStatus;
   refIds: string[];
+  postRecallCount?: number; // complaints received >365 days after the earliest matching recall for this (recalled) year
 }
 
 export interface SignalResult {
@@ -126,6 +127,14 @@ export interface ClusterResult {
   byYear: YearCoverage[];
   coverage: { status: CoverageStatus; refs: CoverageRef[] }; // "uncovered" if any year with count>0 is uncovered, else the weakest status among years with complaints
   signal: SignalResult;
+  /** Informational: complaints in "recalled" years received >365 days after the earliest matching recall covering that year. */
+  postRecall?: PostRecall;
+}
+
+export interface PostRecall {
+  count: number; // summed over all recalled years
+  sinceRecall: Iso | null; // report date of recallId
+  recallId: string | null; // campaign yielding the most post-recall complaints
 }
 
 export interface ScanInput {

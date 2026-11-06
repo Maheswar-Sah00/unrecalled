@@ -23,7 +23,16 @@ export function BacktestChart({ data }: { data: BacktestResult }) {
   const rows = useMemo(() => {
     let cm = 0;
     let ct = 0;
-    return data.monthly.map((m) => {
+    // Start six months before the first matching complaint: earlier months
+    // carry only a handful of complaints, so their shares are noise.
+    const firstIdx = data.monthly.findIndex((m) => m.matched > 0);
+    const start = Math.max(0, firstIdx - 6);
+    const skipped = data.monthly.slice(0, start);
+    for (const m of skipped) {
+      cm += m.matched;
+      ct += m.total;
+    }
+    return data.monthly.slice(start).map((m) => {
       cm += m.matched;
       ct += m.total;
       return {
@@ -39,7 +48,7 @@ export function BacktestChart({ data }: { data: BacktestResult }) {
   const padL = 44;
   const padR = 12;
   const topH = 170;
-  const gap = 26;
+  const gap = 40;
   const botH = 90;
   const padT = 22;
   const padB = 22;
@@ -107,7 +116,7 @@ export function BacktestChart({ data }: { data: BacktestResult }) {
           <g key={`s${t}`}>
             <line x1={padL} x2={width - padR} y1={yTop(t)} y2={yTop(t)} stroke="hsl(var(--border))" strokeDasharray={t ? "2 3" : undefined} />
             <text x={padL - 6} y={yTop(t)} dy="0.32em" textAnchor="end" className="ur-num fill-muted-foreground text-[10px]">
-              {fmtPct(t, t < 0.1 ? 1 : 0)}
+              {t === 0 ? "0%" : fmtPct(t, t < 0.1 ? 1 : 0)}
             </text>
           </g>
         ))}

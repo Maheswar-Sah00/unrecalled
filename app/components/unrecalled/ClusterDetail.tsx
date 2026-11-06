@@ -138,8 +138,8 @@ export function ClusterDetail({
         </Fact>
       </dl>
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <section>
+      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <section className="min-w-0">
           <SectionHeading right={<StatusLegend className="hidden xl:flex" />}>
             Coverage by model year
           </SectionHeading>
@@ -154,7 +154,7 @@ export function ClusterDetail({
             <CoveragePanel refs={refs} />
           </div>
         </section>
-        <section>
+        <section className="min-w-0">
           <SectionHeading>Complaints per month</SectionHeading>
           <div className="rounded-lg border bg-card p-3">
             <MonthlyBars data={cluster.monthly} markers={markers} />

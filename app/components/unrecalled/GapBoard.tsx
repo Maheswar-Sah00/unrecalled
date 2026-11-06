@@ -150,9 +150,9 @@ function BoardTable({ rows, vehicleId }: { rows: ClusterRow[]; vehicleId: string
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b text-left text-xs text-muted-foreground">
-            <th className="w-8 py-2 ps-4 font-medium">#</th>
+            <th className="w-10 py-2 ps-4 font-medium">#</th>
             <th className="py-2 pe-3 font-medium">Failure mode</th>
-            <th className="py-2 pe-3 text-right font-medium">
+            <th className="whitespace-nowrap py-2 pe-3 text-right font-medium">
               Uncovered / all
             </th>
             <th className="py-2 pe-3 font-medium">Harm reported</th>
@@ -166,7 +166,7 @@ function BoardTable({ rows, vehicleId }: { rows: ClusterRow[]; vehicleId: string
             const to = clusterPath(vehicleId, c.failureModeId);
             return (
               <tr key={c.failureModeId} className="group relative hover:bg-accent/40">
-                <td className="ur-num py-3 ps-4 align-top text-xs text-muted-foreground">
+                <td className="ur-num py-3 pe-2 ps-4 align-top text-xs text-muted-foreground">
                   {i + 1}
                 </td>
                 <td className="max-w-[22rem] py-3 pe-3 align-top">

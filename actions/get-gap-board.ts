@@ -45,6 +45,7 @@ export default defineAction({
         signalFired: r.signal.fired,
         signalFiredAt: r.signal.firedAt,
         ratio: r.signal.ratio,
+        postRecall: r.postRecall ?? { count: 0, sinceRecall: null, recallId: null },
         firstReported: r.firstReported,
         lastReported: r.lastReported,
         monthly: r.monthly,

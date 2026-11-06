@@ -32,14 +32,7 @@ const MODES_A: FailureMode[] = [
       s(/\b(?:at|while|when)\s+(?:\w+\s+){0,2}?idl(?:e|ing)\b[^.!?]{0,60}\b(?:shak|vibrat)/),
       s(/\b(?:sitting|stopped|idling|waiting)\s+at\s+a\s+(?:red\s+light|stop\s*(?:light|sign))\b[^.!?]{0,60}\b(?:shak|vibrat)/),
     ],
-    coverageTerms: [
-      s(/\bsteering\s+damper/),
-      s(/\btrack\s+bar/),
-      s(/\bdeath\s+wobble/),
-      s(/\bfront\s+suspension.{0,80}(?:oscillat|shimmy|wobble|vibrat)/),
-      s(/\bsteering\s+wheel.{0,60}(?:shake|shimmy|oscillat|wobble)/),
-      s(/\b(?:shimmy|oscillation|wobble)\b/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard:
       "Sudden, violent oscillation of the front axle and steering at speed can make the vehicle difficult to control and increase the risk of a crash.",
   },
@@ -61,14 +54,7 @@ const MODES_A: FailureMode[] = [
     exclude: [
       s(/\bbrakes?\s+(?:\w+\s+){0,3}?(?:failed|did\s+not\s+(?:work|engage|stop))\b/),
     ],
-    coverageTerms: [
-      s(/\bautomatic\s+emergency\s+brak/),
-      s(/\b(?:aeb|fcw)\b/),
-      s(/\bforward\s+collision/),
-      s(/\b(?:unexpected|unintended|false|inadvertent)\s+(?:\w+\s+){0,3}?brak/),
-      s(/\bphantom\s+brak/),
-      s(/\bcollision\s+(?:avoidance|mitigation)/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard:
       "Unexpected hard braking with no obstacle present can cause following vehicles to strike the vehicle from behind.",
   },
@@ -94,14 +80,7 @@ const MODES_A: FailureMode[] = [
       s(/\b(?:died|stall\w*|lost\s+(?:all\s+)?(?:engine\s+)?power|loss\s+of\s+(?:engine\s+|motive\s+)?power|shut\s+(?:off|down))\b[\s\S]{0,150}?\b(?:engine\s+(?:\w+\s+){0,2}?knock\w*|knock\w*\s+(?:\w+\s+){0,3}?(?:noise|sound)\s+(?:\w+\s+){0,3}?engine)/),
     ],
     exclude: [],
-    coverageTerms: [
-      s(/\bconnecting\s+rod/),
-      s(/\b(?:rod\s+)?bearings?\b.{0,80}(?:wear|damage|fail|seiz)/),
-      s(/\bengine\s+(?:seizure|seize|failure|stall)/),
-      s(/\bcrankshaft/),
-      s(/\bknock\s+sensor/),
-      s(/\bmachining\s+(?:error|debris)/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard:
       "Engine seizure while driving causes a sudden loss of motive power and, in some cases, an engine compartment fire, increasing the risk of a crash.",
   },
@@ -115,11 +94,7 @@ const MODES_A: FailureMode[] = [
       s(/\b(?:while|when)\s+(?:driving|traveling|travelling|accelerating|merging)\s+(?:\w+\s+){0,8}?(?:engine|vehicle|car|it)\s+(?:\w+\s+){0,2}?(?:stall\w*|shut\s+(?:off|down)|died|lost\s+(?:all\s+)?(?:motive\s+)?power)/),
     ],
     exclude: [s(/\bstart[\s-]?stop\b|\bauto(?:matic)?\s+(?:engine\s+)?(?:start[\s-]?stop|stop[\s-]?start)\b/)],
-    coverageTerms: [
-      s(/\b(?:engine\s+)?stall/),
-      s(/\bloss\s+of\s+(?:motive\s+|drive\s+)?power/),
-      s(/\bloss\s+of\s+propulsion/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard:
       "A stall or loss of drive power at speed can leave the vehicle stopped in traffic and increases the risk of a crash.",
   },
@@ -135,12 +110,7 @@ const MODES_A: FailureMode[] = [
       s(/\b(?:loud\s+)?pop(?:ping)?\s+(?:noise|sound)\s+(?:\w+\s+){0,10}?(?:lost\s+(?:all\s+)?power|loss\s+of\s+(?:motive\s+)?power|power\s+loss)/),
     ],
     exclude: [],
-    coverageTerms: [
-      s(/\biccu\b/),
-      s(/\bintegrated\s+charging\s+control\s+unit/),
-      s(/\b12[\s-]?v(?:olt)?\s+(?:auxiliary\s+|low[\s-]voltage\s+)?battery.{0,80}(?:charg|discharg|loss\s+of\s+(?:motive|drive)\s+power)/),
-      s(/\bldc\b|\blow[\s-]voltage\s+dc/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard:
       "Failure of the charging unit or 12-volt supply can cause an EV to lose drive power while moving, increasing the risk of a crash.",
   },
@@ -155,11 +125,7 @@ const MODES_A: FailureMode[] = [
       s(/\bthrottle\s+(?:\w+\s+){0,2}?(?:stuck|stick\w*)\s+open\b|\b(?:gas|accelerator)\s+pedal\s+(?:\w+\s+){0,2}?(?:stuck|stick\w*)\b/),
     ],
     exclude: [],
-    coverageTerms: [
-      s(/\b(?:unintended|sudden|unexpected)\s+acceleration/),
-      s(/\baccelerator\s+pedal.{0,60}(?:stick|stuck|entrap|return)/),
-      s(/\bthrottle.{0,40}(?:stick|stuck|open)/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard:
       "Acceleration the driver did not command can cause a collision with vehicles, pedestrians or objects.",
   },
@@ -174,11 +140,7 @@ const MODES_A: FailureMode[] = [
       s(/\b(?:unable|could\s+not|couldn'?t|was\s+not\s+able)\s+to\s+(?:stop|slow\s+down)\s+(?:the\s+)?(?:vehicle|car|truck)?/),
     ],
     exclude: [s(/\bparking\s+brake\s+(?:\w+\s+){0,2}?(?:failed|did\s+not)/)],
-    coverageTerms: [
-      s(/\b(?:loss|reduction|reduced)\s+(?:of\s+)?(?:brake|braking)\s+(?:\w+\s+){0,2}?(?:assist|power|performance|pressure|fluid)/),
-      s(/\bbrake\s+(?:fluid\s+)?(?:leak|line|hose|booster|master\s+cylinder|caliper)/),
-      s(/\bincreased\s+stopping\s+distance/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard:
       "A loss of braking prevents the driver from slowing or stopping the vehicle and increases the risk of a crash.",
   },
@@ -193,12 +155,7 @@ const MODES_A: FailureMode[] = [
       s(/\bservice\s+power\s+steering\b|\bepas\b|\beps\s+(?:warning|light|fault|failure)/),
     ],
     exclude: [],
-    coverageTerms: [
-      s(/\b(?:loss|lose)\s+(?:of\s+)?(?:power\s+)?steering\s+assist/),
-      s(/\bpower\s+steering/),
-      s(/\belectric\s+power\s+steering|\beps\b/),
-      s(/\bincreased\s+steering\s+effort/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard:
       "A sudden loss of steering assist requires much greater effort to steer, which can lead to a crash, especially at low speed or in turns.",
   },
@@ -212,11 +169,7 @@ const MODES_A: FailureMode[] = [
       s(/\b(?:none\s+of\s+the|neither\s+of\s+the)\s+(?:air\s?bags?|airbags?)\s+(?:\w+\s+){0,2}?deployed/),
     ],
     exclude: [],
-    coverageTerms: [
-      s(/\b(?:air\s?bags?|airbags?).{0,60}(?:not|fail\w*\s+to)\s+deploy/),
-      s(/\bocs\b|\boccupant\s+classification/),
-      s(/\b(?:air\s?bag|airbag)\s+control\s+(?:unit|module)/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard:
       "An airbag that fails to deploy in a crash increases the risk of injury or death to the occupant.",
   },
@@ -230,12 +183,7 @@ const MODES_A: FailureMode[] = [
       s(/\bpassenger\s+(?:air\s?bag|airbag)\s+(?:off|disabled?)\s+(?:\w+\s+){0,4}?(?:adult|someone|occupied|sitting|passenger)/),
     ],
     exclude: [],
-    coverageTerms: [
-      s(/\b(?:air\s?bag|airbag|srs)\s+(?:warning\s+)?(?:light|lamp|indicator)/),
-      s(/\bclockspring|\bclock\s+spring/),
-      s(/\boccupant\s+classification/),
-      s(/\bseat\s+(?:belt\s+)?(?:sensor|wiring|harness).{0,60}(?:air\s?bag|airbag)/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard:
       "An airbag fault indication can mean the airbags are disabled and may not deploy in a crash.",
   },
@@ -249,12 +197,7 @@ const MODES_A: FailureMode[] = [
       s(/\bpretensioner\s+(?:\w+\s+){0,3}?(?:fail\w*|fired|deployed|did\s+not)/),
     ],
     exclude: [],
-    coverageTerms: [
-      s(/\bseat\s?belts?/),
-      s(/\bpretensioner/),
-      s(/\bbuckle/),
-      s(/\bretractor/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard:
       "A seat belt that does not latch, lock or hold fails to restrain the occupant in a crash, increasing the risk of injury.",
   },
@@ -272,12 +215,7 @@ const MODES_B: FailureMode[] = [
       s(/\b(?:would\s+not|wouldn'?t|did\s+not|didn'?t|failed\s+to|will\s+not|won'?t)\s+(?:\w+\s+){0,1}?(?:go|shift|engage|stay)\s+(?:into|in)\s+park\b/),
     ],
     exclude: [],
-    coverageTerms: [
-      s(/\broll[\s-]?away/),
-      s(/\bpark(?:ing)?\s+(?:pawl|position|engag)/),
-      s(/\bshift(?:er)?\s+(?:\w+\s+){0,2}?(?:park|cable|bushing)/),
-      s(/\bvehicle\s+(?:may\s+)?(?:roll|move)\s+(?:\w+\s+){0,3}?unexpectedly/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard: "A vehicle that is not held in park can roll away unattended and strike people or objects.",
   },
   {
@@ -291,12 +229,7 @@ const MODES_B: FailureMode[] = [
       s(/\b(?:stuck|stays)\s+in\s+(?:\w+\s+)?gear\b|\bwould\s+not\s+(?:up|down)?shift\b|\blimp\s+mode\b/),
     ],
     exclude: [],
-    coverageTerms: [
-      s(/\btransmission/),
-      s(/\btorque\s+converter/),
-      s(/\b(?:harsh|delayed|unexpected)\s+(?:down|up)?shift/),
-      s(/\bvalve\s+body|\bclutch/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard:
       "Unexpected lurching, slipping or delayed engagement can cause a loss of acceleration in traffic or an unintended movement, increasing crash risk.",
   },
@@ -310,7 +243,7 @@ const MODES_B: FailureMode[] = [
       s(/\bleak\w*\s+(?:\w+\s+){0,2}?(?:fuel|gas|gasoline|diesel)\b(?!\s+(?:mileage|cap\s+light))/),
     ],
     exclude: [s(/\bexhaust\s+(?:fumes?|smell|odou?r)/)],
-    coverageTerms: [s(/\bfuel\s+(?:\w+\s+){0,2}?(?:leak|odor|odour|smell)/), s(/\bfuel\s+(?:line|tank|pump|rail|injector|filler|hose)/)],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard: "Fuel leaking in the presence of an ignition source increases the risk of a fire.",
   },
   {
@@ -324,7 +257,7 @@ const MODES_B: FailureMode[] = [
       s(/\bthermal\s+(?:runaway|event)\b/),
     ],
     exclude: [s(/\bafter\s+(?:the\s+)?(?:crash|collision|accident)[\s\S]{0,60}\b(?:fire|flames?)/)],
-    coverageTerms: [s(/\bfire\b/), s(/\bthermal\s+(?:runaway|event)/), s(/\bsmoke/), s(/\boverheat/)],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard: "A fire while driving or parked can injure occupants and bystanders and destroy property.",
   },
   {
@@ -338,7 +271,7 @@ const MODES_B: FailureMode[] = [
       s(/\boil\s+consumption\s+test\b/),
     ],
     exclude: [s(/\boil\s+leak\w*/)],
-    coverageTerms: [s(/\boil\s+consumption/), s(/\bpiston\s+rings?/), s(/\blow\s+oil\s+level/)],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard: "Oil consumption that leaves the engine low on oil can lead to engine damage and loss of power while driving.",
   },
   {
@@ -350,7 +283,7 @@ const MODES_B: FailureMode[] = [
       s(/\b(?:lost|loss\s+of|no)\s+(?:all\s+)?head[\s-]?(?:light|lamp)s?\b/),
     ],
     exclude: [],
-    coverageTerms: [s(/\bhead[\s-]?(?:light|lamp)s?/), s(/\blow[\s-]beam|\bhigh[\s-]beam/)],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard: "Headlights that fail or dim at night reduce the driver's visibility and the vehicle's conspicuity, increasing crash risk.",
   },
   {
@@ -363,7 +296,7 @@ const MODES_B: FailureMode[] = [
       s(/\brear[\s-]?view\s+(?:camera\s+)?(?:image|display)\s+(?:\w+\s+){0,3}?(?:not|fail|black|blank)/),
     ],
     exclude: [],
-    coverageTerms: [s(/\brear[\s-]?view\s+(?:camera|image)/), s(/\bback[\s-]?up\s+camera/), s(/\bfmvss\s+(?:no\.\s*)?111\b/)],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard: "A rearview image that fails to display reduces the driver's view behind the vehicle, increasing the risk of a back-over crash.",
   },
   {
@@ -376,7 +309,7 @@ const MODES_B: FailureMode[] = [
       s(/\b(?:door|doors)\s+(?:would\s+not|will\s+not|won'?t|did\s+not|does\s+not)\s+(?:\w+\s+){0,1}?(?:latch|close|stay\s+closed|lock)/),
     ],
     exclude: [],
-    coverageTerms: [s(/\b(?:door|tailgate|liftgate|hood)\s+(?:\w+\s+){0,2}?latch/), s(/\bdoor\s+(?:may\s+)?open/), s(/\bfmvss\s+(?:no\.\s*)?206\b/)],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard: "A door that opens while the vehicle is moving can eject an occupant.",
   },
   {
@@ -388,7 +321,7 @@ const MODES_B: FailureMode[] = [
       s(/\b(?:shatter\w*|explod\w*)\s+(?:\w+\s+){0,3}?(?:sun|moon|panoramic|pano|glass)\s?roof/),
     ],
     exclude: [],
-    coverageTerms: [s(/\b(?:sun|moon|panoramic|glass)\s?roof/)],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard: "Glass falling from a shattering roof panel can cut occupants and startle the driver at speed.",
   },
   {
@@ -401,7 +334,7 @@ const MODES_B: FailureMode[] = [
       s(/\bstress\s+crack\w*\s+(?:\w+\s+){0,4}?wind(?:shield|screen)|\bwind(?:shield|screen)\s+(?:\w+\s+){0,4}?stress\s+crack/),
     ],
     exclude: [],
-    coverageTerms: [s(/\bwind(?:shield|screen)/)],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard: "A spreading windshield crack obstructs the driver's view.",
   },
   {
@@ -413,7 +346,7 @@ const MODES_B: FailureMode[] = [
       s(/\bwiper\s+(?:motor|linkage|arm|transmission|module)\s+(?:\w+\s+){0,3}?(?:fail\w*|broke\w*|seiz\w*|bad|replac\w*)/),
     ],
     exclude: [],
-    coverageTerms: [s(/\bwipers?/), s(/\bfmvss\s+(?:no\.\s*)?104\b/)],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard: "Wipers that stop in rain or snow can leave the driver unable to see the road.",
   },
   {
@@ -426,7 +359,7 @@ const MODES_B: FailureMode[] = [
       s(/\b(?:blowout|blow[\s-]out)\b/),
     ],
     exclude: [],
-    coverageTerms: [s(/\btread\s+separation/), s(/\btires?\b/), s(/\bfmvss\s+(?:no\.\s*)?139\b/)],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard: "A tread separation or blowout at speed can cause a loss of vehicle control.",
   },
   {
@@ -439,10 +372,7 @@ const MODES_B: FailureMode[] = [
       s(/\b(?:wheel|tire)\s+(?:\w+\s+){0,2}?(?:fell|came|flew)\s+off\b/),
     ],
     exclude: [s(/\b(?:after|in)\s+(?:the|a)\s+(?:crash|collision|accident)\b/)],
-    coverageTerms: [
-      s(/\b(?:coil\s+spring|ball\s+joint|control\s+arm|tie\s+rod|knuckle|strut|track\s+bar|axle\s+shaft|wheel\s+hub)s?\b/),
-      s(/\bsuspension.{0,40}(?:fractur|separat|break|crack)/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard: "A fractured suspension or steering link can cause a sudden loss of steering control.",
   },
   {
@@ -455,12 +385,7 @@ const MODES_B: FailureMode[] = [
       s(/\b(?:lost|loss\s+of)\s+(?:all\s+)?(?:gauges|speedometer|instrument\s+cluster|dash(?:board)?\s+(?:lights|display))\b/),
     ],
     exclude: [],
-    coverageTerms: [
-      s(/\b(?:center|touch|infotainment|media\s+control|display)\s+(?:screen|display|unit)/),
-      s(/\binstrument\s+(?:panel|cluster)/),
-      s(/\bemmc|\bmcu\b|\breboot/),
-      s(/\brear[\s-]?view\s+(?:camera|image)/),
-    ],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard:
       "Loss of the central display or instrument cluster can remove the rearview image, speed display, warnings and defrost controls while driving.",
   },
@@ -474,12 +399,170 @@ const MODES_B: FailureMode[] = [
       s(/\b(?:auto\s?steer|autosteer)\s+(?:\w+\s+){0,6}?(?:jerk\w*|yank\w*|swerv\w*|veer\w*)/),
     ],
     exclude: [],
-    coverageTerms: [s(/\blane\s+(?:keep|depart|center|assist)/), s(/\bauto\s?steer/), s(/\bunexpected\s+steering/)],
+    coverageTerms: [], // see COVERAGE_TERMS
     hazard: "An unexpected steering input from a driver-assist system can move the vehicle out of its lane or into another vehicle.",
   },
 ];
 
-export const SEED_MODES: FailureMode[] = [...MODES_A, ...MODES_B];
+// Coverage terms: regexes matched against recall summary + consequence + remedy and investigation
+// subject + summary (NOT the NHTSA component label). Each term describes the defect itself, so a
+// recall only counts as coverage when it addresses this failure mode. Validated against 189 recalls
+// and 52 investigations with scripts/validate-coverage.ts.
+const SHAKE = String.raw`(?:shimm(?:y|ies|ying)|wobbl\w*|oscillat\w*)`;
+const COVERAGE_TERMS: Record<string, string[]> = {
+  "death-wobble": [
+    s(/\bdeath\s+wobble/),
+    s(/\bsteering\s+(?:damper|dampener|stabili[sz]er)s?\b/),
+    String.raw`\b(?:steering(?:\s+wheel)?|front[\s-]end|front\s+(?:axle|suspension))\s+(?:\w+\s+){0,2}?${SHAKE}`,
+    String.raw`\b${SHAKE}\s+(?:\w+\s+){0,3}?(?:of|in)\s+(?:the\s+)?(?:steering|front[\s-]end|front\s+(?:axle|suspension))`,
+  ],
+  "phantom-braking": [
+    s(/\bphantom\s+brak/),
+    s(/\b(?:unexpected|unintended|unintentional|inadvertent|false|unrequested|erroneous|unnecessary)\s+(?:and\s+\w+\s+)?(?:\w+\s+){0,3}?(?:automatic\s+emergency\s+brak\w*|aeb|brak(?:e|ing)\s+activation|(?:vehicle\s+)?deceleration|brak(?:e|ing)\s+application|collision\s+mitigation\s+brak\w*)/),
+    s(/\b(?:automatic\s+emergency\s+brak\w*|aeb|collision\s+mitigation\s+brak\w*)\b[^.]{0,60}\b(?:activat\w*|engag\w*|appl(?:y|ies|ied))\s+(?:\w+\s+){0,3}?(?:unexpectedly|inadvertently|with\s+no\s+(?:apparent\s+)?(?:obstruction|obstacle|object)|when\s+(?:there\s+is\s+)?no)/),
+    s(/\bsudden\s+(?:vehicle\s+)?deceleration\b[^.]{0,80}\bno\s+(?:apparent\s+)?(?:obstruction|obstacle|object|vehicle)/),
+    s(/\bno\s+(?:apparent\s+)?(?:obstruction|obstacle)\b[^.]{0,80}\bsudden\s+(?:vehicle\s+)?deceleration/),
+  ],
+  "engine-seizure": [
+    s(/\bconnecting[\s-]rods?\b/),
+    s(/\b(?:rod|crankshaft|crank|main|engine)\s+bearings?\b/),
+    s(/\bbearing\s+(?:wear|damage|failure|seiz\w*)/),
+    s(/\bengine\s+(?:seizure|seiz\w*)/),
+    s(/\bmachining\s+(?:errors?|debris)\b/),
+    s(/\b(?:metallic\s+)?debris\b[^.]{0,80}\bcrankshaft/),
+  ],
+  "stall-while-driving": [
+    s(/\b(?:engine\s+)?stall(?:s|ed|ing)?\b/),
+    s(/\bloss\s+of\s+(?:all\s+)?(?:motive|drive|motor)\s+power/),
+    s(/\bloss\s+of\s+propulsion/),
+    s(/\b(?:engine|vehicle|powertrain)\s+(?:may\s+)?(?:shut\s*down|shut\s+off)\b|\bengine\s+shutdown\b/),
+    s(/\blose\s+(?:all\s+)?(?:motive|drive|motor)\s+power/),
+  ],
+  "iccu-12v-power-loss": [
+    s(/\biccu\b/),
+    s(/\bintegrated\s+charging\s+control\s+unit/),
+    s(/\b(?:stop|not|inability\s+to)\s+(?:\w+\s+){0,1}?charg\w*\s+(?:the\s+)?12[\s-]?v(?:olt)?\b/),
+    s(/\b12[\s-]?v(?:olt)?\s+(?:auxiliary\s+|low[\s-]voltage\s+)?battery\b[^.]{0,80}\b(?:discharg\w*|not\s+(?:be\s+)?charg\w*|stop\w*\s+charg\w*|loss\s+of\s+(?:drive|motive)\s+power)/),
+    s(/\b(?:ldc|low[\s-]voltage\s+dc[\s/-]?dc\s+converter)\b/),
+  ],
+  "unintended-acceleration": [
+    s(/\b(?:unintended|sudden|unexpected|uncommanded|unintentional)\s+(?:\w+\s+){0,1}?acceleration/),
+    s(/\baccelerator\s+pedal\b[^.]{0,60}\b(?:stick\w*|stuck|entrap\w*|not\s+return|fail\w*\s+to\s+return)/),
+    s(/\bthrottle\b[^.]{0,40}\b(?:stick\w*|stuck|remain\w*\s+open|open\s+unexpectedly)/),
+    s(/\bcruise\s+control\b[^.]{0,60}\b(?:from\s+disengaging|not\s+disengage|fail\w*\s+to\s+disengage)/),
+  ],
+  "brake-loss": [
+    s(/\b(?:loss|lose|reduc\w*|decreas\w*|degrad\w*)\s+(?:of\s+)?(?:\w+\s+){0,2}?(?:brak\w*|stopping)\s+(?:\w+\s+){0,1}?(?:assist|power|performance|pressure|capability|ability|function)/),
+    s(/\bbrake\s+fluid\s+(?:may\s+)?(?:\w+\s+)?leak\w*(?!\s+(?:inside|into|within)\s+the\s+(?:hydraulic|hecu|abs|anti))/),
+    s(/\bbrake\s+(?:lines?|hoses?|booster|master\s+cylinder)\b[^.]{0,80}\b(?:leak\w*|fail\w*|crack\w*|detach\w*|separat\w*)/),
+    s(/\bbrake\s+calipers?\b[^.]{0,60}\b(?:fractur\w*|crack\w*|separat\w*|detach\w*|loose)/),
+    s(/\bincreas\w*\s+(?:the\s+)?(?:vehicle'?s?\s+)?stopping\s+distance/),
+  ],
+  "power-steering-loss": [
+    s(/\b(?:loss|lose|losing|reduc\w*|reduction)\s+(?:of\s+)?(?:\w+\s+){0,2}?(?:power\s+)?steering\s+assist/),
+    s(/\bsteering\s+assist\s+(?:may\s+be\s+)?(?:reduced|lost|disabled)/),
+    s(/\bincreas\w*\s+(?:in\s+)?(?:the\s+)?(?:\w+\s+){0,1}?steering\s+effort/),
+    s(/\bloss\s+of\s+(?:electronic\s+|electric\s+)?power[\s-](?:assisted\s+)?steering/),
+  ],
+  "airbag-non-deployment": [
+    s(/\bair\s?bags?\b[^.]{0,80}\b(?:not|fail\w*\s+to)\s+(?:properly\s+|correctly\s+)?deploy/),
+    s(/\bprevent\w*\b[^.]{0,60}?\bair\s?bags?\b[^.]{0,60}?\bfrom\s+deploying/),
+    s(/\b(?:air\s?bags?|second\s+stage)\b[^.]{0,40}\bnot\s+deploying/),
+    s(/\bdisabl\w*\s+(?:the\s+)?(?:\w+\s+){0,2}?air\s?bags?/),
+    s(/\bair\s?bags?\s+(?:may\s+be\s+)?disabled/),
+    s(/\bfailure\s+of\s+(?:the\s+)?(?:\w+\s+){0,2}?air\s?bags?\s+to\s+deploy/),
+  ],
+  "airbag-warning-light": [
+    s(/\b(?:air\s?bag|srs|supplemental\s+restraint)\s+(?:system\s+)?(?:warning\s+)?(?:light|lamp|telltale|indicator)/),
+    s(/\bpassenger\s+air\s?bag\s+(?:off|on)\s+indicator/),
+    s(/\bclock\s?spring/),
+  ],
+  "seat-belt-failure": [
+    s(/\bseat\s?belts?\b[^.]{0,80}\b(?:detach\w*|fractur\w*|separat\w*|unlatch\w*|not\s+(?:properly\s+)?(?:latch|lock|restrain|attached|secured)\w*|loose)/),
+    s(/\bpretensioners?\b[^.]{0,60}\b(?:failure|fail\w*\s+to|not\s+deploy|detach\w*|missing)/),
+    s(/\bbuckles?\b[^.]{0,80}\b(?:fractur\w*|separat\w*|detach\w*|not\s+(?:be\s+)?(?:properly\s+)?secured|prevent\w*\s+(?:\w+\s+){0,4}?(?:fastening|latching))/),
+    s(/\bretractors?\b[^.]{0,80}\b(?:not\s+(?:\w+\s+)?(?:lock|attached|slow)\w*|detach\w*|fail\w*)/),
+    s(/\b(?:seat\s?belt|buckle|retractor)\s+(?:\w+\s+){0,2}?anchor\w*\b[^.]{0,60}\b(?:loose|improperly|not\s+(?:be\s+)?(?:properly\s+)?secured|detach\w*|fail\w*)/),
+  ],
+  "rollaway-park": [
+    s(/\broll[\s-]?away/),
+    s(/\bpark(?:ing)?\s+(?:pawl|lock\s+rod|gear|mechanism|wheel)\b[^.]{0,80}\b(?:not|fail\w*|disengag\w*|engag\w*)/),
+    s(/\b(?:not|fail\w*\s+to)\s+(?:\w+\s+){0,2}?engag\w*\s+(?:\w+\s+){0,2}?park/),
+    s(/\bvehicle\s+(?:may\s+|to\s+)?(?:roll|move)\s+(?:\w+\s+){0,3}?(?:unexpectedly|away)/),
+    s(/\bpark\s+lock\s+rod|\bshift\s+cable\b[^.]{0,60}\bdetach/),
+  ],
+  "transmission-shudder": [
+    s(/\b(?:harsh|delayed|unexpected|unintended|abrupt)\s+(?:\w+\s+){0,1}?(?:down|up)?shift(?:s|ing)?\b/),
+    s(/\btorque\s+converter/),
+    s(/\btransmission\b[^.]{0,80}\b(?:shudder\w*|slip\w*|lurch\w*|jerk\w*|unexpected\s+(?:gear|downshift))/),
+    s(/\bunexpected\s+(?:\w+\s+){0,2}?gear\s+(?:change|shift)/),
+  ],
+  "fuel-leak": [
+    s(/(?<!\brisk\s+of\s+)\bfuel\s+(?:\w+\s+){0,3}?leak\w*/),
+    s(/\bleak\w*\s+(?:of\s+)?fuel\b/),
+    s(/\bfuel\s+(?:lines?|hoses?|pipes?|tanks?|rails?|filler(?:\s+tube)?|supply\s+(?:line|pipe)s?)\b[^.]{0,80}\b(?:crack\w*|disconnect\w*|punctur\w*|chaf\w*|loose)/),
+    s(/\bfuel\s+(?:odou?r|smell)/),
+  ],
+  "vehicle-fire": [
+    s(/\b(?:catch|catches|caught|cause|causing|result\s+in|resulting\s+in|lead\s+to|leading\s+to|ignite)\s+(?:an?\s+)?(?:\w+\s+){0,2}?fires?\b/),
+    s(/\bfires?\s+(?:while|even\s+when)\s+(?:\w+\s+){0,2}?(?:parked|driving|off)/),
+    s(/\b(?:non-crash|underhood|engine\s+compartment|battery)\s+(?:\w+\s+){0,1}?fires?\b/),
+    s(/\bthermal\s+(?:runaway|events?|incidents?)/),
+  ],
+  "oil-consumption": [
+    s(/\boil\s+consumption/),
+    s(/\b(?:excessive|abnormal)\s+(?:engine\s+)?oil\s+(?:use|loss|burn\w*)/),
+    s(/\bpiston\s+rings?/),
+    s(/\blow\s+(?:engine\s+)?oil\s+level/),
+  ],
+  "headlight-failure": [
+    s(/\bhead[\s-]?(?:light|lamp)s?\b[^.]{0,80}\b(?:fail\w*|inoperative|not\s+(?:\w+\s+)?(?:illuminate|work|function)|flicker\w*|go\s+out|condensation|moisture|water)/),
+    s(/\b(?:low|high)[\s-]beams?\b[^.]{0,60}\b(?:fail\w*|inoperative|not\s+(?:\w+\s+)?(?:illuminate|work|function))/),
+  ],
+  "backup-camera-failure": [
+    s(/\b(?:rear[\s-]?view|back[\s-]?up|reverse)\s+(?:camera\s+)?(?:image|camera|display|video)\b[^.]{0,80}\b(?:not|fail\w*|blank|distort\w*|delay\w*|black|flip|invert\w*|freez\w*|remain\w*|loss)/),
+    s(/\b(?:prevent\w*|disabl\w*|loss\s+of)\s+(?:the\s+)?(?:rear[\s-]?view|back[\s-]?up)\s+(?:camera\s+)?(?:image|camera)/),
+    s(/\b(?:standard|fmvss)\s+(?:number\s+|no\.\s*)?111\b/),
+  ],
+  "door-latch": [
+    s(/\b(?:door|liftgate|tailgate)\s+(?:\w+\s+){0,2}?latch\w*/),
+    s(/\bdoors?\s+(?:to\s+|may\s+|could\s+|can\s+|opens?\s+)?(?:\w+\s+){0,1}?(?:open|unlatch)\w*\s+(?:\w+\s+){0,3}?(?:while\s+(?:driving|moving|in\s+motion)|unexpectedly|unintentionally|in\s+(?:a|the\s+event\s+of\s+a)\s+crash|during\s+a\s+crash)/),
+    s(/\b(?:standard|fmvss)\s+(?:number\s+|no\.\s*)?206\b|\bdoor\s+(?:locks\s+and\s+door\s+)?retention/),
+  ],
+  "sunroof-shatter": [
+    s(/\b(?:sun|moon|panoramic|glass)\s?roof\b[^.]{0,80}\b(?:shatter\w*|break\w*|broke|crack\w*|detach\w*|separat\w*|fall\w*)/),
+  ],
+  "windshield-crack": [s(/\bwind(?:shield|screen)\b[^.]{0,80}\b(?:crack\w*|shatter\w*|fractur\w*|break\w*)/)],
+  "wiper-failure": [
+    s(/\bwipers?\b[^.]{0,80}\b(?:fail\w*|not\s+(?:\w+\s+)?(?:operat\w*|work\w*|function\w*)|inoperative|stop\w*)/),
+    s(/\bwiper\s+motor/),
+    s(/\b(?:standard|fmvss)\s+(?:number\s+|no\.\s*)?104\b/),
+  ],
+  "tire-tread-separation": [
+    s(/\btread\s+(?:\w+\s+)?separat\w*/),
+    s(/\btires?\b[^.]{0,60}\b(?:separat\w*|delaminat\w*|sidewall\s+(?:\w+\s+)?(?:crack|bulg|fail)\w*|rapid\s+air\s+loss|bulg\w*)/),
+    s(/\b(?:standard|fmvss)\s+(?:number\s+|no\.\s*)?139\b/),
+  ],
+  "suspension-break": [
+    s(/\b(?:coil\s+springs?|ball\s+joints?|control\s+arms?|tie[\s-]rods?|knuckles?|lateral\s+links?|suspension\s+links?|sub-?frames?|axle\s+shafts?|struts?|track\s+bar(?:\s+brackets?)?|wheel\s+hubs?|toe\s+links?)\b[^.]{0,100}\b(?:fractur\w*|break\w*|broke|separat\w*|detach\w*|crack\w*|loosen\w*|loose|not\s+(?:have\s+)?(?:been\s+)?(?:properly|correctly|securely)\s+(?:tightened|attached|welded|positioned|secured)|improperly\s+welded)/),
+    s(/\b(?:fractur\w*|separat\w*|detach\w*)\s+(?:\w+\s+){0,4}?(?:suspension|knuckle|control\s+arm|lateral\s+link|sub-?frame)/),
+  ],
+  "display-blackout": [
+    s(/\b(?:center|central|infotainment|touch|integrated\s+computer|radio)\s+(?:\w+\s+){0,2}?(?:screen|display|unit)\b[^.]{0,100}\b(?:blank|black|reboot\w*|restart\w*|freez\w*|lag|fail\w*|flip|invert\w*)/),
+    s(/\binstrument\s+(?:panel\s+)?clusters?\b[^.]{0,80}\b(?:fail\w*|blank|short|reset|inoperative|malfunction\w*|not\s+display)/),
+    s(/\b(?:cpu|mcu|emmc|computer|processor|circuit\s+board)\b[^.]{0,80}\b(?:overheat\w*|lag|restart\w*|reboot\w*|fail\w*|short\w*|wear)\w*[^.]{0,100}\b(?:display|screen|image|camera|cluster|infotainment|gauges?)\b/),
+  ],
+  "lane-keep-intervention": [
+    s(/\blane\s+(?:keep\w*|departure|centering|assist)\b[^.]{0,80}\b(?:unexpected\w*|unintended|inadvertent\w*|steer\w*\s+(?:into|toward))/),
+    s(/\bauto\s?steer\b[^.]{0,80}\b(?:unexpected\w*|unintended|jerk\w*|swerv\w*|veer\w*)/),
+    s(/\b(?:unexpected|unintended|uncommanded|inadvertent)\s+steering\s+(?:input|intervention|torque|correction)/),
+  ],
+};
+
+export const SEED_MODES: FailureMode[] = [...MODES_A, ...MODES_B].map((m) => ({
+  ...m,
+  coverageTerms: COVERAGE_TERMS[m.id] ?? [],
+}));
 
 /** Compile a mode's include/exclude/coverage sources (case-insensitive). */
 export function compileMode(mode: FailureMode): { include: RegExp[]; exclude: RegExp[]; coverage: RegExp[] } {

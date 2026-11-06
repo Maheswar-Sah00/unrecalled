@@ -35,8 +35,9 @@ function rangeYears(from: number, to: number, years: number[]): number[] {
 
 /**
  * Coverage of one mode across the scan years.
- * - recall: about the mode when any coverageTerm matches component+summary+consequence+remedy; covers its modelYear
- * - investigation: about the mode when any coverageTerm matches component+subject+summary; covers yearFrom..yearTo
+ * - recall: about the mode when any coverageTerm matches summary+consequence+remedy; covers its modelYear
+ * - investigation: about the mode when any coverageTerm matches subject+summary; covers yearFrom..yearTo
+ * The NHTSA component label is NOT matched (labels like "FORWARD COLLISION AVOIDANCE: WARNINGS" caused false coverage).
  * - settlement: covers yearFrom..yearTo when its failureModeId === mode.id
  * Inputs are assumed already filtered to the vehicle (make/model); scan() does that.
  * Refs with the same kind+id are merged (years unioned).
@@ -63,7 +64,7 @@ export function coverageFor(
   };
 
   for (const r of recalls) {
-    const terms = matchedTerms(mode, [r.component, r.summary, r.consequence, r.remedy].join("\n"));
+    const terms = matchedTerms(mode, [r.summary, r.consequence, r.remedy].join("\n"));
     if (terms.length === 0) continue;
     addRef({
       kind: "recall",
@@ -78,7 +79,7 @@ export function coverageFor(
   }
 
   for (const inv of investigations) {
-    const terms = matchedTerms(mode, [inv.component, inv.subject, inv.summary].join("\n"));
+    const terms = matchedTerms(mode, [inv.subject, inv.summary].join("\n"));
     if (terms.length === 0) continue;
     addRef({
       kind: "investigation",

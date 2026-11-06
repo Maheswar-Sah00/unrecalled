@@ -43,13 +43,13 @@ export function CoveragePanel({ refs }: { refs: CoverageRef[] }) {
                     href={r.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-0.5 font-mono text-xs font-medium hover:underline"
+                    className="inline-flex min-w-0 items-center gap-0.5 break-all font-mono text-xs font-medium hover:underline"
                   >
                     {r.id}
                     <IconExternalLink className="size-3 text-muted-foreground" aria-hidden="true" />
                   </a>
                 ) : (
-                  <span className="font-mono text-xs font-medium">{r.id}</span>
+                  <span className="break-all font-mono text-xs font-medium">{r.id}</span>
                 )}
                 <span className="text-xs text-muted-foreground">{fmtDate(r.date)}</span>
                 <StatusChip status={r.status} short className="ms-auto" />
@@ -61,7 +61,7 @@ export function CoveragePanel({ refs }: { refs: CoverageRef[] }) {
                   <span className="flex flex-wrap items-center gap-1">
                     matched
                     {r.matchedTerms.map((t) => (
-                      <code key={t} className="rounded bg-muted px-1 font-mono text-[11px] text-foreground">
+                      <code key={t} className="break-all rounded bg-muted px-1 font-mono text-[11px] text-foreground">
                         {t}
                       </code>
                     ))}

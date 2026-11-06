@@ -114,3 +114,39 @@ describe("scan", () => {
     expect(r).toEqual([]);
   });
 });
+
+describe("postRecall evidence", () => {
+  const wob = (year: number, date: string) => complaint({ modelYear: year, dateReceived: date, summary: "death wobble" });
+  const rc = (campaign: string, year: number, date: string) => ({
+    campaign, make: "JEEP", model: "WRANGLER", modelYear: year, component: "STEERING",
+    summary: "steering damper wobble", consequence: "", remedy: "", reportDate: date,
+  });
+
+  it("counts complaints more than 365 days after the earliest matching recall per recalled year", () => {
+    const [w] = scan({
+      make: "JEEP", model: "WRANGLER", years: [2020, 2021, 2022],
+      complaints: [
+        wob(2020, "2020-06-01"), // before recall
+        wob(2020, "2021-03-01"), // exactly recall + 365 days -> not counted
+        wob(2020, "2021-03-02"), // recall + 366 days -> counted
+        wob(2020, "2023-01-01"), // counted
+        wob(2021, "2024-01-01"), // counted against 22V002 (2022-05-01) -> after 2023-05-01
+        wob(2021, "2023-04-30"), // not counted
+        wob(2022, "2025-01-01"), // year uncovered -> ignored
+      ],
+      recalls: [rc("21V001000", 2020, "2020-03-01"), rc("22V009000", 2020, "2022-07-01"), rc("22V002000", 2021, "2022-05-01")],
+      investigations: [], settlements: [], modes: [WOBBLE], labels: [],
+    });
+    expect(w!.postRecall).toEqual({ count: 3, sinceRecall: "2020-03-01", recallId: "21V001000" });
+    expect(w!.byYear.map((y) => [y.year, y.status, y.postRecallCount])).toEqual([
+      [2020, "recalled", 2],
+      [2021, "recalled", 1],
+      [2022, "uncovered", undefined],
+    ]);
+  });
+
+  it("is zero/null when nothing is recalled", () => {
+    const [w] = scan({ make: "JEEP", model: "WRANGLER", years: [2021], complaints: [wob(2021, "2021-01-01")], recalls: [], investigations: [], settlements: [], modes: [WOBBLE], labels: [] });
+    expect(w!.postRecall).toEqual({ count: 0, sinceRecall: null, recallId: null });
+  });
+});

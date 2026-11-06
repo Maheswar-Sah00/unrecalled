@@ -110,6 +110,62 @@ describe("SEED_MODES", () => {
   });
 });
 
+// Real NHTSA recall text (summary + consequence + remedy, abridged) and ODI investigation excerpts.
+const REAL = {
+  "21V846": "A communication error may cause false forward-collision warning (FCW) or unexpected activation of the automatic emergency brake (AEB) system.\nUnexpected activation of the AEB system may cause the car to stop suddenly, increasing the risk of a crash.\nTesla Service has released an over-the-air (OTA) software update, free of charge.",
+  "22V317": "The fisheye and narrow camera cable terminals were incorrectly installed in the cable harness connector, resulting in swapped camera views.\nSwapped camera views can prevent the vehicle's cameras from detecting crossing objects and high-curvature lane lines, impairing the Autosteer and Automatic Emergency Braking (AEB) performance, and increasing the risk of a crash.\nTesla Service will correct the swapped terminals and recalibrate the cameras, free of charge.",
+  "24V153": "A factory reset muted the Pedestrian Warning System (PWS) sounds. As such, these vehicles fail to comply with the requirements of Federal Motor Vehicle Safety Standard number 141, \"Minimum Sound Requirements for Hybrid and Electric Vehicles.\"\nPedestrians may be unaware of an approaching vehicle if the PWS sounds are muted, increasing the risk of a crash.\nTesla released an over-the-air (OTA) software update, release 2023.44.30.14, free of charge.",
+  "18V675": "The front track bar brackets may be improperly welded, which can cause the bracket to separate from the frame, reducing steering capability.\nAn unexpected reduction in steering ability, can increase the risk of a crash.\nChrysler will notify owners, and dealers will inspect and repair the track bar bracket welds, as necessary, free of charge.",
+  "24V868": "The Integrated Charging Control Unit (ICCU) may become damaged and stop charging the 12-volt battery, which can result in a loss of drive power.\nA loss of drive power increases the risk of a crash.\nDealers will inspect and replace the ICCU and its fuse, as necessary. In addition, dealers will update the ICCU software.",
+  "17V224": "Machining errors during the engine manufacturing process may cause premature bearing wear within the engine.\nBearing wear may result in the engine seizing, increasing the risk of a crash.\nKia will notify owners, and dealers will inspect the engine assembly, and replace the engine if necessary, free of charge.",
+  "15V568": "In the affected vehicles, metallic debris may not have been fully removed during manufacturing of the engine crankshaft. If the debris was not completely removed, oil flow may be restricted through the connecting rod bearings, causing connecting rod damage.\nEngine failure would result in a vehicle stall, increasing the risk of a crash.",
+  "21V560": "The high voltage battery could catch fire when charged to full or nearly full capacity.\nA battery fire increases the risk of injury.\nDefective battery modules will be replaced by GM, free of charge.",
+  PE19012:
+    "Frame weld deficiencies\nDue to a previous steering related recall that was caused by a misaligned weld on the front track bar (NHTSA Recall No. 18V-675), ODI decided to include reports of steering shimmy or wobble, loose steering, and steering stiction (loss of power steering) as part of this investigation and parent petition (DP18-004).",
+  PE22002:
+    "Unexpected Brake Activation\nOn February 16, 2022, the Office of Defects Investigation (ODI) opened a Preliminary Evaluation (PE22002) to investigate reports of unexpected deceleration while driving with the adaptive cruise control system engaged in Model Year (MY) 2021 – 2022 Model 3 and Model Y vehicles manufactured by Tesla. These complaints have been colloquially referred to as “phantom braking”.",
+};
+
+describe("coverageTerms on real recall and investigation text", () => {
+  const covers = (id: string, text: string) => compileMode(mode(id)).coverage.some((r) => r.test(text));
+  const coveredBy = (text: string) => SEED_MODES.filter((m) => covers(m.id, text)).map((m) => m.id);
+
+  it.each([
+    ["21V846", "phantom-braking"],
+    ["PE22002", "phantom-braking"],
+    ["PE19012", "death-wobble"],
+    ["17V224", "engine-seizure"],
+    ["15V568", "engine-seizure"],
+    ["24V868", "iccu-12v-power-loss"],
+    ["21V560", "vehicle-fire"],
+  ] as const)("%s covers %s", (ref, modeId) => {
+    expect(covers(modeId, REAL[ref])).toBe(true);
+  });
+
+  it("22V317 (swapped camera views, mentions AEB performance) is not phantom braking", () => {
+    expect(covers("phantom-braking", REAL["22V317"])).toBe(false);
+  });
+  it("24V153 (pedestrian warning sounds muted) is not phantom braking", () => {
+    expect(covers("phantom-braking", REAL["24V153"])).toBe(false);
+  });
+  it("18V675 (track bar bracket welds) is not death wobble but is a suspension fracture", () => {
+    expect(covers("death-wobble", REAL["18V675"])).toBe(false);
+    expect(covers("suspension-break", REAL["18V675"])).toBe(true);
+  });
+  it("24V153 matches no failure mode at all", () => {
+    expect(coveredBy(REAL["24V153"])).toEqual([]);
+  });
+  it("the ICCU recall is not mistaken for engine seizure or a fire", () => {
+    expect(coveredBy(REAL["24V868"])).not.toContain("engine-seizure");
+    expect(coveredBy(REAL["24V868"])).not.toContain("vehicle-fire");
+  });
+  it("bare system names do not count as coverage", () => {
+    expect(covers("death-wobble", "Track bar")).toBe(false);
+    expect(covers("phantom-braking", "FORWARD COLLISION AVOIDANCE")).toBe(false);
+    expect(covers("seat-belt-failure", "The driver may be unaware that their seat belt is not fastened.")).toBe(false);
+  });
+});
+
 describe("SEED_SETTLEMENTS", () => {
   it("includes Reynolds v. FCA for 2018–2020 Wrangler and 2020 Gladiator", () => {
     const w = SEED_SETTLEMENTS.find((s) => s.model === "WRANGLER");

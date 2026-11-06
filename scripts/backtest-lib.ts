@@ -85,6 +85,8 @@ export interface RawRecall {
   reportDate: Iso | null;
   component: string;
   summary: string;
+  consequence: string;
+  remedy: string;
 }
 
 export async function fetchRecallsRaw(make: string, model: string, year: number): Promise<RawRecall[]> {
@@ -100,6 +102,8 @@ export async function fetchRecallsRaw(make: string, model: string, year: number)
     reportDate: dmyToIso(r.ReportReceivedDate),
     component: String(r.Component ?? ""),
     summary: String(r.Summary ?? ""),
+    consequence: String(r.Consequence ?? ""),
+    remedy: String(r.Remedy ?? ""),
   }));
 }
 
@@ -114,6 +118,8 @@ export async function fetchCampaign(campaign: string): Promise<RawRecall[]> {
     reportDate: dmyToIso(r.ReportReceivedDate),
     component: String(r.Component ?? ""),
     summary: String(r.Summary ?? ""),
+    consequence: String(r.Consequence ?? ""),
+    remedy: String(r.Remedy ?? ""),
   }));
 }
 

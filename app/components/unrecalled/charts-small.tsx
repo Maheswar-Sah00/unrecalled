@@ -107,7 +107,7 @@ export function CoverageStrip({
               "flex flex-col items-center justify-center rounded-[3px] text-white",
               meta.fill,
               y.count === 0 && "opacity-35",
-              big ? "h-12 min-w-14 flex-1 gap-0.5 px-1" : "h-5 w-7",
+              big ? "h-12 min-w-0 flex-1 gap-0.5 px-1" : "h-5 w-7",
               onSelectYear && "cursor-pointer hover:brightness-110",
               active && "ring-2 ring-foreground ring-offset-1 ring-offset-background",
             )}
@@ -137,7 +137,7 @@ export function CoverageStrip({
                   type="button"
                   className={cn(
                     "rounded-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    big && "flex flex-1",
+                    big && "flex min-w-0 flex-1",
                   )}
                   aria-pressed={active}
                   aria-label={`${y.year}: ${y.count} complaints, ${meta.label}`}

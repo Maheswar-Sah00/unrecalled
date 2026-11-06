@@ -92,3 +92,29 @@ describe("investigations flat-file parsing", () => {
     expect(investigationOutcome(null, "21V001000", "x")).toBe("unknown");
   });
 });
+
+describe("coverage ignores NHTSA component labels", () => {
+  const PHANTOM = { ...WOBBLE, id: "phantom-braking", coverageTerms: ["forward\\s+collision", "phantom\\s+brak"] };
+
+  it("a component-only match no longer covers (recall)", () => {
+    const r = coverageFor(
+      PHANTOM,
+      [2021],
+      [recall({ campaign: "24V153000", modelYear: 2021, component: "FORWARD COLLISION AVOIDANCE: WARNINGS", summary: "Pedestrian warning sound may not meet requirements.", consequence: "Pedestrians may not hear the vehicle.", remedy: "Software update." })],
+      [],
+      [],
+    );
+    expect(r.refs).toEqual([]);
+    expect(r.byYear[0]!.status).toBe("uncovered");
+  });
+
+  it("a component-only match no longer covers (investigation)", () => {
+    const r = coverageFor(PHANTOM, [2021], [], [investigation({ yearFrom: 2021, yearTo: 2021, component: "FORWARD COLLISION AVOIDANCE", subject: "Door latch", summary: "Doors open." })], []);
+    expect(r.refs).toEqual([]);
+  });
+
+  it("text match still covers", () => {
+    const r = coverageFor(PHANTOM, [2021], [recall({ modelYear: 2021, component: "BRAKES", summary: "Phantom braking may occur." })], [], []);
+    expect(r.byYear[0]!.status).toBe("recalled");
+  });
+});

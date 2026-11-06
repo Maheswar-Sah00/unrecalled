@@ -4,7 +4,7 @@ import { coverageFor, weakest } from "./coverage.js";
 import { monthOf, monthlySeries } from "./dates.js";
 import { investigationsFor } from "./investigations.js";
 import { computeSignal } from "./signal.js";
-import type { ClusterResult, Complaint, CoverageStatus, ScanInput, SignalRule, YearCoverage } from "./types.js";
+import type { ClusterResult, Complaint, CoverageRef, CoverageStatus, PostRecall, ScanInput, SignalRule, YearCoverage } from "./types.js";
 
 const up = (s: string) => s.trim().toUpperCase();
 
@@ -26,6 +26,44 @@ function monthCounts(complaints: Complaint[]): Map<string, number> {
     if (k) m.set(k, (m.get(k) ?? 0) + 1);
   }
   return m;
+}
+
+const POST_RECALL_DAYS = 365;
+
+function addDays(iso: string, days: number): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Informational post-recall evidence (does not change statuses). For each "recalled" year, take the
+ * earliest matching recall ref covering it and count that year's complaints received more than 365 days
+ * after the recall report date (sets byYear[].postRecallCount). count sums all recalled years;
+ * recallId/sinceRecall name the recall that yields the most post-recall complaints.
+ */
+export function computePostRecall(matched: Complaint[], byYear: YearCoverage[], refs: CoverageRef[]): PostRecall {
+  const perRecall = new Map<string, { date: string; count: number }>();
+  let total = 0;
+  for (const y of byYear) {
+    if (y.status !== "recalled") continue;
+    const recall = refs
+      .filter((r) => r.kind === "recall" && r.date && r.years.includes(y.year))
+      .sort((a, b) => (a.date as string).localeCompare(b.date as string))[0];
+    if (!recall || !recall.date) {
+      y.postRecallCount = 0;
+      continue;
+    }
+    const cutoff = addDays(recall.date, POST_RECALL_DAYS); // strictly after recall + 365 days
+    const n = matched.filter((c) => c.modelYear === y.year && !!c.dateReceived && c.dateReceived > cutoff).length;
+    y.postRecallCount = n;
+    total += n;
+    const prev = perRecall.get(recall.id);
+    perRecall.set(recall.id, { date: recall.date, count: (prev?.count ?? 0) + n });
+  }
+  let best: { id: string; date: string; count: number } | null = null;
+  for (const [id, v] of perRecall) if (!best || v.count > best.count) best = { id, ...v };
+  return { count: total, sinceRecall: best?.date ?? null, recallId: best?.id ?? null };
 }
 
 /**
@@ -57,6 +95,7 @@ export function scan(input: ScanInput, rule?: SignalRule): ClusterResult[] {
     const countByYear = new Map<number, number>();
     for (const c of matched) countByYear.set(c.modelYear, (countByYear.get(c.modelYear) ?? 0) + 1);
     const byYear: YearCoverage[] = cov.byYear.map((y) => ({ ...y, count: countByYear.get(y.year) ?? 0 }));
+    const postRecall = computePostRecall(matched, byYear, cov.refs);
     const withComplaints = byYear.filter((y) => y.count > 0);
     const uncoveredCount = withComplaints.filter((y) => y.status === "uncovered").reduce((s, y) => s + y.count, 0);
     const overall: CoverageStatus = withComplaints.some((y) => y.status === "uncovered")
@@ -82,6 +121,7 @@ export function scan(input: ScanInput, rule?: SignalRule): ClusterResult[] {
       byYear,
       coverage: { status: overall, refs: cov.refs },
       signal: computeSignal(monthCounts(matched), totalByMonth, peerShare, rule),
+      postRecall,
     });
   }
   return results.sort((a, b) => b.uncoveredCount - a.uncoveredCount || b.count - a.count);

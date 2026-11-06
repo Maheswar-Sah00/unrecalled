@@ -61,7 +61,20 @@ export function vehicleLabel(make: string, model: string, from: number, to: numb
 export async function getModes(scope: Scope): Promise<FailureMode[]> {
   const db = getDb();
   const t = schema.failureModes;
-  const rows = await db.select({ id: t.id, data: t.data }).from(t).where(scoped(t, scope)).limit(500);
+  const rows = await db
+    .select({ pk: t.pk, id: t.id, data: t.data, isSeed: t.isSeed })
+    .from(t)
+    .where(scoped(t, scope))
+    .limit(500);
+  // Unedited seed rows track the shipped rules; edited rows (isSeed=false) are the user's.
+  const seedById = new Map(SEED_MODES.map((m) => [m.id, m]));
+  for (const r of rows) {
+    const seed = r.isSeed ? seedById.get(r.id) : undefined;
+    if (seed && JSON.stringify(seed) !== JSON.stringify(r.data)) {
+      r.data = seed;
+      await db.update(t).set({ data: seed, updatedAt: new Date().toISOString() }).where(eq(t.pk, r.pk));
+    }
+  }
   const have = new Set(rows.map((r) => r.id));
   const missing = SEED_MODES.filter((m) => !have.has(m.id));
   if (missing.length) {
