@@ -1,0 +1,581 @@
+{
+  "name": "Hyundai/Kia Theta II engine failure (recalls 17V-224 and 17V-226)",
+  "vehicles": [
+    {
+      "make": "KIA",
+      "model": "SPORTAGE",
+      "years": [
+        2011,
+        2012,
+        2013
+      ]
+    },
+    {
+      "make": "KIA",
+      "model": "SORENTO",
+      "years": [
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "make": "KIA",
+      "model": "OPTIMA",
+      "years": [
+        2011,
+        2012,
+        2013,
+        2014
+      ]
+    },
+    {
+      "make": "HYUNDAI",
+      "model": "SONATA",
+      "years": [
+        2013,
+        2014
+      ]
+    },
+    {
+      "make": "HYUNDAI",
+      "model": "SANTA FE SPORT",
+      "years": [
+        2013,
+        2014
+      ]
+    }
+  ],
+  "firstComplaint": {
+    "date": "2012-11-20",
+    "odi": "10485272"
+  },
+  "recall": {
+    "date": "2017-03-31",
+    "campaigns": [
+      "17V224000",
+      "17V226000"
+    ]
+  },
+  "signalFiredAt": "2014-09",
+  "leadMonths": 30,
+  "matchedBeforeRecall": 164,
+  "share": 0.0942,
+  "peerShare": 0.0033,
+  "monthly": [
+    {
+      "month": "2010-06",
+      "matched": 0,
+      "total": 0,
+      "peerShare": 0
+    },
+    {
+      "month": "2010-07",
+      "matched": 0,
+      "total": 0,
+      "peerShare": 0.2
+    },
+    {
+      "month": "2010-08",
+      "matched": 0,
+      "total": 0,
+      "peerShare": 0.14285714285714285
+    },
+    {
+      "month": "2010-09",
+      "matched": 0,
+      "total": 0,
+      "peerShare": 0.09090909090909091
+    },
+    {
+      "month": "2010-10",
+      "matched": 0,
+      "total": 0,
+      "peerShare": 0.07692307692307693
+    },
+    {
+      "month": "2010-11",
+      "matched": 0,
+      "total": 0,
+      "peerShare": 0.06666666666666667
+    },
+    {
+      "month": "2010-12",
+      "matched": 0,
+      "total": 0,
+      "peerShare": 0.047619047619047616
+    },
+    {
+      "month": "2011-01",
+      "matched": 0,
+      "total": 0,
+      "peerShare": 0.030303030303030304
+    },
+    {
+      "month": "2011-02",
+      "matched": 0,
+      "total": 1,
+      "peerShare": 0.025
+    },
+    {
+      "month": "2011-03",
+      "matched": 0,
+      "total": 7,
+      "peerShare": 0.02
+    },
+    {
+      "month": "2011-04",
+      "matched": 0,
+      "total": 12,
+      "peerShare": 0.01694915254237288
+    },
+    {
+      "month": "2011-05",
+      "matched": 0,
+      "total": 16,
+      "peerShare": 0.013888888888888888
+    },
+    {
+      "month": "2011-06",
+      "matched": 0,
+      "total": 18,
+      "peerShare": 0.023529411764705882
+    },
+    {
+      "month": "2011-07",
+      "matched": 0,
+      "total": 21,
+      "peerShare": 0.020833333333333332
+    },
+    {
+      "month": "2011-08",
+      "matched": 0,
+      "total": 29,
+      "peerShare": 0.017391304347826087
+    },
+    {
+      "month": "2011-09",
+      "matched": 0,
+      "total": 34,
+      "peerShare": 0.016
+    },
+    {
+      "month": "2011-10",
+      "matched": 0,
+      "total": 44,
+      "peerShare": 0.014598540145985401
+    },
+    {
+      "month": "2011-11",
+      "matched": 0,
+      "total": 49,
+      "peerShare": 0.013157894736842105
+    },
+    {
+      "month": "2011-12",
+      "matched": 0,
+      "total": 55,
+      "peerShare": 0.012121212121212121
+    },
+    {
+      "month": "2012-01",
+      "matched": 0,
+      "total": 63,
+      "peerShare": 0.011111111111111112
+    },
+    {
+      "month": "2012-02",
+      "matched": 0,
+      "total": 76,
+      "peerShare": 0.01020408163265306
+    },
+    {
+      "month": "2012-03",
+      "matched": 0,
+      "total": 87,
+      "peerShare": 0.009389671361502348
+    },
+    {
+      "month": "2012-04",
+      "matched": 0,
+      "total": 99,
+      "peerShare": 0.00881057268722467
+    },
+    {
+      "month": "2012-05",
+      "matched": 0,
+      "total": 108,
+      "peerShare": 0.007751937984496124
+    },
+    {
+      "month": "2012-06",
+      "matched": 0,
+      "total": 120,
+      "peerShare": 0.007017543859649123
+    },
+    {
+      "month": "2012-07",
+      "matched": 0,
+      "total": 131,
+      "peerShare": 0.006153846153846154
+    },
+    {
+      "month": "2012-08",
+      "matched": 0,
+      "total": 147,
+      "peerShare": 0.0055248618784530384
+    },
+    {
+      "month": "2012-09",
+      "matched": 0,
+      "total": 161,
+      "peerShare": 0.005154639175257732
+    },
+    {
+      "month": "2012-10",
+      "matched": 0,
+      "total": 174,
+      "peerShare": 0.004728132387706856
+    },
+    {
+      "month": "2012-11",
+      "matched": 2,
+      "total": 187,
+      "peerShare": 0.0045351473922902496
+    },
+    {
+      "month": "2012-12",
+      "matched": 2,
+      "total": 199,
+      "peerShare": 0.00423728813559322
+    },
+    {
+      "month": "2013-01",
+      "matched": 2,
+      "total": 222,
+      "peerShare": 0.003929273084479371
+    },
+    {
+      "month": "2013-02",
+      "matched": 2,
+      "total": 231,
+      "peerShare": 0.0035398230088495575
+    },
+    {
+      "month": "2013-03",
+      "matched": 2,
+      "total": 247,
+      "peerShare": 0.003284072249589491
+    },
+    {
+      "month": "2013-04",
+      "matched": 3,
+      "total": 271,
+      "peerShare": 0.003048780487804878
+    },
+    {
+      "month": "2013-05",
+      "matched": 3,
+      "total": 302,
+      "peerShare": 0.002789400278940028
+    },
+    {
+      "month": "2013-06",
+      "matched": 4,
+      "total": 324,
+      "peerShare": 0.002380952380952381
+    },
+    {
+      "month": "2013-07",
+      "matched": 4,
+      "total": 349,
+      "peerShare": 0.002079002079002079
+    },
+    {
+      "month": "2013-08",
+      "matched": 4,
+      "total": 372,
+      "peerShare": 0.0018018018018018018
+    },
+    {
+      "month": "2013-09",
+      "matched": 5,
+      "total": 391,
+      "peerShare": 0.0016129032258064516
+    },
+    {
+      "month": "2013-10",
+      "matched": 5,
+      "total": 409,
+      "peerShare": 0.001516300227445034
+    },
+    {
+      "month": "2013-11",
+      "matched": 5,
+      "total": 423,
+      "peerShare": 0.00145985401459854
+    },
+    {
+      "month": "2013-12",
+      "matched": 5,
+      "total": 443,
+      "peerShare": 0.0013995801259622112
+    },
+    {
+      "month": "2014-01",
+      "matched": 6,
+      "total": 460,
+      "peerShare": 0.0013422818791946308
+    },
+    {
+      "month": "2014-02",
+      "matched": 6,
+      "total": 484,
+      "peerShare": 0.00129366106080207
+    },
+    {
+      "month": "2014-03",
+      "matched": 6,
+      "total": 534,
+      "peerShare": 0.0012399256044637321
+    },
+    {
+      "month": "2014-04",
+      "matched": 6,
+      "total": 568,
+      "peerShare": 0.0011961722488038277
+    },
+    {
+      "month": "2014-05",
+      "matched": 8,
+      "total": 604,
+      "peerShare": 0.001142204454597373
+    },
+    {
+      "month": "2014-06",
+      "matched": 8,
+      "total": 637,
+      "peerShare": 0.0010887316276537834
+    },
+    {
+      "month": "2014-07",
+      "matched": 8,
+      "total": 671,
+      "peerShare": 0.0010256410256410256
+    },
+    {
+      "month": "2014-08",
+      "matched": 8,
+      "total": 693,
+      "peerShare": 0.000964785335262904
+    },
+    {
+      "month": "2014-09",
+      "matched": 10,
+      "total": 727,
+      "peerShare": 0.0013786764705882354
+    },
+    {
+      "month": "2014-10",
+      "matched": 10,
+      "total": 764,
+      "peerShare": 0.0021222410865874364
+    },
+    {
+      "month": "2014-11",
+      "matched": 10,
+      "total": 797,
+      "peerShare": 0.00202757502027575
+    },
+    {
+      "month": "2014-12",
+      "matched": 11,
+      "total": 820,
+      "peerShare": 0.001961553550411926
+    },
+    {
+      "month": "2015-01",
+      "matched": 11,
+      "total": 855,
+      "peerShare": 0.0018982536066818527
+    },
+    {
+      "month": "2015-02",
+      "matched": 11,
+      "total": 876,
+      "peerShare": 0.0018477457501847746
+    },
+    {
+      "month": "2015-03",
+      "matched": 11,
+      "total": 899,
+      "peerShare": 0.0017780938833570413
+    },
+    {
+      "month": "2015-04",
+      "matched": 15,
+      "total": 926,
+      "peerShare": 0.002059025394646534
+    },
+    {
+      "month": "2015-05",
+      "matched": 16,
+      "total": 949,
+      "peerShare": 0.001987413050679033
+    },
+    {
+      "month": "2015-06",
+      "matched": 16,
+      "total": 967,
+      "peerShare": 0.0022544283413848632
+    },
+    {
+      "month": "2015-07",
+      "matched": 20,
+      "total": 999,
+      "peerShare": 0.002178649237472767
+    },
+    {
+      "month": "2015-08",
+      "matched": 22,
+      "total": 1024,
+      "peerShare": 0.002411817907747965
+    },
+    {
+      "month": "2015-09",
+      "matched": 31,
+      "total": 1052,
+      "peerShare": 0.0023494860499265785
+    },
+    {
+      "month": "2015-10",
+      "matched": 36,
+      "total": 1087,
+      "peerShare": 0.0022988505747126436
+    },
+    {
+      "month": "2015-11",
+      "matched": 39,
+      "total": 1106,
+      "peerShare": 0.002254791431792559
+    },
+    {
+      "month": "2015-12",
+      "matched": 41,
+      "total": 1141,
+      "peerShare": 0.002207505518763797
+    },
+    {
+      "month": "2016-01",
+      "matched": 45,
+      "total": 1171,
+      "peerShare": 0.0021639166892074655
+    },
+    {
+      "month": "2016-02",
+      "matched": 51,
+      "total": 1211,
+      "peerShare": 0.0021287919105907396
+    },
+    {
+      "month": "2016-03",
+      "matched": 54,
+      "total": 1252,
+      "peerShare": 0.0020909566126502874
+    },
+    {
+      "month": "2016-04",
+      "matched": 61,
+      "total": 1286,
+      "peerShare": 0.002052861175263023
+    },
+    {
+      "month": "2016-05",
+      "matched": 66,
+      "total": 1322,
+      "peerShare": 0.0020191822311963654
+    },
+    {
+      "month": "2016-06",
+      "matched": 75,
+      "total": 1357,
+      "peerShare": 0.002229378251176616
+    },
+    {
+      "month": "2016-07",
+      "matched": 86,
+      "total": 1407,
+      "peerShare": 0.0024265954865323952
+    },
+    {
+      "month": "2016-08",
+      "matched": 97,
+      "total": 1448,
+      "peerShare": 0.0028208744710860366
+    },
+    {
+      "month": "2016-09",
+      "matched": 115,
+      "total": 1501,
+      "peerShare": 0.0027522935779816515
+    },
+    {
+      "month": "2016-10",
+      "matched": 138,
+      "total": 1560,
+      "peerShare": 0.002699055330634278
+    },
+    {
+      "month": "2016-11",
+      "matched": 147,
+      "total": 1596,
+      "peerShare": 0.003089143865842895
+    },
+    {
+      "month": "2016-12",
+      "matched": 152,
+      "total": 1632,
+      "peerShare": 0.003247456159341849
+    },
+    {
+      "month": "2017-01",
+      "matched": 158,
+      "total": 1683,
+      "peerShare": 0.003192168546499255
+    },
+    {
+      "month": "2017-02",
+      "matched": 160,
+      "total": 1710,
+      "peerShare": 0.003138731952291274
+    },
+    {
+      "month": "2017-03",
+      "matched": 164,
+      "total": 1741,
+      "peerShare": 0.0032739922242684674
+    }
+  ],
+  "precisionNote": "Hand spot-check of 20 random matched complaints received before the recall (seed 1): 18 of 20 clearly describe engine seizure or catastrophic engine failure (seized, thrown rod, rod-bearing failure, engine replaced after stall); 2 were ambiguous (intermittent power loss with clicking; oil use with ticking). Observed precision about 90%. Several narratives report a dealer blaming sludge or maintenance; these were counted as engine failures because the owner describes the failure itself. Regex classification only; no labels applied.",
+  "patterns": [
+    "\\bengine\\s+(?:\\w+\\s+){0,3}?(?:seiz\\w*|sie?z\\w*|locked\\s+up|lock\\s+up|locking\\s+up|blew\\s+up|blown|exploded|threw\\s+a\\s+rod|grenaded)",
+    "\\b(?:seized|seizing|seizure)\\s+(?:\\w+\\s+){0,2}?engine",
+    "\\b(?:rod|connecting[\\s-]rod|bearing|crankshaft)\\s+(?:\\w+\\s+){0,3}?(?:knock\\w*|fail\\w*|spun|broke\\w*|damage\\w*|wear)",
+    "\\b(?:knock\\w*|spun)\\s+(?:\\w+\\s+){0,3}?(?:rod|connecting[\\s-]rod|rod\\s+bearings?|bearings?)\\b",
+    "\\bthr(?:ew|ow|own)\\s+a\\s+rod\\b",
+    "\\bhole\\s+in\\s+(?:the\\s+)?(?:engine\\s+)?block\\b",
+    "(?<!\\b(?:could|may|might|potential(?:ly)?|risk\\s+of|lead\\s+to|cause|result\\s+in|afraid|fear|prevent)\\s+(?:\\w+\\s+){0,3})\\b(?:catastrophic|complete|total|sudden|diagnosed\\s+(?:\\w+\\s+){0,2}?with)\\s+engine\\s+failure",
+    "\\bengine\\s+(?:\\w+\\s+){0,2}?(?:needs?|needed|required|requires)\\s+(?:to\\s+be\\s+)?(?:a\\s+)?(?:replac\\w*|rebuil\\w*)",
+    "\\b(?:new|replacement|replaced\\s+the)\\s+(?:short[\\s-]block|long[\\s-]block|engine\\s+block)\\b",
+    "\\b(?:seized|seizing)\\b(?:\\s+up)?\\s+(?:on|while|at|in|going|driving)\\b",
+    "\\bknock\\w*\\b[\\s\\S]{0,250}?\\b(?:died|stall\\w*|lost\\s+(?:all\\s+)?(?:engine\\s+)?power|loss\\s+of\\s+(?:engine\\s+|motive\\s+)?power|shut\\s+(?:off|down)|tow(?:ed)?|limp\\s+mode)\\b",
+    "\\b(?:died|stall\\w*|lost\\s+(?:all\\s+)?(?:engine\\s+)?power|loss\\s+of\\s+(?:engine\\s+|motive\\s+)?power|shut\\s+(?:off|down))\\b[\\s\\S]{0,150}?\\b(?:engine\\s+(?:\\w+\\s+){0,2}?knock\\w*|knock\\w*\\s+(?:\\w+\\s+){0,3}?(?:noise|sound)\\s+(?:\\w+\\s+){0,3}?engine)"
+  ],
+  "notes": [
+    "Population and recall date taken from the NHTSA recalls API for campaigns 17V224000, 17V226000 (report date 2017-03-31).",
+    "Hyundai Sonata 2011–2012 is excluded: it was recalled earlier for the same bearing failure under 15V-568 (report date 2015-09-10). Measured against that earlier recall, the rule's lead would be 12 months.",
+    "Peers: TOYOTA CAMRY, HONDA ACCORD, FORD FUSION, model years 2011–2014. Shares use complaints received before the recall date.",
+    "Rule: cumulative matches >= 10 and cumulative share >= 5x cumulative peer share, evaluated monthly on complaint received dates.",
+    "Data fetched 2026-11-06; NHTSA adds late-filed complaints, so counts can drift slightly."
+  ]
+}
