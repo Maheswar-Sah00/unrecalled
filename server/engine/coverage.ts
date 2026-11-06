@@ -29,6 +29,17 @@ export function investigationStatus(inv: Investigation): CoverageStatus {
   return inv.outcome === "recall" ? "recalled" : "closed_no_recall";
 }
 
+/** "25V274000" / "25V-274" / "25v 274" -> "25V274". */
+export function recallKey(id: string): string | null {
+  const m = /(\d{2})\s*V\s*-?\s*(\d{3})/i.exec(id);
+  return m ? `${m[1]}V${m[2]}` : null;
+}
+
+/** Normalised recall numbers cited in a piece of text. */
+export function citedRecalls(text: string): string[] {
+  return [...new Set([...text.matchAll(/\b(\d{2})V[-\s]?(\d{3})\b/gi)].map((m) => `${m[1]}V${m[2]}`.toUpperCase()))];
+}
+
 function rangeYears(from: number, to: number, years: number[]): number[] {
   return years.filter((y) => y >= from && y <= to);
 }
@@ -36,7 +47,8 @@ function rangeYears(from: number, to: number, years: number[]): number[] {
 /**
  * Coverage of one mode across the scan years.
  * - recall: about the mode when any coverageTerm matches summary+consequence+remedy; covers its modelYear
- * - investigation: about the mode when any coverageTerm matches subject+summary; covers yearFrom..yearTo
+ * - investigation: about the mode when any coverageTerm matches subject+summary, or when it cites a recall
+ *   that already matched this mode (remedy-effectiveness probes, e.g. EA26005 on recall 25V-274); covers yearFrom..yearTo
  * The NHTSA component label is NOT matched (labels like "FORWARD COLLISION AVOIDANCE: WARNINGS" caused false coverage).
  * - settlement: covers yearFrom..yearTo when its failureModeId === mode.id
  * Inputs are assumed already filtered to the vehicle (make/model); scan() does that.
@@ -78,8 +90,20 @@ export function coverageFor(
     });
   }
 
+  const matchedRecalls = new Set(
+    [...refs.values()]
+      .filter((r) => r.kind === "recall")
+      .map((r) => recallKey(r.id))
+      .filter((k): k is string => !!k),
+  );
   for (const inv of investigations) {
-    const terms = matchedTerms(mode, [inv.subject, inv.summary].join("\n"));
+    const text = [inv.subject, inv.summary].join("\n");
+    let terms = matchedTerms(mode, text);
+    if (terms.length === 0) {
+      terms = citedRecalls(text)
+        .filter((k) => matchedRecalls.has(k))
+        .map((k) => `cites recall ${k.slice(0, 3)}-${k.slice(3)}`);
+    }
     if (terms.length === 0) continue;
     addRef({
       kind: "investigation",

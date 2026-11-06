@@ -118,3 +118,31 @@ describe("coverage ignores NHTSA component labels", () => {
     expect(r.byYear[0]!.status).toBe("recalled");
   });
 });
+
+describe("remedy-effectiveness investigations (cite a matched recall)", () => {
+  const ENGINE = { ...WOBBLE, id: "engine-seizure", coverageTerms: ["engine\\s+bearings?"] };
+  const rec = recall({ campaign: "25V274000", modelYear: 2022, component: "ENGINE", summary: "Engine bearings may fail." });
+  const ea = investigation({
+    actionNumber: "EA26005",
+    type: "EA",
+    yearFrom: 2021,
+    yearTo: 2026,
+    status: "open",
+    component: "ENGINE",
+    subject: "Loss of motive power due to engine failure post recall remedy",
+    summary: "This investigation assesses the remedy effectiveness of Recall 25V-274.",
+  });
+
+  it("covers the mode when it cites a recall that matched the mode", () => {
+    const r = coverageFor(ENGINE, [2022, 2025], [rec], [ea], []);
+    const ref = r.refs.find((x) => x.id === "EA26005");
+    expect(ref?.matchedTerms).toEqual(["cites recall 25V-274"]);
+    expect(r.byYear.find((y) => y.year === 2025)!.status).toBe("under_investigation");
+  });
+
+  it("does not cover when the cited recall is about a different mode", () => {
+    const other = recall({ campaign: "25V274000", modelYear: 2022, component: "ENGINE", summary: "Fuel pump may fail." });
+    const r = coverageFor(ENGINE, [2022, 2025], [other], [ea], []);
+    expect(r.refs).toEqual([]);
+  });
+});
