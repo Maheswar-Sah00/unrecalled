@@ -25,7 +25,15 @@ pnpm dev          # http://localhost:8080 → "Continue as local dev"
 pnpm test         # unit tests; LIVE=1 pnpm test also hits the NHTSA APIs
 ```
 
-The agent chat needs an LLM key in `.env`, for example `OPENAI_API_KEY` + `OPENAI_BASE_URL` for an OpenAI-compatible provider.
+The agent chat needs an LLM key in `.env`. Tested with Gemini:
+
+```bash
+GOOGLE_GENERATIVE_AI_API_KEY=...
+AGENT_ENGINE=ai-sdk:google
+AGENT_MODEL=gemini-3.5-flash
+```
+
+Providers with a small tokens-per-minute cap (such as the Groq free tier, 8k TPM) are too small: one gap-board tool result is about 20k tokens.
 
 ## Data sources
 
