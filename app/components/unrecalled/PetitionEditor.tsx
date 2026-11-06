@@ -5,6 +5,7 @@ import {
 } from "@agent-native/core/client/hooks";
 import {
   IconArrowBackUp,
+  IconArrowLeft,
   IconCheck,
   IconCopy,
   IconDeviceFloppy,
@@ -33,11 +34,19 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-import { plainChecklistLabel, ProgressRing, splitPetitionTitle, StatusPill } from "./docs/shared";
+import {
+  Perch,
+  petitionFacts,
+  plainChecklistLabel,
+  ProgressRing,
+  splitPetitionTitle,
+  StatusPill,
+  WindowTitle,
+} from "./docs/shared";
 import { fmtRelative } from "./format";
 import { Markdown } from "./Markdown";
 import { Page, useCrumbs } from "./page";
-import { BrandMark, Reveal } from "./premium";
+import { AgentMessage, BrandMark, Reveal, Window } from "./premium";
 import type { Petition } from "./types";
 
 export function isReady(status: string | null | undefined) {
@@ -200,29 +209,53 @@ export function PetitionEditor({ id }: { id: string }) {
       </AlertDialog>
     );
 
+  const facts = petitionFacts(markdown);
+  const agentNote = (
+    <AgentNote
+      complaints={facts.complaints}
+      uncovered={facts.uncovered}
+      when={fmtRelative(data.updatedAt)}
+      onCopy={copy}
+      onDownload={download}
+    />
+  );
+
   return (
-    <Page wide className="flex min-h-full flex-col">
+    <Page wide className="flex min-h-full max-w-[1320px] flex-col">
       {/* Header */}
       <Reveal>
-        <header className="mb-10 grid grid-cols-1 items-center gap-x-6 gap-y-4 lg:grid-cols-[minmax(0,1fr)_auto]">
-            <div className="order-1 flex flex-wrap items-center gap-2.5">
-              <StatusPill status={data.status} label={statusLabel(data.status)} />
-              <span className="text-[13px] text-muted-foreground">
-                {dirty ? (
-                  <span className="inline-flex items-center gap-1.5 text-ur-investigation">
-                    <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
-                    Unsaved changes
-                  </span>
-                ) : (
-                  `Saved ${fmtRelative(data.updatedAt)}`
-                )}
-              </span>
-            </div>
-          <div className="order-3 min-w-0 lg:order-3 lg:col-span-2">
-            <h1 className="ur-display max-w-4xl text-[2rem] md:text-[2.75rem]">{issue}</h1>
-            {vehicle ? <p className="ur-lede mt-2">{vehicle}</p> : null}
+        <header className="mb-4 md:mb-6">
+          <Link
+            to="/petitions"
+            className="inline-flex items-center gap-1.5 text-[14px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <IconArrowLeft className="size-4" /> All petitions
+          </Link>
+          <div className="mt-6 flex flex-wrap items-center gap-2.5">
+            <StatusPill status={data.status} label={statusLabel(data.status)} />
+            <span className="text-[13px] text-muted-foreground">
+              {dirty ? (
+                <span className="inline-flex items-center gap-1.5 text-ur-investigation">
+                  <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
+                  Unsaved changes
+                </span>
+              ) : (
+                `Saved ${fmtRelative(data.updatedAt)}`
+              )}
+            </span>
           </div>
-          <div className="order-4 -ms-2.5 flex flex-wrap items-center gap-0.5 sm:ms-0 sm:gap-1 lg:order-2 lg:justify-self-end">
+          <h1 className="ur-display mt-4 max-w-5xl text-[2.4rem] leading-[1.02] md:text-[4.25rem]">{issue}</h1>
+          {vehicle ? (
+            <p className="ur-lede mt-4 text-[1.125rem] md:text-[1.25rem]">
+              {vehicle}
+              {facts.complaints ? (
+                <>
+                  {" "}· <span className="ur-num">{facts.complaints.toLocaleString("en-US")}</span> owner complaints
+                </>
+              ) : null}
+            </p>
+          ) : null}
+          <div className="mt-7 flex flex-wrap items-center gap-1 sm:gap-1.5">
             <button type="button" className={ACTION_BTN} onClick={copy}>
               <IconCopy className="size-4" /> Copy
             </button>
@@ -242,71 +275,126 @@ export function PetitionEditor({ id }: { id: string }) {
               )}
               Save
             </button>
-            {readyAction ? <div className="ms-auto ps-1 lg:ms-1.5">{readyAction}</div> : null}
+            {readyAction ? <div className="ms-auto sm:ms-2">{readyAction}</div> : null}
           </div>
         </header>
       </Reveal>
 
-      <div className="grid flex-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_310px] xl:gap-12">
-        {/* Document */}
+      <div className="grid flex-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px] xl:gap-12">
+        {/* Document inside a window, mascot perched on top */}
         <Reveal delay={80} className="order-2 min-w-0 lg:order-1">
-          <div
-            role="tablist"
-            aria-label="Petition view"
-            className="mb-5 inline-flex rounded-full bg-foreground/[0.06] p-1"
-          >
-            <TabButton active={pane === "preview"} onClick={() => setPane("preview")}>
-              <IconFileText className="size-4" /> Document
-            </TabButton>
-            <TabButton active={pane === "edit"} onClick={() => setPane("edit")}>
-              <IconPencil className="size-4" /> Edit text
-            </TabButton>
-          </div>
-
-          <article className="ur-paper mx-auto max-w-[820px]">
-            <div className="flex items-center justify-between gap-3 border-b px-6 py-3.5 text-[12.5px] text-muted-foreground sm:px-10 lg:px-16">
-              <span className="inline-flex items-center gap-2">
-                <BrandMark className="size-5" />
-                Prepared with Unrecalled
-              </span>
-              <span>{pane === "edit" ? "Editing text" : "For your review"}</span>
-            </div>
-            {pane === "edit" ? (
-              <div className="px-5 py-6 sm:px-10 lg:px-16 lg:py-10">
-                <label htmlFor="petition-md" className="sr-only">Petition text</label>
-                <textarea
-                  id="petition-md"
-                  value={markdown}
-                  onChange={(e) => setText(e.target.value)}
-                  spellCheck
-                  className="ur-paper-editor"
-                />
-                <p className="mt-4 border-t pt-4 text-[12.5px] text-muted-foreground">
-                  Switch to Document to see it laid out. Press Ctrl+S (⌘S) to save.
-                </p>
+          <Perch pose="write" color="blue" size={112}>
+            <Window
+              title={
+                <WindowTitle icon={<IconFileText className="size-3.5 shrink-0" />}>
+                  Petition draft · {vehicle ?? issue}
+                </WindowTitle>
+              }
+              bodyClassName="p-0"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-card px-3 py-2.5 sm:px-5">
+                <div
+                  role="tablist"
+                  aria-label="Petition view"
+                  className="inline-flex rounded-full bg-foreground/[0.06] p-1"
+                >
+                  <TabButton active={pane === "preview"} onClick={() => setPane("preview")}>
+                    <IconFileText className="size-4" /> Document
+                  </TabButton>
+                  <TabButton active={pane === "edit"} onClick={() => setPane("edit")}>
+                    <IconPencil className="size-4" /> Edit text
+                  </TabButton>
+                </div>
+                <span className="hidden items-center gap-2 text-[12.5px] text-muted-foreground sm:inline-flex">
+                  <BrandMark className="size-5" />
+                  {pane === "edit" ? "Editing text" : "Prepared with Unrecalled · for your review"}
+                </span>
               </div>
-            ) : (
-              <div className="px-6 py-10 sm:px-10 sm:py-12 lg:px-12 lg:py-14 xl:px-16 xl:py-16">
-                <Markdown text={markdown} />
+              <div className="ur-doc-desk px-2.5 py-5 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+                <article className="ur-paper mx-auto max-w-[780px]">
+                  {pane === "edit" ? (
+                    <div className="px-5 py-6 sm:px-10 lg:px-14 lg:py-10">
+                      <label htmlFor="petition-md" className="sr-only">Petition text</label>
+                      <textarea
+                        id="petition-md"
+                        value={markdown}
+                        onChange={(e) => setText(e.target.value)}
+                        spellCheck
+                        className="ur-paper-editor"
+                      />
+                      <p className="mt-4 border-t pt-4 text-[12.5px] text-muted-foreground">
+                        Switch to Document to see it laid out. Press Ctrl+S (⌘S) to save.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="px-5 py-9 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
+                      <Markdown text={markdown} />
+                    </div>
+                  )}
+                </article>
               </div>
-            )}
-          </article>
+            </Window>
+          </Perch>
+          <div className="mt-6 lg:hidden">{agentNote}</div>
         </Reveal>
 
-        {/* Ready-to-file checklist */}
-        <Reveal delay={140} className="order-1 lg:sticky lg:top-6 lg:order-2">
+        {/* Ready-to-file card + agent note */}
+        <Reveal delay={140} className="order-1 space-y-5 lg:sticky lg:top-6 lg:order-2 lg:mt-[98px]">
           <Checklist items={data.checklist} />
-          <div className="ur-panel mt-4 hidden gap-3 p-5 lg:flex text-[13.5px] leading-relaxed text-muted-foreground">
-            <BrandMark className="mt-0.5 size-6 shrink-0" />
-            <p>
-              <span className="font-medium text-foreground">You stay in charge.</span>{" "}
-              The agent drafts and checks; it never files for you. When you are
-              happy, send it to NHTSA yourself.
-            </p>
-          </div>
+          <div className="hidden lg:block">{agentNote}</div>
         </Reveal>
       </div>
     </Page>
+  );
+}
+
+function AgentNote({
+  complaints,
+  uncovered,
+  when,
+  onCopy,
+  onDownload,
+}: {
+  complaints: number | null;
+  uncovered: number | null;
+  when: string;
+  onCopy: () => void;
+  onDownload: () => void;
+}) {
+  return (
+    <section className="ur-card p-5" aria-label="Note from the agent">
+      <AgentMessage time={when}>
+        <p className="mt-1 text-[14.5px] leading-relaxed">
+          I drafted this from{" "}
+          {complaints ? (
+            <b className="ur-num">{complaints.toLocaleString("en-US")} owner complaints</b>
+          ) : (
+            "owner complaints"
+          )}{" "}
+          sent to NHTSA
+          {uncovered ? (
+            <>
+              ; <b className="ur-num">{uncovered.toLocaleString("en-US")}</b> are for model years nothing covers yet
+            </>
+          ) : null}
+          . Read it through and add anything I missed.
+        </p>
+        <p className="mt-2 text-[14.5px] leading-relaxed">
+          You stay in charge; <b>I never file.</b>
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button type="button" className="ur-chip h-8 cursor-pointer hover:border-foreground/30" onClick={onCopy}>
+            <IconCopy className="size-3.5" /> Copy text
+          </button>
+          <button type="button" className="ur-chip h-8 cursor-pointer hover:border-foreground/30" onClick={onDownload}>
+            <IconDownload className="size-3.5" /> Download
+          </button>
+          <Link to="/chat" className="ur-chip h-8 hover:border-foreground/30">
+            Ask for changes
+          </Link>
+        </div>
+      </AgentMessage>
+    </section>
   );
 }
 

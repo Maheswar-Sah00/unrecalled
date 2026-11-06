@@ -1,185 +1,137 @@
-// "How Unrecalled works": three plain-language steps, each with a tiny product mockup.
-import { IconFileText, IconListSearch, IconShieldCheck, IconUsers } from "@tabler/icons-react";
-import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
+// "How Unrecalled works": an OpenTag-style vertical timeline. Icon tiles joined by a
+// wavy line; the step in the middle of the viewport lights up and the sticky
+// window on the right (desktop) swaps to that step's mockup.
+import {
+  IconAlertTriangle,
+  IconFileText,
+  IconMessages,
+  IconShieldSearch,
+  type Icon,
+} from "@tabler/icons-react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-import { AgentMessage, Window } from "../premium";
+import { Mascot } from "../mascots";
+import { BacktestMock, ComplaintsMock, CoverageMock, PetitionMock } from "./mockups";
+import { Rise } from "./shared";
 
-/** True once the element has scrolled into view (stays true). */
-function useInView<T extends Element>() {
-  const ref = useRef<T>(null);
-  const [seen, setSeen] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || seen) return;
-    if (typeof IntersectionObserver === "undefined") {
-      setSeen(true);
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setSeen(true);
-          io.disconnect();
-        }
-      },
-      { rootMargin: "0px 0px -12% 0px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [seen]);
-  return [ref, seen] as const;
-}
-
-function Step({
-  n,
-  icon,
-  title,
-  body,
-  children,
-  delay,
-  seen,
-}: {
-  n: number;
-  icon: ReactNode;
+interface Step {
+  icon: Icon;
+  tone: string;
   title: string;
   body: string;
-  children: ReactNode;
-  delay: number;
-  seen: boolean;
-}) {
-  return (
-    <li
-      className={cn("flex flex-col", seen ? "ur-reveal" : "opacity-0")}
-      style={{ ["--ur-delay" as string]: `${delay}ms` } as CSSProperties}
-    >
-      <div className="flex items-center gap-3">
-        <span className="flex size-10 items-center justify-center rounded-xl bg-ur-blue/12 text-ur-blue">
-          {icon}
-        </span>
-        <span className="ur-num text-[13px] font-medium text-muted-foreground">
-          Step {n}
-        </span>
-      </div>
-      <h3 className="ur-title mt-4 text-[1.6rem]">{title}</h3>
-      <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground lg:min-h-[3.2rem]">{body}</p>
-      <div className="mt-6 flex-1">{children}</div>
-    </li>
-  );
+  mock: (cls: string) => ReactNode;
 }
 
-function Quote({ children }: { children: ReactNode }) {
-  return (
-    <div className="rounded-xl border bg-background px-3 py-2 font-display text-[13.5px] leading-snug">
-      “{children}”
-    </div>
-  );
-}
-
-const YEARS: { y: string; tone: string; label: string }[] = [
-  { y: "’18", tone: "bg-ur-settlement", label: "Settlement" },
-  { y: "’19", tone: "bg-ur-settlement", label: "Settlement" },
-  { y: "’20", tone: "bg-ur-settlement", label: "Settlement" },
-  { y: "’21", tone: "bg-ur-uncovered", label: "Uncovered" },
-  { y: "’22", tone: "bg-ur-uncovered", label: "Uncovered" },
-  { y: "’23", tone: "bg-ur-uncovered", label: "Uncovered" },
+const STEPS: Step[] = [
+  {
+    icon: IconMessages,
+    tone: "bg-ur-blue text-white",
+    title: "Read every owner complaint",
+    body: "Unrecalled pulls the complaints owners file with NHTSA for a car and groups the ones describing the same failure, like 380 reports of violent steering shake.",
+    mock: (c) => <ComplaintsMock className={c} />,
+  },
+  {
+    icon: IconShieldSearch,
+    tone: "bg-ur-settlement text-white",
+    title: "Check what already covers it",
+    body: "Each problem is checked against recalls, NHTSA investigations and class settlements, model year by model year. Whatever is left is a gap.",
+    mock: (c) => <CoverageMock className={c} />,
+  },
+  {
+    icon: IconAlertTriangle,
+    tone: "bg-ur-uncovered text-white",
+    title: "Spot the early warning",
+    body: "It compares complaint rates with similar cars and flags problems climbing far above normal. In a backtest it would have flagged Theta II engines 30 months early.",
+    mock: (c) => <BacktestMock className={c} />,
+  },
+  {
+    icon: IconFileText,
+    tone: "bg-[#16a394] text-white",
+    title: "Draft the request to investigate",
+    body: "The agent writes the formal petition asking NHTSA to investigate, citing the real complaints. You review it before anything is sent.",
+    mock: (c) => <PetitionMock className={c} />,
+  },
 ];
 
 export function HowItWorks() {
-  const [ref, seen] = useInView<HTMLElement>();
+  const [active, setActive] = useState(0);
+  const refs = useRef<(HTMLLIElement | null)[]>([]);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            const i = refs.current.indexOf(e.target as HTMLLIElement);
+            if (i >= 0) setActive(i);
+          }
+        }
+      },
+      { rootMargin: "-42% 0px -52% 0px" },
+    );
+    refs.current.forEach((el) => el && io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
   return (
-    <section ref={ref} className="mt-24 md:mt-32" aria-labelledby="how-heading">
-      <div className={cn("max-w-2xl", seen ? "ur-reveal" : "opacity-0")}>
-        <h2 id="how-heading" className="ur-display text-[2.4rem] md:text-[3.25rem]">
-          How Unrecalled works
-        </h2>
-        <p className="ur-lede mt-3">
-          Three steps, from what owners say to a request NHTSA has to answer.
-        </p>
+    <section className="lp-section" aria-labelledby="lp-how">
+      <div className="lp-container grid gap-12 md:grid-cols-[minmax(0,1fr)_minmax(0,500px)] md:gap-16 lg:gap-24">
+        <div>
+          <Rise>
+            <h2 id="lp-how" className="lp-h2">
+              How Unrecalled works
+            </h2>
+          </Rise>
+          <ol className="mt-14 md:mt-20">
+            {STEPS.map((s, i) => {
+              const on = i === active;
+              const last = i === STEPS.length - 1;
+              return (
+                <li
+                  key={s.title}
+                  ref={(el) => {
+                    refs.current[i] = el;
+                  }}
+                  data-active={on}
+                  className="lp-step grid grid-cols-[44px_1fr] gap-x-5 md:grid-cols-[48px_1fr] md:gap-x-7"
+                >
+                  <div className="flex flex-col items-center">
+                    <span
+                      className={cn(
+                        "lp-step__icon flex size-11 shrink-0 items-center justify-center rounded-xl md:size-12",
+                        s.tone,
+                      )}
+                    >
+                      <s.icon className="size-[22px]" stroke={1.9} />
+                    </span>
+                    {last ? null : <span className="lp-wave mt-3 flex-1" aria-hidden="true" />}
+                  </div>
+                  <div className={cn("pb-16 md:min-h-[300px] md:pb-24", last && "md:min-h-0 md:pb-0")}>
+                    <span className="ur-num text-[13px] font-medium text-muted-foreground">Step {i + 1}</span>
+                    <h3 className="lp-h4 mt-1 md:text-[1.75rem]">{s.title}</h3>
+                    <p className="lp-body mt-3 max-w-[32rem]">{s.body}</p>
+                    <div className="mt-7 md:hidden">{s.mock("min-h-[420px]")}</div>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+
+        <div className="relative hidden md:block">
+          <div className="sticky top-[120px] pt-[70px]">
+            <div className="lp-perch top-[-2px] right-[9%]" aria-hidden="true">
+              <Mascot pose="sit" color="violet" className="size-[108px]" />
+            </div>
+            <div key={active} className="lp-swap">
+              {STEPS[active]?.mock("min-h-[560px]")}
+            </div>
+          </div>
+        </div>
       </div>
-
-      <ol className="mt-12 grid gap-12 md:gap-8 lg:grid-cols-3">
-        <Step
-          n={1}
-          seen={seen}
-          delay={120}
-          icon={<IconUsers className="size-5" strokeWidth={1.8} />}
-          title="Read every owner complaint"
-          body="Owners’ own words, grouped by the problem they describe."
-        >
-          <Window title="Steering shakes at speed" bodyClassName="space-y-2.5 p-4">
-            <Quote>The steering wheel shakes violently and it’s hard to control.</Quote>
-            <Quote>Happens anytime the road has a bump.</Quote>
-            <div className="flex items-center gap-2 pt-1 text-[12.5px] text-muted-foreground">
-              <IconListSearch className="size-4" strokeWidth={1.8} />
-              Grouped with similar reports
-            </div>
-          </Window>
-        </Step>
-
-        <Step
-          n={2}
-          seen={seen}
-          delay={240}
-          icon={<IconShieldCheck className="size-5" strokeWidth={1.8} />}
-          title="Check what already covers it"
-          body="Recalls, government investigations and settlements, year by year."
-        >
-          <Window title="Jeep Wrangler · model years" bodyClassName="p-4">
-            <div className="grid grid-cols-6 gap-1.5">
-              {YEARS.map((x, i) => (
-                <div key={x.y} className="flex flex-col items-center gap-1.5">
-                  <span
-                    className={cn("h-10 w-full rounded-lg", x.tone, seen && "ur-pop")}
-                    style={{ ["--ur-delay" as string]: `${400 + i * 90}ms` } as CSSProperties}
-                    title={x.label}
-                  />
-                  <span className="ur-num text-[11.5px] text-muted-foreground">{x.y}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 flex flex-wrap gap-x-3 gap-y-1.5 text-[12px] text-muted-foreground">
-              <Legend tone="bg-ur-settlement">Settlement</Legend>
-              <Legend tone="bg-ur-uncovered">Nothing covers it</Legend>
-            </div>
-          </Window>
-        </Step>
-
-        <Step
-          n={3}
-          seen={seen}
-          delay={360}
-          icon={<IconFileText className="size-5" strokeWidth={1.8} />}
-          title="Draft the request to investigate"
-          body="The agent writes a petition you review and file."
-        >
-          <Window title="Petition draft" bodyClassName="space-y-3 p-4">
-            <AgentMessage>
-              Drafted a petition asking NHTSA to look into steering shake on 2021–2023
-              Wranglers.
-            </AgentMessage>
-            <div className="ms-11 space-y-1.5 rounded-xl border bg-background p-3">
-              <div className="h-2 w-3/4 rounded-full bg-foreground/15" />
-              <div className="h-2 w-full rounded-full bg-foreground/10" />
-              <div className="h-2 w-5/6 rounded-full bg-foreground/10" />
-              <div className="h-2 w-2/3 rounded-full bg-foreground/10" />
-            </div>
-            <div className="ms-11">
-              <span className="ur-btn-soft h-8 rounded-lg px-3 text-[13px]">Ready for your review</span>
-            </div>
-          </Window>
-        </Step>
-      </ol>
     </section>
-  );
-}
-
-function Legend({ tone, children }: { tone: string; children: ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <span className={cn("size-2 rounded-full", tone)} />
-      {children}
-    </span>
   );
 }

@@ -1,7 +1,166 @@
 // Shared pieces for the document pages (petitions, backtest, rules).
 import "../../../styles/documents.css";
 
+import type { CSSProperties, ReactNode } from "react";
+
 import { cn } from "@/lib/utils";
+
+import { Mascot, type MascotColor, type MascotPose } from "../mascots";
+
+/* ---------- OpenTag-style building blocks ---------- */
+
+export interface PillTab<T extends string> {
+  id: T;
+  label: string;
+  icon?: ReactNode;
+  count?: number;
+}
+
+/** Row of pill tabs (ink when active, outlined otherwise). Scrolls inside itself on phones. */
+export function PillTabs<T extends string>({
+  tabs,
+  value,
+  onChange,
+  label,
+  className,
+}: {
+  tabs: PillTab<T>[];
+  value: T;
+  onChange: (id: T) => void;
+  label: string;
+  className?: string;
+}) {
+  return (
+    <div role="tablist" aria-label={label} className={cn("ur-tabs", className)}>
+      {tabs.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          role="tab"
+          aria-selected={t.id === value}
+          className="ur-tab"
+          onClick={() => onChange(t.id)}
+        >
+          {t.icon}
+          {t.label}
+          {t.count != null ? <span className="ur-tab__count">{t.count}</span> : null}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export type Tone = "meadow" | "steel" | "peach" | "sage" | "dusk" | "ocean" | "rose" | "sand";
+
+/** Soft photographic gradient tile with a white line icon. */
+export function GradientTile({
+  tone,
+  icon,
+  className,
+  style,
+  float,
+  children,
+}: {
+  tone: Tone;
+  icon?: ReactNode;
+  children?: ReactNode;
+  className?: string;
+  style?: CSSProperties;
+  float?: boolean;
+}) {
+  return (
+    <div
+      data-tone={tone}
+      aria-hidden="true"
+      className={cn("ur-gtile", float && "ur-float", className)}
+      style={style}
+    >
+      {icon}
+      {children}
+    </div>
+  );
+}
+
+/** Wraps a window/card so a mascot sits on its top edge. */
+export function Perch({
+  pose,
+  color = "blue",
+  side = "right",
+  size = 104,
+  children,
+  className,
+}: {
+  pose: MascotPose;
+  color?: MascotColor;
+  side?: "left" | "right";
+  size?: number;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("ur-perch", className)} style={{ marginTop: size - 14 }}>
+      <div
+        className="ur-perch__mascot ur-float"
+        style={{
+          [side]: "clamp(16px, 6%, 64px)",
+          width: size,
+          height: size,
+          ["--ur-dur" as string]: "6s",
+        }}
+      >
+        <Mascot pose={pose} color={color} className="size-full" />
+      </div>
+      {children}
+    </div>
+  );
+}
+
+/** Title pill shown in a Window's chrome bar. */
+export function WindowTitle({ icon, children }: { icon?: ReactNode; children: ReactNode }) {
+  return (
+    <span className="ur-wtitle">
+      {icon}
+      <span>{children}</span>
+    </span>
+  );
+}
+
+/** Mini paper sheet (petition card art), with a status seal when ready/filed. */
+export function PaperSheet({ status, className }: { status?: string | null; className?: string }) {
+  const s = docStatus(status);
+  return (
+    <div className={cn("ur-sheet", className)} aria-hidden="true">
+      <div className="ur-sheet__kicker">Petition</div>
+      <div className="ur-sheet__l" style={{ width: "92%" }} />
+      <div className="ur-sheet__l" style={{ width: "100%" }} />
+      <div className="ur-sheet__l" style={{ width: "64%" }} />
+      <div className="ur-sheet__table">
+        {Array.from({ length: 9 }, (_, i) => (
+          <i key={i} />
+        ))}
+      </div>
+      <div className="ur-sheet__l" style={{ width: "96%" }} />
+      <div className="ur-sheet__l" style={{ width: "80%" }} />
+      <div className="ur-sheet__l" style={{ width: "88%" }} />
+      {s !== "draft" ? (
+        <span
+          className="ur-sheet__seal"
+          style={{ background: s === "filed" ? "hsl(var(--ur-blue))" : "hsl(var(--ur-recalled))" }}
+        >
+          {s === "filed" ? "Filed" : "Ready"}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+/** Pulls "1202 complaints" / "380 of them" out of a drafted petition's markdown. */
+export function petitionFacts(markdown: string): { complaints: number | null; uncovered: number | null } {
+  const c = markdown.match(/filed\s+([\d,]+)\s+complaints/i)?.[1];
+  const u = markdown.match(/([\d,]+)\s+of them concern/i)?.[1];
+  const n = (v?: string) => (v ? Number(v.replace(/,/g, "")) : null);
+  return { complaints: n(c), uncovered: n(u) };
+}
 
 /** "Petition for a Defect Investigation: 2018–2023 Jeep Wrangler, Death wobble (…)"
  *  -> { issue: "Death wobble (…)", vehicle: "2018–2023 Jeep Wrangler" } */

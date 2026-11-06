@@ -2,16 +2,14 @@ import {
   actionErrorMessage,
   useActionMutation,
 } from "@agent-native/core/client/hooks";
-import { IconArrowRight, IconCheck, IconLoader2 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { IconArrowUp, IconCheck, IconLoader2 } from "@tabler/icons-react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-import { BrandMark } from "./premium";
+import { Msg } from "./landing/shared";
 import type { ScanVehicleResult } from "./types";
 
 const QUICK_PICKS = [
@@ -23,6 +21,12 @@ const QUICK_PICKS = [
 
 const THIS_YEAR = new Date().getFullYear() + 1;
 
+/** Event the landing page fires to run the Jeep Wrangler example scan. */
+export const EXAMPLE_SCAN_EVENT = "ur:example-scan";
+export function startExampleScan() {
+  window.dispatchEvent(new CustomEvent(EXAMPLE_SCAN_EVENT));
+}
+
 interface ScanVars {
   make: string;
   model: string;
@@ -30,7 +34,12 @@ interface ScanVars {
   yearTo: number;
 }
 
-export function ScanForm() {
+/**
+ * The real scan form, styled as the message composer of the landing page's
+ * agent window. `thread` is the demo conversation rendered above it; while a
+ * scan runs, the request and the agent's staged progress are appended there.
+ */
+export function ScanForm({ thread }: { thread?: ReactNode }) {
   const navigate = useNavigate();
   const [make, setMake] = useState("Jeep");
   const [model, setModel] = useState("Wrangler");
@@ -69,6 +78,7 @@ export function ScanForm() {
           : to - from > 9
             ? "Scan at most 10 model years"
             : null;
+  const showYearError = !!yearError && yearFrom.length === 4 && yearTo.length === 4;
   const canSubmit =
     make.trim() && model.trim() && !yearError && !scan.isPending;
 
@@ -78,132 +88,162 @@ export function ScanForm() {
     scan.mutate(vars);
   }
 
+  function pick(q: (typeof QUICK_PICKS)[number]) {
+    if (scan.isPending) return;
+    setMake(q.make);
+    setModel(q.model);
+    setYearFrom(String(q.from));
+    setYearTo(String(q.to));
+    run({ make: q.make, model: q.model, yearFrom: q.from, yearTo: q.to });
+  }
+
+  // "See a real example" on the hero runs the Jeep Wrangler quick pick.
+  useEffect(() => {
+    const onExample = () => pick(QUICK_PICKS[0]!);
+    window.addEventListener(EXAMPLE_SCAN_EVENT, onExample);
+    return () => window.removeEventListener(EXAMPLE_SCAN_EVENT, onExample);
+  });
+
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
     run({ make: make.trim(), model: model.trim(), yearFrom: from, yearTo: to });
   }
 
-  const inputClass =
-    "h-11 rounded-xl border-border/80 bg-background px-3.5 text-[15px] shadow-none transition-colors focus-visible:border-ur-blue/60 focus-visible:ring-ur-blue/25";
+  const busy = scan.isPending;
+  const years = (v: ScanVars) =>
+    v.yearFrom === v.yearTo ? String(v.yearFrom) : `${v.yearFrom}–${v.yearTo}`;
 
   return (
-    <section className="ur-card overflow-hidden">
-      <form
-        onSubmit={submit}
-        className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-[1fr_1fr_5.5rem_5.5rem] md:p-5"
-      >
-        <Field id="scan-make" label="Make">
-          <Input
-            id="scan-make"
-            value={make}
-            onChange={(e) => setMake(e.target.value)}
-            placeholder="Jeep"
-            autoComplete="off"
-            disabled={scan.isPending}
-            className={inputClass}
-          />
-        </Field>
-        <Field id="scan-model" label="Model">
-          <Input
-            id="scan-model"
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            placeholder="Wrangler"
-            autoComplete="off"
-            disabled={scan.isPending}
-            className={inputClass}
-          />
-        </Field>
-        <Field id="scan-from" label="From year">
-          <Input
-            id="scan-from"
-            inputMode="numeric"
-            value={yearFrom}
-            onChange={(e) => setYearFrom(e.target.value.replace(/\D/g, "").slice(0, 4))}
-            aria-invalid={!!yearError}
-            className={cn("ur-num", inputClass)}
-            disabled={scan.isPending}
-          />
-        </Field>
-        <Field id="scan-to" label="To year">
-          <Input
-            id="scan-to"
-            inputMode="numeric"
-            value={yearTo}
-            onChange={(e) => setYearTo(e.target.value.replace(/\D/g, "").slice(0, 4))}
-            aria-invalid={!!yearError}
-            aria-describedby={yearError ? "scan-year-error" : undefined}
-            className={cn("ur-num", inputClass)}
-            disabled={scan.isPending}
-          />
-        </Field>
-        {yearError && (yearFrom.length === 4 && yearTo.length === 4) ? (
-          <p
-            id="scan-year-error"
-            className="col-span-2 text-xs text-destructive sm:col-span-4"
-          >
-            {yearError}
-          </p>
+    <div className="flex flex-col">
+      <div className="space-y-5 px-4 pb-4 pt-5 sm:px-6 sm:pt-6">
+        {thread}
+        {busy && scanning && startedAt ? (
+          <>
+            <Msg name="You" initials="Y" tone={1} time="now" className="lp-swap">
+              Scan the{" "}
+              <span className="font-medium">
+                {years(scanning)} {scanning.make} {scanning.model}
+              </span>
+            </Msg>
+            <ScanProgress vars={scanning} startedAt={startedAt} />
+          </>
         ) : null}
-        <button
-          type="submit"
-          disabled={!canSubmit}
-          className="ur-btn col-span-2 mt-1 w-full sm:col-span-4"
-        >
-          {scan.isPending ? (
-            <IconLoader2 className="size-4 motion-safe:animate-spin" />
-          ) : null}
-          {scan.isPending ? "Scanning…" : "Scan for gaps"}
-          {scan.isPending ? null : <IconArrowRight className="size-4" strokeWidth={2} />}
-        </button>
-      </form>
-      {scan.isPending && scanning && startedAt ? (
-        <ScanProgress vars={scanning} startedAt={startedAt} />
-      ) : (
-        <div className="flex items-center gap-2 border-t border-border/70 bg-ur-sand/50 py-3.5 ps-4 sm:pe-4 md:px-5">
-          <span className="shrink-0 text-[13px] text-muted-foreground sm:self-start sm:pt-1.5">Try</span>
-          <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto py-0.5 pe-4 [mask-image:linear-gradient(to_right,#000_calc(100%-36px),transparent)] [scrollbar-width:none] sm:flex-wrap sm:overflow-visible sm:pe-0 sm:[mask-image:none] [&::-webkit-scrollbar]:hidden">
-          {QUICK_PICKS.map((q) => {
-            const label = `${q.make} ${q.model} ${q.from === q.to ? q.from : `${q.from}–${q.to}`}`;
-            return (
-              <button
-                key={label}
-                type="button"
-                onClick={() => {
-                  setMake(q.make);
-                  setModel(q.model);
-                  setYearFrom(String(q.from));
-                  setYearTo(String(q.to));
-                  run({ make: q.make, model: q.model, yearFrom: q.from, yearTo: q.to });
-                }}
-                className="ur-chip ur-num shrink-0 transition-[transform,background-color,border-color] duration-150 hover:-translate-y-px hover:border-foreground/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {label}
-              </button>
-            );
-          })}
+      </div>
+
+      <div className="px-3 pb-3 sm:px-5 sm:pb-5">
+        <form onSubmit={submit} className="lp-composer" aria-label="Scan a car">
+          <div className="flex items-center gap-2 px-3.5 pt-3 text-[14px] text-muted-foreground sm:px-4">
+            <span className="lp-mention font-medium">@Unrecalled</span>
+            <span className="truncate">find the problems nobody is fixing on…</span>
           </div>
-        </div>
-      )}
-    </section>
+          <div className="grid grid-cols-2 gap-2 p-2.5 sm:p-3 md:grid-cols-[1fr_1fr_7.5rem_7.5rem_auto]">
+            <Field id="scan-make" label="Make">
+              <input
+                id="scan-make"
+                value={make}
+                onChange={(e) => setMake(e.target.value)}
+                placeholder="Jeep"
+                autoComplete="off"
+                disabled={busy}
+              />
+            </Field>
+            <Field id="scan-model" label="Model">
+              <input
+                id="scan-model"
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                placeholder="Wrangler"
+                autoComplete="off"
+                disabled={busy}
+              />
+            </Field>
+            <Field id="scan-from" label="From" invalid={showYearError}>
+              <input
+                id="scan-from"
+                inputMode="numeric"
+                value={yearFrom}
+                onChange={(e) => setYearFrom(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                aria-invalid={!!yearError}
+                className="ur-num"
+                disabled={busy}
+              />
+            </Field>
+            <Field id="scan-to" label="To" invalid={showYearError}>
+              <input
+                id="scan-to"
+                inputMode="numeric"
+                value={yearTo}
+                onChange={(e) => setYearTo(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                aria-invalid={!!yearError}
+                aria-describedby={yearError ? "scan-year-error" : undefined}
+                className="ur-num"
+                disabled={busy}
+              />
+            </Field>
+            <button
+              type="submit"
+              disabled={!canSubmit}
+              className="lp-send col-span-2 md:col-span-1"
+            >
+              {busy ? (
+                <IconLoader2 className="size-4 motion-safe:animate-spin" />
+              ) : null}
+              {busy ? "Scanning…" : "Scan"}
+              {busy ? null : (
+                <span className="flex size-5 items-center justify-center rounded-full bg-primary-foreground/15">
+                  <IconArrowUp className="size-3.5" strokeWidth={2.4} />
+                </span>
+              )}
+            </button>
+            {showYearError ? (
+              <p
+                id="scan-year-error"
+                className="col-span-2 px-1 text-xs text-destructive md:col-span-5"
+              >
+                {yearError}
+              </p>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-2 border-t border-border/80 py-2.5 ps-3.5 sm:px-4">
+            <span className="shrink-0 text-[12.5px] text-muted-foreground">Try</span>
+            <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-0.5 pe-3 [mask-image:linear-gradient(to_right,#000_calc(100%-28px),transparent)] [scrollbar-width:none] md:flex-wrap md:overflow-visible md:pe-0 md:[mask-image:none] [&::-webkit-scrollbar]:hidden">
+              {QUICK_PICKS.map((q) => {
+                const label = `${q.make} ${q.model} ${q.from === q.to ? q.from : `${q.from}–${q.to}`}`;
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => pick(q)}
+                    className="ur-chip ur-num h-7 shrink-0 text-[12.5px] transition-[transform,border-color] duration-150 hover:-translate-y-px hover:border-foreground/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 
 function Field({
   id,
   label,
+  invalid,
   children,
 }: {
   id: string;
   label: string;
-  children: React.ReactNode;
+  invalid?: boolean;
+  children: ReactNode;
 }) {
   return (
-    <div className="flex min-w-0 flex-col gap-1.5">
-      <Label htmlFor={id} className="ps-1 text-[12.5px] font-medium text-muted-foreground">
-        {label}
-      </Label>
+    <div className="lp-field" data-invalid={invalid ? "true" : undefined}>
+      <label htmlFor={id}>{label}</label>
       {children}
     </div>
   );
@@ -244,29 +284,16 @@ function ScanProgress({
       : `${vars.yearFrom}–${vars.yearTo}`;
 
   return (
-    <div
-      className="border-t border-border/70 bg-ur-sand/50 px-4 py-4 md:px-5"
-      role="status"
-      aria-live="polite"
-    >
-      <div className="flex items-start gap-3">
-        <BrandMark className="mt-0.5 size-8 shrink-0" />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-[14px] font-semibold">Unrecalled</span>
-            <span className="ur-agent-badge">Agent</span>
-            <span className="ur-num ms-auto text-xs text-muted-foreground">
-              {secs}s
-            </span>
-          </div>
-          <p className="mt-0.5 text-[14px] text-foreground/85">
-            Looking into the{" "}
-            <span className="font-medium text-foreground">
-              {years} {vars.make} {vars.model}
-            </span>
-          </p>
-
-          <ol className="mt-3 space-y-2">
+    <div role="status" aria-live="polite" className="lp-swap">
+      <Msg name="Unrecalled" agent time={`${secs}s`}>
+        <p>
+          Looking into the{" "}
+          <span className="font-medium text-foreground">
+            {years} {vars.make} {vars.model}
+          </span>
+        </p>
+        <div className="mt-2.5 max-w-md rounded-xl border border-border/80 bg-background/60 p-3.5">
+          <ol className="space-y-2">
             {STEPS.map((s, i) => {
               const done = i < active;
               const current = i === active;
@@ -302,15 +329,14 @@ function ScanProgress({
               );
             })}
           </ol>
-
-          <div className="mt-4 h-1 overflow-hidden rounded-full bg-foreground/[0.07]">
+          <div className="mt-3.5 h-1 overflow-hidden rounded-full bg-foreground/[0.07]">
             <div
               className="h-full rounded-full bg-ur-blue transition-[width] duration-300 ease-out"
               style={{ width: `${pct}%` }}
             />
           </div>
         </div>
-      </div>
+      </Msg>
     </div>
   );
 }

@@ -42,3 +42,30 @@ export function spanLabel(months: number | null): string {
   const y = months / 12;
   return `${y >= 10 ? Math.round(y) : y.toFixed(1).replace(/\.0$/, "")} years`;
 }
+
+/** "Jeep Wrangler 2018–2023" -> { name: "Jeep Wrangler", years: "2018–2023" } */
+export function splitVehicleLabel(label: string): { name: string; years: string | null } {
+  const m = /^(.*?)\s+(\d{4}(?:\s*[–-]\s*\d{4})?)$/.exec(label.trim());
+  if (!m || !m[1]) return { name: label, years: null };
+  return { name: m[1], years: m[2]!.replace(/\s*[–-]\s*/, "–") };
+}
+
+/** Model name without the make: ("Jeep Wrangler", "JEEP") -> "Wrangler". */
+export function modelOnly(name: string, make?: string | null): string {
+  if (!make) return name;
+  const words = name.split(/\s+/);
+  if (words.length > 1 && words[0]!.toLowerCase() === make.toLowerCase()) return words.slice(1).join(" ");
+  return name;
+}
+
+/** "Jeep Wrangler 2018–2023" -> "jeep-wrangler" */
+export function channelSlug(text: string): string {
+  return (
+    text
+      .toLowerCase()
+      .replace(/\(.*?\)/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40) || "report"
+  );
+}

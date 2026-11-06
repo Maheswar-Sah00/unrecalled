@@ -1,3 +1,5 @@
+import "../../styles/report.css";
+
 import { useId } from "react";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -100,15 +102,16 @@ export function CoverageStrip({
 }) {
   const refTitle = new Map((refs ?? []).map((r) => [r.id, r.title]));
   const big = size === "lg";
+  const maxCount = Math.max(1, ...byYear.map((y) => y.count));
   return (
     <div
       className={cn(
         big
-          ? "grid grid-cols-[repeat(auto-fit,minmax(6.5rem,1fr))] gap-2.5"
+          ? "grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))]"
           : "flex flex-wrap items-center gap-[3px]",
         className,
       )}
-      style={big ? { maxWidth: `${Math.max(1, byYear.length) * 10}rem` } : undefined}
+      style={big ? { maxWidth: `${Math.max(2, byYear.length) * 13}rem` } : undefined}
       role="list"
       aria-label="Coverage by model year"
     >
@@ -120,28 +123,32 @@ export function CoverageStrip({
         const cell = big ? (
           <div
             role="listitem"
-            className={cn(
-              "ur-pop relative flex w-full flex-col overflow-hidden rounded-2xl border bg-card p-3 text-left shadow-[var(--ur-shadow)] transition-[transform,opacity,box-shadow] duration-200",
-              y.count === 0 && "opacity-60",
-              onSelectYear && "cursor-pointer hover:-translate-y-0.5",
-              dim && "opacity-55",
-              active && "ring-2 ring-foreground ring-offset-2 ring-offset-background",
-            )}
-            style={{ ["--ur-delay" as string]: `${120 + idx * 70}ms` }}
+            data-status={y.status}
+            data-active={active}
+            data-dim={dim}
+            className={cn("rp-ytile ur-pop", y.count === 0 && "opacity-60", onSelectYear && "cursor-pointer")}
+            style={{ ["--ur-delay" as string]: `${100 + idx * 70}ms` }}
           >
-            <span className={cn("absolute inset-x-0 top-0 h-1", meta.fill)} aria-hidden="true" />
-            <span className={cn("pointer-events-none absolute inset-0 opacity-[0.07]", meta.fill)} aria-hidden="true" />
-            <span className="relative font-display text-[1.25rem] leading-none tracking-tight text-foreground">
-              {y.year}
+            <span className="flex items-center justify-between gap-2">
+              <span className="rp-ytile__year ur-num">{y.year}</span>
+              <span className={cn("grid size-7 shrink-0 place-items-center rounded-full", meta.tint, meta.text)}>
+                <Icon className="size-3.5" aria-hidden="true" />
+              </span>
             </span>
-            <span className={cn("relative mt-2 inline-flex items-center gap-1 text-[12px] font-medium", meta.text)}>
-              <Icon className="size-3.5 shrink-0" aria-hidden="true" />
-              <span className="truncate">{meta.short}</span>
-            </span>
-            <span className="ur-num relative mt-1 text-[1.375rem] font-semibold leading-tight text-foreground">
+            <span className={cn("rp-ytile__count", y.status === "uncovered" && y.count > 0 ? "text-ur-uncovered" : "text-foreground")}>
               {fmtInt(y.count)}
             </span>
-            <span className="relative text-[11px] text-muted-foreground">complaints</span>
+            <span className="mt-1 text-[12px] text-muted-foreground">owner reports</span>
+            <span className="rp-ytile__bar" aria-hidden="true">
+              <i
+                className={meta.fill}
+                style={{
+                  width: `${Math.max(y.count ? 4 : 0, (y.count / maxCount) * 100)}%`,
+                  ["--ur-delay" as string]: `${300 + idx * 70}ms`,
+                }}
+              />
+            </span>
+            <span className={cn("mt-3 truncate text-[12.5px] font-semibold", meta.text)}>{meta.short}</span>
           </div>
         ) : (
           <div

@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 
 import { Shimmer, ShimmerStyles } from "./board/Shimmer";
 import { fmtDate, nhtsaComplaintUrl } from "./format";
+import { Mascot } from "./mascots";
+import { statusMeta } from "./status";
 import type { ClusterComplaint, GetClusterResult, LabelVerdict } from "./types";
 
 type Verdict = LabelVerdict | "clear";
@@ -88,11 +90,17 @@ export function ComplaintList({
   failureModeId,
   complaints,
   loading,
+  ownerLabel,
+  yearStatus,
 }: {
   vehicleId: string;
   failureModeId: string;
   complaints: ClusterComplaint[];
   loading: boolean;
+  /** e.g. "Wrangler" -> "2022 Wrangler owner" */
+  ownerLabel?: string;
+  /** coverage status per model year, used to colour the avatars */
+  yearStatus?: Record<number, string>;
 }) {
   const qc = useQueryClient();
   const label = useActionMutation<unknown, LabelVars>("label-complaint", {
@@ -126,13 +134,16 @@ export function ComplaintList({
 
   if (loading) {
     return (
-      <ul className="grid gap-3">
+      <ul className="grid gap-1 py-2" aria-busy="true">
         <ShimmerStyles />
         {[0, 1, 2, 3].map((i) => (
-          <li key={i} className="ur-card space-y-3 p-5">
-            <Shimmer className="h-3.5 w-48" />
-            <Shimmer className="h-3 w-full" />
-            <Shimmer className="h-3 w-4/5" />
+          <li key={i} className="rp-msg">
+            <Shimmer className="size-[38px] rounded-full" />
+            <div className="space-y-2.5">
+              <Shimmer className="h-3.5 w-48" />
+              <Shimmer className="h-3 w-full" />
+              <Shimmer className="h-3 w-4/5" />
+            </div>
           </li>
         ))}
       </ul>
@@ -140,18 +151,22 @@ export function ComplaintList({
   }
   if (!complaints.length) {
     return (
-      <p className="ur-panel p-8 text-center text-sm text-muted-foreground">
-        No complaints match this filter.
-      </p>
+      <div className="flex flex-col items-center px-6 py-12 text-center">
+        <Mascot pose="read" color="violet" className="ur-float h-auto w-24" />
+        <p className="mt-3 text-[15px] font-medium text-foreground">No owner reports match this filter.</p>
+        <p className="mt-1 text-[13.5px] text-muted-foreground">Try another model year, or show every year.</p>
+      </div>
     );
   }
   return (
-    <ul className="grid gap-3">
+    <ul className="py-2">
       {complaints.map((c, i) => (
         <ComplaintItem
           key={c.odiNumber}
           index={i}
           c={c}
+          ownerLabel={ownerLabel}
+          status={yearStatus?.[c.modelYear]}
           onLabel={(verdict) =>
             label.mutate({
               vehicleId,
@@ -169,109 +184,107 @@ export function ComplaintList({
 function ComplaintItem({
   c,
   index,
+  ownerLabel,
+  status,
   onLabel,
 }: {
   c: ClusterComplaint;
   index: number;
+  ownerLabel?: string | undefined;
+  status?: string | undefined;
   onLabel: (v: Verdict) => void;
 }) {
   const [open, setOpen] = useState(false);
   const long = c.summary.length > 420;
   const excluded = c.label === "exclude";
   const included = c.label === "include";
+  const fill = status ? statusMeta(status).fill : "bg-ur-ink";
   return (
     <li
-      className={cn(
-        "ur-card ur-reveal relative overflow-hidden p-4 md:p-5",
-        excluded && "opacity-70",
-        included && "border-ur-recalled/40",
-      )}
-      style={{ ["--ur-delay" as string]: `${Math.min(index, 8) * 50}ms` }}
+      className={cn("rp-msg ur-reveal", excluded && "opacity-60")}
+      style={{ ["--ur-delay" as string]: `${Math.min(index, 8) * 45}ms` }}
     >
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[12.5px] text-muted-foreground">
-        <span className="ur-num inline-flex h-6 items-center rounded-full bg-foreground/[0.06] px-2.5 font-semibold text-foreground">
-          {c.modelYear} model
+      <div className="pt-0.5">
+        <span className={cn("rp-avatar", fill)} title={`${c.modelYear} model year`} aria-hidden="true">
+          {String(c.modelYear).slice(2)}
         </span>
-        <span>Reported {fmtDate(c.dateReceived)}</span>
-        {c.crash || c.fire || c.injuries > 0 || c.deaths > 0 ? (
-          <span className="flex flex-wrap items-center gap-1">
-            {c.crash ? <Flag icon={IconCarCrash} label="Crash" /> : null}
-            {c.fire ? <Flag icon={IconFlame} label="Fire" /> : null}
-            {c.injuries > 0 ? (
-              <Flag icon={IconFirstAidKit} label={`${c.injuries} injured`} />
-            ) : null}
-            {c.deaths > 0 ? <Flag icon={IconSkull} label={`${c.deaths} died`} /> : null}
-          </span>
-        ) : null}
-        {excluded ? (
-          <span className="ms-auto rounded-full bg-muted px-2 py-0.5 text-[11.5px] font-medium">Excluded</span>
-        ) : included ? (
-          <span className="ms-auto rounded-full bg-ur-recalled/12 px-2 py-0.5 text-[11.5px] font-medium text-ur-recalled">
-            Confirmed
-          </span>
-        ) : null}
       </div>
-      <blockquote
-        className={cn(
-          "relative mt-3 border-l-2 border-foreground/10 ps-4 text-[15px] leading-[1.7] text-foreground/90",
-          excluded && "text-muted-foreground line-through decoration-muted-foreground/40",
-          !open && long && "line-clamp-4",
-        )}
-      >
-        {highlightText(sentenceCase(c.summary), c.highlights ?? [])}
-      </blockquote>
-      {long ? (
-        <button
-          type="button"
-          className="mt-1.5 ps-4 text-[13px] font-medium text-ur-blue underline-offset-2 hover:underline"
-          onClick={() => setOpen((o) => !o)}
+      <div className="min-w-0">
+        <div className="rp-msg__name">
+          <b>
+            {c.modelYear} {ownerLabel ?? "model"} owner
+          </b>
+          <time className="rp-time" dateTime={c.dateReceived}>
+            {fmtDate(c.dateReceived)}
+          </time>
+          {c.crash ? <Flag icon={IconCarCrash} label="Crash" /> : null}
+          {c.fire ? <Flag icon={IconFlame} label="Fire" /> : null}
+          {c.injuries > 0 ? <Flag icon={IconFirstAidKit} label={`${c.injuries} injured`} /> : null}
+          {c.deaths > 0 ? <Flag icon={IconSkull} label={`${c.deaths} died`} /> : null}
+          {excluded ? (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+              Excluded
+            </span>
+          ) : included ? (
+            <span className="rounded-full bg-ur-recalled/12 px-2 py-0.5 text-[11px] font-semibold text-ur-recalled">
+              Confirmed
+            </span>
+          ) : null}
+        </div>
+        <p
+          className={cn(
+            "rp-msg__text",
+            excluded && "text-muted-foreground line-through decoration-muted-foreground/40",
+            !open && long && "line-clamp-4",
+          )}
         >
-          {open ? "Show less" : "Read the full complaint"}
-        </button>
-      ) : null}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3">
-        <a
-          href={nhtsaComplaintUrl(c.odiNumber)}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-0.5 text-[12px] text-muted-foreground hover:text-foreground hover:underline"
-          title="Open on nhtsa.gov"
-        >
-          NHTSA complaint <span className="ur-num">#{c.odiNumber}</span>
-          <IconExternalLink className="size-3" aria-hidden="true" />
-        </a>
-        <span className="flex items-center gap-1.5">
+          {highlightText(sentenceCase(c.summary), c.highlights ?? [])}
+        </p>
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px]">
+          {long ? (
+            <button
+              type="button"
+              className="font-semibold text-ur-blue underline-offset-2 hover:underline"
+              onClick={() => setOpen((o) => !o)}
+            >
+              {open ? "Show less" : "Read the full report"}
+            </button>
+          ) : null}
+          <a
+            href={nhtsaComplaintUrl(c.odiNumber)}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-0.5 text-muted-foreground hover:text-foreground hover:underline"
+            title="Open on nhtsa.gov"
+          >
+            NHTSA <span className="ur-num">#{c.odiNumber}</span>
+            <IconExternalLink className="size-3" aria-hidden="true" />
+          </a>
+        </div>
+        <div className="rp-msg__actions" role="group" aria-label="Label this report">
           <button
             type="button"
+            className="rp-act"
+            data-kind="include"
             aria-pressed={included}
             onClick={() => onLabel(included ? "clear" : "include")}
-            title={included ? "Clear label" : "Confirm this complaint is about this problem"}
-            className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors",
-              included
-                ? "border-ur-recalled/40 bg-ur-recalled/12 text-ur-recalled"
-                : "border-border bg-card text-foreground/80 hover:bg-foreground/[0.04]",
-            )}
+            title={included ? "Clear label" : "Confirm this report is about this problem"}
           >
-            <IconCircleCheck className="size-4" aria-hidden="true" />
-            Include
+            <IconCircleCheck aria-hidden="true" />
+            {included ? "Included" : "Include"}
           </button>
           <button
             type="button"
+            className="rp-act"
+            data-kind="exclude"
             aria-pressed={excluded}
             onClick={() => onLabel(excluded ? "clear" : "exclude")}
-            title={excluded ? "Undo exclude" : "Not about this problem — exclude"}
-            className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors",
-              excluded
-                ? "border-foreground/20 bg-foreground/[0.08] text-foreground"
-                : "border-border bg-card text-foreground/80 hover:bg-foreground/[0.04]",
-            )}
+            title={excluded ? "Undo exclude" : "Not about this problem: exclude it"}
           >
-            <IconCircleX className="size-4" aria-hidden="true" />
+            <IconCircleX aria-hidden="true" />
             {excluded ? "Undo" : "Exclude"}
           </button>
-        </span>
+        </div>
       </div>
     </li>
   );
@@ -303,8 +316,8 @@ function Flag({
   label: string;
 }) {
   return (
-    <span className="inline-flex h-6 items-center gap-1 rounded-full bg-ur-uncovered/10 px-2 text-[11.5px] font-medium text-foreground">
-      <Icon className="size-3.5 text-ur-uncovered" aria-hidden="true" />
+    <span className="inline-flex h-5 items-center gap-1 self-center rounded-full bg-ur-uncovered/10 px-2 text-[11px] font-semibold text-ur-uncovered">
+      <Icon className="size-3" aria-hidden="true" />
       {label}
     </span>
   );

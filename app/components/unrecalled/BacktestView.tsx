@@ -1,6 +1,18 @@
 import { actionErrorMessage, useActionQuery } from "@agent-native/core/client/hooks";
-import { IconChevronDown, IconExternalLink, IconInfoCircle } from "@tabler/icons-react";
-import { useState } from "react";
+import {
+  IconAlertTriangle,
+  IconBell,
+  IconCalendarEvent,
+  IconCar,
+  IconChartLine,
+  IconChevronDown,
+  IconEngine,
+  IconExternalLink,
+  IconFileText,
+  IconInfoCircle,
+  IconMessage2,
+} from "@tabler/icons-react";
+import { Fragment, useState } from "react";
 
 import {
   Collapsible,
@@ -11,10 +23,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 import { BacktestChart } from "./BacktestChart";
-import "../../styles/documents.css";
+import { GradientTile, Perch, WindowTitle } from "./docs/shared";
 import { compactYears, fmtDate, fmtInt, fmtMonth, fmtPct, fmtRatio, nhtsaComplaintUrl } from "./format";
-import { Page, SectionHeading, useCrumbs } from "./page";
-import { CountUp, Reveal } from "./premium";
+import { Mascot } from "./mascots";
+import { Page, useCrumbs } from "./page";
+import { AgentMessage, CountUp, Reveal, Window } from "./premium";
 import type { BacktestResult } from "./types";
 
 type Backtest = BacktestResult & { notes?: string[] };
@@ -25,6 +38,13 @@ function titleCase(s: string) {
     .split(" ")
     .map((w) => (w ? w[0]!.toUpperCase() + w.slice(1) : w))
     .join(" ");
+}
+
+/** Whole months from one "YYYY-MM[-DD]" to another. */
+function monthsBetween(a: string, b: string) {
+  const [ay, am] = a.split("-").map(Number);
+  const [by, bm] = b.split("-").map(Number);
+  return (by! - ay!) * 12 + (bm! - am!);
 }
 
 /** Pulls the "earlier, narrower recall" caveat out of the backtest notes, if present. */
@@ -38,6 +58,14 @@ function earlierRecall(notes: string[] | undefined) {
   return { note, campaign, lead: Number.isFinite(lead) ? lead : null, date, vehicle };
 }
 
+/** Floating gradient tiles around the hero (desktop only). */
+const FLOATS = [
+  { tone: "steel", icon: <IconEngine />, cls: "left-[2%] top-[6%] size-[132px]", dur: "9s", rot: "-4deg", delay: "0s" },
+  { tone: "peach", icon: <IconBell />, cls: "left-[11%] top-[56%] size-[92px]", dur: "7s", rot: "5deg", delay: "0.8s" },
+  { tone: "meadow", icon: <IconChartLine />, cls: "right-[3%] top-[2%] size-[150px]", dur: "8s", rot: "3deg", delay: "0.3s" },
+  { tone: "dusk", icon: <IconCalendarEvent />, cls: "right-[12%] top-[60%] size-[96px]", dur: "10s", rot: "-6deg", delay: "1.2s" },
+] as const;
+
 export function BacktestView() {
   useCrumbs([{ label: "Backtest" }]);
   const { data, isLoading, error } = useActionQuery<Backtest>("get-backtest", {});
@@ -46,15 +74,18 @@ export function BacktestView() {
 
   if (isLoading) {
     return (
-      <Page wide>
-        <Skeleton className="h-4 w-40" />
-        <Skeleton className="mt-4 h-12 w-[44rem] max-w-full" />
-        <Skeleton className="mt-2 h-12 w-[30rem] max-w-full" />
-        <div className="mt-10 grid gap-4 lg:grid-cols-[22rem_minmax(0,1fr)]">
-          <Skeleton className="h-64 w-full rounded-2xl" />
-          <Skeleton className="h-64 w-full rounded-2xl" />
+      <Page wide className="max-w-[1240px]">
+        <div className="flex flex-col items-center pt-14">
+          <Skeleton className="size-28 rounded-full" />
+          <Skeleton className="mt-6 h-16 w-[44rem] max-w-full" />
+          <Skeleton className="mt-3 h-16 w-[30rem] max-w-full" />
+          <Skeleton className="mt-6 h-5 w-[36rem] max-w-full" />
         </div>
-        <Skeleton className="mt-6 h-96 w-full rounded-2xl" />
+        <div className="mt-20 grid gap-5 md:grid-cols-3">
+          <Skeleton className="h-56 w-full rounded-2xl" />
+          <Skeleton className="h-56 w-full rounded-2xl" />
+          <Skeleton className="h-56 w-full rounded-2xl" />
+        </div>
       </Page>
     );
   }
@@ -70,179 +101,230 @@ export function BacktestView() {
 
   const makes = [...new Set(data.vehicles.map((v) => titleCase(v.make)))].sort().join("/");
   const topic = data.name.replace(/\s*\(.*\)\s*$/, "").trim();
-  const subject = topic.toLowerCase().startsWith(makes.toLowerCase())
-    ? topic
-    : `${makes} ${topic}`;
+  const subject = topic.toLowerCase().startsWith(makes.toLowerCase()) ? topic : `${makes} ${topic}`;
   const subjectPlural = /failure$/i.test(subject) ? `${subject}s` : subject;
   const vehicles = data.vehicles.map((v) => ({
     name: `${titleCase(v.make)} ${titleCase(v.model)}`,
     years: compactYears(v.years),
   }));
+  const allYears = data.vehicles.flatMap((v) => v.years);
+  const yearSpan = allYears.length ? `${Math.min(...allYears)}–${Math.max(...allYears)}` : "";
   const ratio = data.peerShare > 0 ? data.share / data.peerShare : null;
   const recallMonth = data.recall.date.slice(0, 7);
   const earlier = earlierRecall(data.notes);
   const otherNotes = (data.notes ?? []).filter((n) => n !== earlier?.note);
+  const toSignal = monthsBetween(data.firstComplaint.date, data.signalFiredAt);
+  const campaigns = data.recall.campaigns.map((c) => c.replace(/^(\d{2}V)(\d{3})\d*$/, "$1-$2"));
 
-  const moments = [
+  const milestones = [
     {
+      key: false,
       when: fmtDate(data.firstComplaint.date),
+      tone: "steel" as const,
+      icon: <IconMessage2 />,
       title: "First owner complaint",
       body: (
-        <a
-          href={nhtsaComplaintUrl(data.firstComplaint.odi)}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 hover:text-foreground hover:underline"
-        >
-          Read it on NHTSA <IconExternalLink className="size-3" aria-hidden="true" />
-        </a>
+        <>
+          An owner tells NHTSA their engine failed. One report on its own proves nothing.{" "}
+          <a
+            href={nhtsaComplaintUrl(data.firstComplaint.odi)}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            Read it <IconExternalLink className="size-3" aria-hidden="true" />
+          </a>
+        </>
       ),
-      color: "bg-foreground/40",
     },
     {
+      key: true,
       when: fmtMonth(data.signalFiredAt),
-      title: "Our signal would have fired",
-      body: "Complaints about this problem ran far above similar cars.",
-      color: "bg-ur-blue",
-      ring: true,
+      tone: "ocean" as const,
+      icon: <IconBell />,
+      title: "Our signal fires",
+      body: (
+        <AgentMessage time={fmtMonth(data.signalFiredAt)} className="mt-1 rounded-xl bg-ur-blue/[0.06] p-3">
+          <p className="mt-0.5 text-[14px] leading-relaxed">
+            Engine-failure complaints for these cars are running{" "}
+            <b className="ur-num">{ratio != null ? fmtRatio(ratio) : "far"}</b> above similar cars.
+            Worth an investigation.
+          </p>
+        </AgentMessage>
+      ),
     },
     {
+      key: false,
       when: fmtDate(data.recall.date),
+      tone: "sage" as const,
+      icon: <IconFileText />,
       title: "The recall",
       body: (
         <>
-          Campaign{data.recall.campaigns.length > 1 ? "s" : ""}{" "}
-          {data.recall.campaigns.map((c, i) => (
+          The makers recall the engines under campaign{campaigns.length > 1 ? "s" : ""}{" "}
+          {campaigns.map((c, i) => (
             <span key={c}>
               {i ? " and " : ""}
-              <span className="ur-num whitespace-nowrap">{c.replace(/^(\d{2}V)(\d{3})\d*$/, "$1-$2")}</span>
+              <span className="ur-num whitespace-nowrap font-medium text-foreground">{c}</span>
             </span>
           ))}
+          .
         </>
       ),
-      color: "bg-ur-recalled",
     },
   ];
+  const gaps = [`${toSignal} months later`, `${data.leadMonths} months later`];
 
   return (
-    <Page wide>
-      {/* Headline */}
-      <Reveal>
-        <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="size-1.5 rounded-full bg-ur-blue" aria-hidden="true" />
-          Backtest · replaying a real case from the past
-        </div>
-        <h1 className="ur-display max-w-5xl text-[2rem] md:text-[3.25rem]">
-          Our early-warning signal would have flagged the {subjectPlural}{" "}
-          <span className="text-ur-blue">{data.leadMonths} months</span> before the recall.
-        </h1>
-        <p className="ur-lede mt-5 max-w-3xl">
-          We replayed NHTSA owner complaints month by month, as if we were back in time,
-          and asked one question: when would our rule have raised the alarm?
-        </p>
-      </Reveal>
-
-      {/* Big number + timeline */}
-      <div className="mt-10 grid gap-5 lg:grid-cols-[22rem_minmax(0,1fr)]">
-        <Reveal delay={100} className="ur-card relative flex flex-col justify-between overflow-hidden p-7 md:p-8">
-          <div
-            className="pointer-events-none absolute -right-16 -top-16 size-56 rounded-full bg-ur-blue/10 blur-2xl"
-            aria-hidden="true"
-          />
-          <div className="text-sm font-medium text-muted-foreground">Early warning</div>
-          <div className="mt-6">
-            <div className="flex items-baseline gap-3">
-              <CountUp
-                value={data.leadMonths}
-                className="font-display text-[5.5rem] font-semibold leading-none tracking-[-0.05em] md:text-[6.5rem]"
-              />
-              <span className="ur-title text-[1.75rem]">months</span>
-            </div>
-            <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-              before the recall was announced in {fmtMonth(recallMonth)}.
-            </p>
-          </div>
-          <dl className="mt-8 grid grid-cols-2 gap-4 border-t pt-5">
-            <div>
-              <dt className="text-[12.5px] text-muted-foreground">Matching complaints</dt>
-              <dd className="ur-num mt-1 font-display text-[1.6rem] font-semibold tracking-tight">
-                {fmtInt(data.matchedBeforeRecall)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-[12.5px] text-muted-foreground">Above similar cars</dt>
-              <dd className="ur-num mt-1 font-display text-[1.6rem] font-semibold tracking-tight">
-                {ratio != null ? fmtRatio(ratio) : "n/a"}
-              </dd>
-              <dd className="ur-num text-[12px] text-muted-foreground">
-                {fmtPct(data.share)} vs {fmtPct(data.peerShare)} of complaints
-              </dd>
-            </div>
-          </dl>
-        </Reveal>
-
-        <Reveal delay={180} className="ur-card p-7 md:p-8">
-          <div className="text-sm font-medium text-muted-foreground">How it unfolded</div>
-          <div className="relative mt-6">
-            <div
-              className="absolute bottom-2 left-[7px] top-2 w-px bg-border md:bottom-auto md:left-2 md:right-2 md:top-[7px] md:h-px md:w-auto"
-              aria-hidden="true"
+    <Page wide className="max-w-[1240px]">
+      {/* Hero */}
+      <section className="relative pb-16 pt-4 text-center md:pb-24 md:pt-12">
+        <div className="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden="true">
+          {FLOATS.map((f, i) => (
+            <GradientTile
+              key={i}
+              tone={f.tone}
+              icon={f.icon}
+              float
+              className={cn("absolute", f.cls)}
+              style={{ ["--ur-dur" as string]: f.dur, ["--ur-rot" as string]: f.rot, ["--ur-delay" as string]: f.delay }}
             />
-            <ol className="relative grid gap-7 md:grid-cols-3 md:gap-6">
-            {moments.map((m) => (
-              <li key={m.title} className="relative ps-8 md:ps-0 md:pt-9">
-                <span
-                  className={cn(
-                    "absolute left-0 top-1 size-[15px] rounded-full border-[3px] border-card md:top-0",
-                    m.color,
-                    m.ring && "ring-4 ring-ur-blue/20",
-                  )}
-                  aria-hidden="true"
-                />
-                <div className="ur-num text-[13px] font-medium text-muted-foreground">{m.when}</div>
-                <div className="ur-title mt-1 text-[1.3rem]">{m.title}</div>
-                <div className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">{m.body}</div>
-              </li>
-            ))}
-            </ol>
-          </div>
-          <div className="mt-8 flex flex-wrap gap-2 border-t pt-5">
-            {vehicles.map((v) => (
-              <span key={v.name} className="ur-chip">
-                {v.name} <span className="ur-num text-muted-foreground">{v.years}</span>
+          ))}
+        </div>
+        <div className="relative">
+          <Reveal>
+            <span className="ur-chip h-9 px-4 text-[13.5px]">
+              <span className="ur-live-dot" aria-hidden="true" />
+              Backtest · replaying a real case
+            </span>
+          </Reveal>
+          <Reveal delay={60}>
+            <h1 className="ur-display ur-hero-lg mx-auto mt-8 max-w-[21ch]">
+              Flagged
+              <Mascot pose="alert" color="amber" className="ur-hero-mascot ur-float [--ur-dur:5s]" />
+              <span className="ur-hl">{data.leadMonths} months</span> before the recall
+            </h1>
+          </Reveal>
+          <Reveal delay={120}>
+            <p className="ur-lede mx-auto mt-7 max-w-2xl text-[1.125rem] md:text-[1.25rem]">
+              We replayed real NHTSA owner complaints month by month. Our early-warning signal would
+              have flagged the {subjectPlural} in {fmtMonth(data.signalFiredAt)}. The recall came in{" "}
+              {fmtMonth(recallMonth)}.
+            </p>
+          </Reveal>
+          <Reveal delay={180} className="mt-9">
+            <div className="ur-trust">
+              <span>
+                <b className="ur-num font-semibold">
+                  <CountUp value={data.matchedBeforeRecall} />
+                </b>{" "}
+                complaints before the recall
               </span>
-            ))}
-          </div>
+              <i aria-hidden="true" />
+              <span>
+                <b className="ur-num font-semibold">{ratio != null ? fmtRatio(ratio) : "n/a"}</b> more often than similar cars
+              </span>
+              <i aria-hidden="true" />
+              <span>
+                <b className="ur-num font-semibold">{data.vehicles.length}</b> models, {yearSpan}
+              </span>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Timeline */}
+      <section aria-labelledby="bt-timeline">
+        <Reveal>
+          <h2 id="bt-timeline" className="ur-display ur-section-title">
+            How it unfolded
+          </h2>
+          <p className="ur-lede mt-4 max-w-2xl">
+            Three moments, in order. The gap between the last two is the head start owners could
+            have had.
+          </p>
         </Reveal>
-      </div>
+        <ol className="relative mt-12 grid gap-4 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] md:items-stretch md:gap-3">
+          {milestones.map((m, i) => (
+            <Fragment key={m.title}>
+              <Reveal as="li" delay={80 + i * 120} className="min-w-0">
+                <div className="ur-milestone" data-key={m.key}>
+                  <div className="flex items-center gap-3">
+                    <GradientTile tone={m.tone} icon={m.icon} className="size-11 rounded-xl" />
+                    <div className="ur-num text-[13.5px] font-medium text-muted-foreground">{m.when}</div>
+                  </div>
+                  <h3 className="ur-title mt-5 text-[1.6rem]">{m.title}</h3>
+                  <div className="mt-2 text-[14.5px] leading-relaxed text-muted-foreground">{m.body}</div>
+                </div>
+              </Reveal>
+              {i < gaps.length ? (
+                <li aria-hidden="true" className="flex items-center justify-center md:w-[124px]">
+                  <span className="relative flex w-full items-center justify-center py-1 md:py-0">
+                    <span className="absolute inset-y-0 left-1/2 w-px border-l border-dashed border-foreground/20 md:inset-x-0 md:inset-y-auto md:left-0 md:top-1/2 md:h-px md:w-auto md:border-l-0 md:border-t" />
+                    <span className="ur-gap-badge relative" data-key={i === 1}>
+                      {gaps[i]}
+                    </span>
+                  </span>
+                </li>
+              ) : null}
+            </Fragment>
+          ))}
+        </ol>
+      </section>
 
       {/* Chart */}
-      <Reveal delay={240} as="section" className="ur-card mt-5 p-5 md:p-8">
-        <SectionHeading className="mb-1">How the alarm built up</SectionHeading>
-        <p className="mb-6 max-w-2xl text-[14.5px] leading-relaxed text-muted-foreground">
-          The red line is the share of all complaints for these vehicles that describe the
-          problem. The dashed grey line is the same share for similar cars from other brands.
-        </p>
-        <BacktestChart data={data} />
-      </Reveal>
+      <section aria-labelledby="bt-chart" className="mt-24 md:mt-32">
+        <Reveal>
+          <h2 id="bt-chart" className="ur-display ur-section-title">
+            Watch the alarm build
+          </h2>
+          <p className="ur-lede mt-4 max-w-2xl">
+            The red line is the share of all complaints for these cars that describe engine failure.
+            The dashed grey line is the same share for similar cars from other brands.
+          </p>
+        </Reveal>
+        <Reveal delay={100}>
+          <Perch pose="watch" color="teal" size={100} className="mt-4">
+            <Window
+              title={
+                <WindowTitle icon={<IconChartLine className="size-3.5 shrink-0" />}>
+                  {subject} · complaints over time
+                </WindowTitle>
+              }
+              bodyClassName="p-4 md:p-8"
+            >
+              <BacktestChart data={data} />
+            </Window>
+          </Perch>
+        </Reveal>
+        <Reveal delay={140} className="mt-6 flex flex-wrap items-center gap-2">
+          <span className="me-1 inline-flex items-center gap-1.5 text-[13.5px] text-muted-foreground">
+            <IconCar className="size-4" aria-hidden="true" /> Cars in this replay
+          </span>
+          {vehicles.map((v) => (
+            <span key={v.name} className="ur-chip h-8">
+              {v.name} <span className="ur-num text-muted-foreground">{v.years}</span>
+            </span>
+          ))}
+        </Reveal>
+      </section>
 
       {/* Honest caveat */}
       {earlier ? (
-        <Reveal delay={300} className="ur-panel mt-5 flex flex-col gap-4 p-6 sm:flex-row sm:items-start md:p-7">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-card text-foreground/70 shadow-[var(--ur-shadow)]">
-            <IconInfoCircle className="size-5" />
+        <Reveal as="section" className="ur-note mt-20 flex flex-col gap-5 p-6 sm:flex-row sm:items-start md:p-9">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-ur-investigation/15 text-ur-investigation">
+            <IconInfoCircle className="size-6" />
           </span>
           <div className="min-w-0">
-            <h2 className="ur-title text-[1.3rem]">An honest note</h2>
-            <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-foreground/80">
+            <h2 className="ur-title text-[1.75rem] md:text-[2rem]">An honest note</h2>
+            <p className="mt-3 max-w-3xl text-[16px] leading-relaxed text-foreground/80">
               {earlier.campaign && earlier.lead != null ? (
                 <>
                   An earlier, narrower recall ({earlier.campaign}
                   {earlier.vehicle ? `, ${earlier.vehicle}` : ""}
-                  {earlier.date ? `, ${fmtMonth(earlier.date.slice(0, 7))}` : ""}) covered the same
-                  failure. It came{" "}
-                  <span className="font-semibold text-foreground">{earlier.lead} months</span> after
-                  our signal, so measured against that recall the head start is smaller.
+                  {earlier.date ? `, ${fmtMonth(earlier.date.slice(0, 7))}` : ""}) covered the same failure. It
+                  came <span className="font-semibold text-foreground">{earlier.lead} months</span> after our
+                  signal, so measured against that recall the head start is smaller.
                 </>
               ) : (
                 earlier.note
@@ -253,21 +335,36 @@ export function BacktestView() {
       ) : null}
 
       {/* Method */}
-      <Collapsible open={open} onOpenChange={setOpen} className="mt-8">
-        <CollapsibleTrigger className="ur-btn-soft h-10 px-4 text-sm">
+      <Collapsible open={open} onOpenChange={setOpen} className="mt-10">
+        <CollapsibleTrigger className="ur-btn-soft">
+          <IconAlertTriangle className="size-4 opacity-70" aria-hidden="true" />
           How we checked this
           <IconChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-5 grid gap-5 md:grid-cols-2">
-          <div className="ur-card p-6">
-            <h3 className="ur-title text-[1.2rem]">How accurate is the matching?</h3>
-            <p className="mt-2 whitespace-pre-line text-[14px] leading-relaxed text-muted-foreground">
+          <div className="ur-card p-6 md:p-7">
+            <h3 className="ur-title text-[1.35rem]">How accurate is the matching?</h3>
+            <p className="mt-2 whitespace-pre-line text-[14.5px] leading-relaxed text-muted-foreground">
               {data.precisionNote}
             </p>
+            <dl className="mt-5 grid grid-cols-2 gap-4 border-t pt-5">
+              <div>
+                <dt className="text-[12.5px] text-muted-foreground">Matching complaints</dt>
+                <dd className="ur-num mt-1 font-display text-[1.6rem] font-semibold tracking-tight">
+                  {fmtInt(data.matchedBeforeRecall)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[12.5px] text-muted-foreground">Share vs similar cars</dt>
+                <dd className="ur-num mt-1 font-display text-[1.6rem] font-semibold tracking-tight">
+                  {fmtPct(data.share)} <span className="text-[1rem] text-muted-foreground">vs {fmtPct(data.peerShare)}</span>
+                </dd>
+              </div>
+            </dl>
           </div>
           {otherNotes.length ? (
-            <div className="ur-card p-6">
-              <h3 className="ur-title text-[1.2rem]">Notes</h3>
+            <div className="ur-card p-6 md:p-7">
+              <h3 className="ur-title text-[1.35rem]">Notes</h3>
               <ul className="mt-2 space-y-2 text-[14px] leading-relaxed text-muted-foreground">
                 {otherNotes.map((n) => (
                   <li key={n} className="flex gap-2">

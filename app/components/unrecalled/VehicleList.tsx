@@ -13,8 +13,8 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 import { fmtInt, fmtRelative, yearRange } from "./format";
-import { SectionHeading } from "./page";
-import { BrandMark, CountUp } from "./premium";
+import { Mascot } from "./mascots";
+import { CountUp } from "./premium";
 import type { ListVehiclesResult, VehicleSummary } from "./types";
 
 export function VehicleList() {
@@ -23,40 +23,48 @@ export function VehicleList() {
   const vehicles = data?.vehicles ?? [];
 
   return (
-    <section className="mt-4">
-      <SectionHeading
-        right={
-          vehicles.length > 0 ? (
-            <span className="ur-num text-sm text-muted-foreground">
+    <section className="lp-section" aria-labelledby="lp-vehicles">
+      <div className="lp-container">
+        <div className="lp-reveal is-in flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <h2 id="lp-vehicles" className="lp-h2">
+              Scanned vehicles
+            </h2>
+            <p className="lp-body mt-4 max-w-[34rem]">
+              Every car scanned so far. Open one to see its gaps, or watch it weekly.
+            </p>
+          </div>
+          {vehicles.length > 0 ? (
+            <span className="ur-num rounded-full border border-border px-3.5 py-1.5 text-sm text-muted-foreground">
               {vehicles.length} vehicle{vehicles.length === 1 ? "" : "s"}
             </span>
-          ) : null
-        }
-      >
-        Scanned vehicles
-      </SectionHeading>
-      {isLoading ? (
-        <ListSkeleton />
-      ) : error ? (
-        <p className="ur-panel mt-2 p-6 text-sm text-muted-foreground">
-          {actionErrorMessage(error) ?? "Could not load scanned vehicles."}
-        </p>
-      ) : vehicles.length === 0 ? (
-        <div className="ur-panel mt-2 flex flex-col items-center px-6 py-10 text-center">
-          <BrandMark className="ur-float size-10" />
-          <p className="ur-title mt-4 text-[1.25rem]">Nothing scanned yet</p>
-          <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">
-            Pick a car above and Unrecalled will read what owners are
-            reporting about it.
-          </p>
+          ) : null}
         </div>
-      ) : (
-        <ul className="mt-2 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {vehicles.map((v, i) => (
-            <VehicleRow key={v.id} v={v} index={i} />
-          ))}
-        </ul>
-      )}
+        <div className="mt-10 md:mt-12">
+          {isLoading ? (
+            <ListSkeleton />
+          ) : error ? (
+            <p className="ur-panel p-6 text-sm text-muted-foreground">
+              {actionErrorMessage(error) ?? "Could not load scanned vehicles."}
+            </p>
+          ) : vehicles.length === 0 ? (
+            <div className="ur-panel flex flex-col items-center px-6 py-14 text-center">
+              <Mascot pose="sit" color="blue" className="size-24" />
+              <p className="lp-h4 mt-4">Nothing scanned yet</p>
+              <p className="mt-1.5 max-w-sm text-[15px] text-muted-foreground">
+                Pick a car above and Unrecalled will read what owners are
+                reporting about it.
+              </p>
+            </div>
+          ) : (
+            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+              {vehicles.map((v, i) => (
+                <VehicleRow key={v.id} v={v} index={i} />
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
     </section>
   );
 }
@@ -97,14 +105,14 @@ function VehicleRow({ v, index }: { v: VehicleSummary; index: number }) {
   const uncovered = v.uncoveredModes > 0;
   return (
     <li
-      className="ur-card ur-reveal group relative flex flex-col p-5 transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-[var(--ur-shadow-lg)] focus-within:ring-2 focus-within:ring-ring"
+      className="ur-card ur-reveal group relative flex flex-col overflow-hidden rounded-[20px] p-6 transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1 hover:border-foreground/15 hover:shadow-[var(--ur-shadow-lg)] focus-within:ring-2 focus-within:ring-ring"
       style={{ ["--ur-delay" as string]: `${Math.min(index, 8) * 60}ms` }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <Link
             to={`/gaps/${encodeURIComponent(v.id)}`}
-            className="ur-title line-clamp-2 block text-[1.375rem] after:absolute after:inset-0 after:rounded-[18px] after:content-[''] focus-visible:outline-none"
+            className="line-clamp-2 block font-display text-[1.6rem] leading-tight tracking-[-0.03em] after:absolute after:inset-0 after:rounded-[20px] after:content-[''] focus-visible:outline-none"
           >
             {name}
           </Link>
@@ -123,7 +131,7 @@ function VehicleRow({ v, index }: { v: VehicleSummary; index: number }) {
         <CountUp
           value={v.uncoveredModes}
           className={cn(
-            "font-display text-[3rem] font-semibold leading-none tracking-tight",
+            "font-display text-[3.5rem] font-normal leading-none tracking-[-0.04em]",
             uncovered ? "text-ur-uncovered" : "text-muted-foreground",
           )}
         />

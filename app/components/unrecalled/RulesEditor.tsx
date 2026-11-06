@@ -4,25 +4,36 @@ import {
   useActionQuery,
 } from "@agent-native/core/client/hooks";
 import {
+  IconCar,
   IconChevronDown,
+  IconDeviceDesktop,
   IconDeviceFloppy,
+  IconEngine,
+  IconHandStop,
+  IconLayoutGrid,
   IconLoader2,
   IconPencil,
+  IconRadar,
+  IconShieldHalf,
+  IconSteeringWheel,
+  IconWindow,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-import "../../styles/documents.css";
+import { GradientTile, PillTabs, type Tone } from "./docs/shared";
+import { Mascot } from "./mascots";
 import { Page, useCrumbs } from "./page";
-import { PageHero, Reveal } from "./premium";
+import { Reveal } from "./premium";
 import type { FailureMode } from "./types";
 
 type ListKey = "include" | "exclude" | "coverageTerms";
@@ -66,34 +77,98 @@ function regexErrors(s: string): { line: number; message: string }[] {
   return errs;
 }
 
+type AreaId = "steering" | "brakes" | "engine" | "electrical" | "airbags" | "body" | "assist" | "other";
+
+const AREAS: { id: AreaId; label: string; tone: Tone; icon: ReactNode; accent: string; test: RegExp }[] = [
+  { id: "assist", label: "Driver assist", tone: "dusk", icon: <IconRadar />, accent: "#8b9cf2", test: /LANE|FORWARD COLLISION|PHANTOM|DRIVER.?ASSIST|ADAPTIVE CRUISE/ },
+  { id: "airbags", label: "Airbags & belts", tone: "rose", icon: <IconShieldHalf />, accent: "#e0708f", test: /AIR ?BAG|SEAT ?BELT|SRS/ },
+  { id: "body", label: "Body & glass", tone: "steel", icon: <IconWindow />, accent: "#7f95ab", test: /WINDSHIELD|SUNROOF|LATCH|DOOR|WIPER|GLASS|ROOF/ },
+  { id: "brakes", label: "Brakes", tone: "peach", icon: <IconHandStop />, accent: "#ff9152", test: /BRAKE|ROLLAWAY|PARK/ },
+  { id: "steering", label: "Steering & suspension", tone: "meadow", icon: <IconSteeringWheel />, accent: "#6f9ad8", test: /STEERING|SUSPENSION|WOBBLE|TIRE|WHEEL/ },
+  { id: "electrical", label: "Electrical & screens", tone: "ocean", icon: <IconDeviceDesktop />, accent: "#4f86d9", test: /DISPLAY|CAMERA|HEADLIGHT|LIGHTING|INFOTAINMENT|BACK OVER|SCREEN/ },
+  { id: "engine", label: "Engine & power", tone: "sand", icon: <IconEngine />, accent: "#e7a75a", test: /ENGINE|POWER TRAIN|FUEL|ACCELERAT|TRANSMISSION|STALL|FIRE|12V|ICCU|SPEED CONTROL|OIL/ },
+];
+const OTHER = { id: "other" as const, label: "Other", tone: "sage" as Tone, icon: <IconCar />, accent: "#8fae7e" };
+
+/** Groups a problem type into a plain-language area from its id, name and NHTSA component hints. */
+function areaOf(m: FailureMode) {
+  const text = `${m.id} ${m.name} ${m.componentHints.join(" ")}`.toUpperCase().replace(/-/g, " ");
+  return AREAS.find((a) => a.test.test(text)) ?? (/ELECTRICAL/.test(text) ? AREAS.find((a) => a.id === "electrical")! : OTHER);
+}
+
+/** "Death wobble (violent front-end shake)" -> ["Death wobble", "violent front-end shake"] */
+function splitName(name: string): [string, string | null] {
+  const m = name.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  return m ? [m[1]!, m[2]!] : [name, null];
+}
+
 export function RulesEditor() {
-  useCrumbs([{ label: "Rules" }]);
+  useCrumbs([{ label: "Problem types" }]);
   const [params, setParams] = useSearchParams();
   const { data, isLoading, error } = useActionQuery<{ modes: FailureMode[] }>("list-failure-modes", {});
   const modes = data?.modes ?? [];
   const selectedId = params.get("mode");
+  const selected = modes.find((m) => m.id === selectedId) ?? null;
+  const lastSelected = useRef<FailureMode | null>(null);
+  if (selected) lastSelected.current = selected;
+  const [area, setArea] = useState<AreaId | "all">("all");
 
   function select(id: string | null) {
     setParams(id ? { mode: id } : {}, { replace: true });
   }
 
+  const withArea = modes.map((m) => ({ m, a: areaOf(m) }));
+  const usedAreas = [...AREAS, OTHER].filter((a) => withArea.some((x) => x.a.id === a.id));
+  const shown = area === "all" ? withArea : withArea.filter((x) => x.a.id === area);
+  const sheetMode = selected ?? lastSelected.current;
+
   return (
-    <Page wide>
-      <PageHero
-        title="Problem types"
-        lede="The kinds of defects the agent looks for in owner complaints. Each one has a plain name and the safety risk it creates. Edit them here, then rescan a vehicle to apply."
-        actions={
-          !isLoading && modes.length ? (
-            <span className="ur-chip">
-              <span className="ur-num">{modes.length}</span> problem types
-            </span>
-          ) : null
-        }
-      />
+    <Page wide className="max-w-[1240px]">
+      {/* Hero */}
+      <section className="relative pb-14 pt-6 text-center md:pb-16 md:pt-14">
+        <div className="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden="true">
+          <GradientTile tone="meadow" icon={<IconSteeringWheel />} float className="absolute left-[3%] top-[12%] size-[118px]" style={{ ["--ur-dur" as string]: "9s", ["--ur-rot" as string]: "-4deg" }} />
+          <GradientTile tone="peach" icon={<IconHandStop />} float className="absolute left-[12%] top-[62%] size-[84px]" style={{ ["--ur-dur" as string]: "7s", ["--ur-delay" as string]: "0.6s" }} />
+          <GradientTile tone="dusk" icon={<IconRadar />} float className="absolute right-[4%] top-[8%] size-[132px]" style={{ ["--ur-dur" as string]: "8s", ["--ur-rot" as string]: "4deg" }} />
+          <GradientTile tone="rose" icon={<IconShieldHalf />} float className="absolute right-[13%] top-[64%] size-[80px]" style={{ ["--ur-dur" as string]: "10s", ["--ur-delay" as string]: "1s" }} />
+        </div>
+        <div className="relative">
+          <Reveal>
+            <h1 className="ur-display ur-hero-xl">
+              Problem
+              <Mascot pose="read" color="violet" className="ur-hero-mascot ur-float [--ur-dur:6s]" />
+              types
+            </h1>
+          </Reveal>
+          <Reveal delay={80}>
+            <p className="ur-lede mx-auto mt-6 max-w-2xl text-[1.125rem] md:text-[1.25rem]">
+              The kinds of defects the agent looks for in owner complaints, each with a plain name
+              and the safety risk it creates. Edit one, then rescan a car to apply it.
+            </p>
+          </Reveal>
+          {!isLoading && modes.length ? (
+            <Reveal delay={140} className="mt-8">
+              <div className="ur-trust">
+                <span>
+                  <b className="ur-num font-semibold">{modes.length}</b> problem types
+                </span>
+                <i aria-hidden="true" />
+                <span>
+                  <b className="ur-num font-semibold">{usedAreas.length}</b> areas of the car
+                </span>
+                <i aria-hidden="true" />
+                <span>Changes apply on the next scan</span>
+              </div>
+            </Reveal>
+          ) : null}
+        </div>
+      </section>
+
       {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className="ur-card space-y-3 p-6">
+            <div key={i} className="ur-mcard space-y-3">
+              <Skeleton className="size-12 rounded-xl" />
               <Skeleton className="h-6 w-2/3" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-4/5" />
@@ -105,38 +180,76 @@ export function RulesEditor() {
           {actionErrorMessage(error) ?? "Could not load failure modes."}
         </div>
       ) : modes.length === 0 ? (
-        <div className="ur-panel p-10 text-center text-sm text-muted-foreground">
+        <div className="ur-panel flex flex-col items-center gap-3 p-12 text-center text-sm text-muted-foreground">
+          <Mascot pose="sit" color="violet" className="size-20" />
           No problem types defined yet.
         </div>
       ) : (
-        <ul className="grid grid-flow-row-dense gap-4 md:grid-cols-2">
-          {modes.map((m, i) =>
-            m.id === selectedId ? (
-              <Reveal as="li" key={m.id} className="md:col-span-2">
-                <ModeForm key={m.id} mode={m} onClose={() => select(null)} />
-              </Reveal>
-            ) : (
-              <Reveal as="li" key={m.id} delay={Math.min(i, 10) * 40}>
-                <button
-                  type="button"
-                  onClick={() => select(m.id)}
-                  className="ur-card ur-lift group flex h-full w-full flex-col p-6 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <div className="flex w-full items-start justify-between gap-3">
-                    <h2 className="ur-title text-[1.3rem]">{m.name}</h2>
-                    <span className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[12.5px] font-medium text-muted-foreground/70 transition-colors group-hover:bg-foreground/[0.06] group-hover:text-foreground group-focus-visible:text-foreground">
-                      <IconPencil className="size-3.5" aria-hidden="true" /> Edit
+        <section aria-label="Problem types by area">
+          <Reveal>
+            <h2 className="ur-display ur-section-title">What the agent looks for</h2>
+          </Reveal>
+          <Reveal delay={60} className="mb-9 mt-7">
+            <PillTabs<AreaId | "all">
+              label="Areas of the car"
+              value={area}
+              onChange={setArea}
+              tabs={[
+                { id: "all", label: "All", icon: <IconLayoutGrid />, count: modes.length },
+                ...usedAreas.map((a) => ({
+                  id: a.id,
+                  label: a.label,
+                  icon: a.icon,
+                  count: withArea.filter((x) => x.a.id === a.id).length,
+                })),
+              ]}
+            />
+          </Reveal>
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {shown.map(({ m, a }, i) => {
+              const [title, sub] = splitName(m.name);
+              return (
+                <Reveal as="li" key={m.id} delay={Math.min(i, 12) * 35}>
+                  <button
+                    type="button"
+                    onClick={() => select(m.id)}
+                    className="ur-mcard group"
+                    aria-haspopup="dialog"
+                  >
+                    <span className="ur-mcard__glow" style={{ background: a.accent }} aria-hidden="true" />
+                    <span className="relative flex w-full items-start justify-between gap-3">
+                      <GradientTile tone={a.tone} icon={a.icon} className="size-12 rounded-[14px]" />
+                      <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12.5px] font-medium text-muted-foreground transition-colors group-hover:bg-foreground/[0.06] group-hover:text-foreground">
+                        <IconPencil className="size-3.5" aria-hidden="true" /> Edit
+                      </span>
                     </span>
-                  </div>
-                  <p className="mt-2.5 border-l-2 border-foreground/10 ps-3 text-[14.5px] leading-relaxed text-muted-foreground transition-colors group-hover:border-ur-blue/50">
-                    {m.hazard}
-                  </p>
-                </button>
-              </Reveal>
-            ),
-          )}
-        </ul>
+                    <span className="relative mt-5 block">
+                      <span className="ur-title block text-[1.4rem]">{title}</span>
+                      {sub ? <span className="mt-1 block text-[13.5px] text-muted-foreground">{sub}</span> : null}
+                    </span>
+                    <span className="relative mt-3 block text-[14.5px] leading-relaxed text-foreground/75">
+                      {m.hazard}
+                    </span>
+                    <span className="relative mt-auto flex pt-5">
+                      <span className="ur-chip h-7 text-[12px] text-muted-foreground">{a.label}</span>
+                    </span>
+                  </button>
+                </Reveal>
+              );
+            })}
+          </ul>
+        </section>
       )}
+
+      <Sheet open={!!selected} onOpenChange={(o) => (!o ? select(null) : undefined)}>
+        <SheetContent
+          side="right"
+          showClose={false}
+          className="w-full overflow-y-auto border-l p-0 sm:max-w-[600px]"
+        >
+          {sheetMode ? <ModeForm key={sheetMode.id} mode={sheetMode} onClose={() => select(null)} /> : null}
+        </SheetContent>
+      </Sheet>
     </Page>
   );
 }
@@ -165,9 +278,7 @@ function ModeForm({ mode, onClose }: { mode: FailureMode; onClose: () => void })
   const emptyInclude = splitLines(form.include).length === 0;
   const [advanced, setAdvanced] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  useEffect(() => {
-    formRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, []);
+  const area = areaOf(mode);
   const showAdvanced = advanced || hasErrors || emptyInclude;
 
   const save = useActionMutation<unknown, { id: string; patch: Partial<FailureMode> }>(
@@ -196,11 +307,17 @@ function ModeForm({ mode, onClose }: { mode: FailureMode; onClose: () => void })
   const phraseCount = FIELDS.reduce((n, f) => n + splitLines(form[f.key]).length, 0);
 
   return (
-    <form ref={formRef} onSubmit={submit} className="ur-card scroll-mt-6 min-w-0 p-6 ring-2 ring-ur-blue/25 md:p-8">
-      <div className="mb-6 flex items-start justify-between gap-3">
-        <div>
-          <div className="text-[13px] font-medium text-ur-blue">Editing problem type</div>
-          <h2 className="ur-title mt-1 text-[1.6rem]">{form.name || mode.name}</h2>
+    <form ref={formRef} onSubmit={submit} className="flex min-h-full min-w-0 flex-col">
+      <div className="relative overflow-hidden border-b bg-ur-sand/60 px-6 pb-7 pt-6 md:px-8">
+        <span className="ur-mcard__glow" style={{ background: area.accent }} aria-hidden="true" />
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <GradientTile tone={area.tone} icon={area.icon} className="mb-5 size-14 rounded-2xl" />
+          <div className="text-[13px] font-medium text-muted-foreground">Editing · {area.label}</div>
+          <SheetTitle className="ur-title mt-1 text-[1.9rem] leading-tight">{form.name || mode.name}</SheetTitle>
+          <SheetDescription className="mt-2 text-[14px] leading-relaxed">
+            Give it a plain name and say why it is dangerous. The agent uses this on the next scan.
+          </SheetDescription>
         </div>
         <button
           type="button"
@@ -211,8 +328,10 @@ function ModeForm({ mode, onClose }: { mode: FailureMode; onClose: () => void })
           <IconX className="size-4" />
         </button>
       </div>
+      </div>
 
-      <div className="grid gap-5 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+      <div className="flex-1 px-6 py-7 md:px-8">
+      <div className="grid gap-5">
         <div className="space-y-1.5">
           <Label htmlFor="mode-name" className="text-[13px]">Name</Label>
           <Input
@@ -226,10 +345,10 @@ function ModeForm({ mode, onClose }: { mode: FailureMode; onClose: () => void })
           <Label htmlFor="mode-hazard" className="text-[13px]">Why it is dangerous</Label>
           <Textarea
             id="mode-hazard"
-            rows={2}
+            rows={4}
             value={form.hazard}
             onChange={(e) => setForm({ ...form, hazard: e.target.value })}
-            className="min-h-11 resize-none rounded-xl"
+            className="min-h-11 resize-none rounded-xl text-[15px] leading-relaxed"
           />
         </div>
       </div>
@@ -307,7 +426,9 @@ function ModeForm({ mode, onClose }: { mode: FailureMode; onClose: () => void })
         ) : null}
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center gap-2">
+      </div>
+
+      <div className="sticky bottom-0 flex flex-wrap items-center gap-2 border-t bg-background/90 px-6 py-4 backdrop-blur md:px-8">
         <button
           type="submit"
           className="ur-btn h-10 px-5 text-sm"

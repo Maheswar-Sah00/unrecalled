@@ -1,3 +1,5 @@
+import "../../styles/report.css";
+
 import {
   IconArrowUpRight,
   IconCircleCheck,
@@ -7,6 +9,8 @@ import {
 } from "@tabler/icons-react";
 
 import { cn } from "@/lib/utils";
+
+import { Mascot } from "./mascots";
 
 import { prettyRefId, whyItCounts } from "./board/plain";
 import { compactYears, fmtDate } from "./format";
@@ -22,21 +26,20 @@ const KIND_META = {
 export function CoveragePanel({ refs }: { refs: CoverageRef[] }) {
   if (!refs.length) {
     return (
-      <div className="flex items-start gap-3 rounded-2xl border border-dashed border-ur-uncovered/40 bg-ur-uncovered/[0.06] p-4 text-sm">
-        <span className="grid size-8 shrink-0 place-items-center rounded-full bg-ur-uncovered/12 text-ur-uncovered">
-          <IconFileAlert className="size-4" aria-hidden="true" />
-        </span>
-        <p className="leading-relaxed">
-          <span className="font-semibold text-foreground">Nothing covers this problem.</span>{" "}
-          <span className="text-muted-foreground">
-            No recall, government investigation or class settlement for these model years mentions it.
-          </span>
-        </p>
+      <div className="ur-reveal flex flex-col items-center gap-6 rounded-[24px] border border-dashed border-ur-uncovered/40 bg-ur-uncovered/[0.05] px-6 py-10 text-center sm:flex-row sm:text-left">
+        <Mascot pose="alert" color="coral" className="ur-float h-auto w-24 shrink-0" />
+        <div>
+          <h3 className="rp-h3">Nothing covers this problem</h3>
+          <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+            No recall, government investigation or class settlement for these model years mentions it. That is
+            exactly the kind of gap a petition can ask NHTSA to look into.
+          </p>
+        </div>
       </div>
     );
   }
   return (
-    <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
       {refs.map((r, i) => {
         const kind = KIND_META[r.kind] ?? KIND_META.recall;
         const Icon = kind.icon;
@@ -45,42 +48,48 @@ export function CoveragePanel({ refs }: { refs: CoverageRef[] }) {
         return (
           <li
             key={`${r.kind}-${r.id}`}
-            className="ur-card ur-reveal flex h-full gap-3 p-4"
-            style={{ ["--ur-delay" as string]: `${200 + i * 60}ms` }}
+            className="ur-reveal group flex h-full flex-col overflow-hidden rounded-[18px] border border-border bg-card shadow-[var(--ur-shadow)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--ur-shadow-lg)]"
+            style={{ ["--ur-delay" as string]: `${120 + i * 70}ms` }}
           >
-            <span
-              className={cn(
-                "grid size-9 shrink-0 place-items-center rounded-xl border",
-                meta.tint,
-                meta.text,
-              )}
-            >
-              <Icon className="size-4" aria-hidden="true" />
-            </span>
-            <div className="flex min-w-0 flex-1 flex-col">
-              <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[12.5px] text-muted-foreground">
-                <span className="w-full font-medium text-foreground/80">{kind.label}</span>
-                {showId ? <span className="ur-num">{prettyRefId(r.kind, r.id)}</span> : null}
-                {r.date ? <span>{showId ? "· " : ""}{fmtDate(r.date)}</span> : null}
+            <div className="flex h-9 items-center gap-2.5 border-b border-border bg-foreground/[0.035] px-3.5 text-[12px] text-muted-foreground">
+              <span className="flex gap-1.5" aria-hidden="true">
+                <i className="block size-2.5 rounded-full bg-[#ff5f57]" />
+                <i className="block size-2.5 rounded-full bg-[#febc2e]" />
+                <i className="block size-2.5 rounded-full bg-[#28c840]" />
+              </span>
+              <span className="min-w-0 truncate font-medium">
+                {kind.label}
+                {showId ? <span className="ur-num"> · {prettyRefId(r.kind, r.id)}</span> : null}
+              </span>
+            </div>
+            <div className="flex flex-1 flex-col p-5">
+              <div className="flex items-start gap-3">
+                <span className={cn("grid size-10 shrink-0 place-items-center rounded-xl border", meta.tint, meta.text)}>
+                  <Icon className="size-[18px]" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <div className="font-display text-[1.15rem] leading-snug tracking-[-0.02em] text-foreground">
+                    {cleanTitle(r.title, r.id)}
+                  </div>
+                  {r.date ? <div className="mt-0.5 text-[12.5px] text-muted-foreground">{fmtDate(r.date)}</div> : null}
+                </div>
               </div>
-              <div className="mt-1 text-[15px] font-semibold leading-snug text-foreground">
-                {cleanTitle(r.title, r.id)}
-              </div>
-              <p className="mt-1 text-[13.5px] leading-relaxed text-muted-foreground">{plainLine(r.kind, r.status)}</p>
-              <div className="mb-3.5 mt-2.5 flex flex-wrap items-center gap-2">
+              <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">{plainLine(r.kind, r.status)}</p>
+              <div className="mb-4 mt-3 flex flex-wrap items-center gap-2">
                 <StatusChip status={r.status} short />
                 {r.years.length ? (
-                  <span className="ur-num text-[12.5px] text-muted-foreground">
-                    Model years {compactYears(r.years)}
+                  <span className="ur-num rounded-full bg-foreground/[0.05] px-2.5 py-0.5 text-[12.5px] text-foreground/75">
+                    {compactYears(r.years)}
                   </span>
                 ) : null}
               </div>
-              <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 border-t pt-3 text-[13px]">
-                <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                  <IconCircleCheck className="size-4 shrink-0 text-ur-recalled" aria-hidden="true" />
+              <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t pt-3.5 text-[13px]">
+                <span className="inline-flex min-w-0 items-start gap-1.5 text-muted-foreground">
+                  <IconCircleCheck className="mt-0.5 size-4 shrink-0 text-ur-recalled" aria-hidden="true" />
                   <span>
-                    <span className="font-medium text-foreground/80">Why it counts:</span>{" "}
-                    {r.kind === "settlement" && !r.matchedTerms.length ? "The settlement is about this exact problem" : whyItCounts(r.matchedTerms)}
+                    {r.kind === "settlement" && !r.matchedTerms.length
+                      ? "The settlement is about this exact problem"
+                      : whyItCounts(r.matchedTerms)}
                   </span>
                 </span>
                 {r.url ? (
@@ -88,7 +97,7 @@ export function CoveragePanel({ refs }: { refs: CoverageRef[] }) {
                     href={r.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-0.5 font-medium text-ur-blue hover:underline"
+                    className="inline-flex items-center gap-0.5 font-semibold text-ur-blue hover:underline"
                   >
                     {kind.link}
                     <IconArrowUpRight className="size-3.5" aria-hidden="true" />

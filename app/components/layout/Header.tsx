@@ -61,7 +61,7 @@ export function Header({ onOpenMobileSidebar }: HeaderProps) {
           <div className="hidden sm:block [&_button]:rounded-xl">
             <AgentToggleButton />
           </div>
-          <Link to="/gaps#scan" className="ur-btn hidden h-11 sm:inline-flex">
+          <Link to="/gaps#scan" className="ur-btn hidden h-11 whitespace-nowrap sm:inline-flex">
             Scan a car
             <IconArrowRight className="size-4" stroke={2} />
           </Link>
