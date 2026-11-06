@@ -92,8 +92,8 @@ export function Mascot({
       <ellipse cx="60" cy="104.5" rx="42" ry="4.2" fill={base} opacity="0.18" />
 
       {/* tyres (behind the body) */}
-      <rect x="25" y="84" width="14" height="19" rx="4.5" fill={DARK} />
-      <rect x="81" y="84" width="14" height="19" rx="4.5" fill={DARK} />
+      <rect x="25" y="84" width="14" height="19" rx="4.5" fill={DARK} strokeWidth="1.2" style={{ stroke: "var(--ur-m-ink)", strokeOpacity: 0.35 }} />
+      <rect x="81" y="84" width="14" height="19" rx="4.5" fill={DARK} strokeWidth="1.2" style={{ stroke: "var(--ur-m-ink)", strokeOpacity: 0.35 }} />
 
       {/* back arm */}
       <BackArm pose={pose} base={base} limb={limb} limbFill={limbFill} />
