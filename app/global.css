@@ -1,39 +1,49 @@
 @import "@fontsource-variable/inter";
+@import "@fontsource-variable/source-serif-4/opsz.css";
+@import "./styles/agent-theme.css";
 
 @import "tailwindcss";
 @import "@agent-native/toolkit/styles.css";
 
 @source "./**/*.{ts,tsx}";
 
+/* Light: warm paper + navy ink (palette taken from tryopentag.com). */
 :root {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 10%;
+  --background: 43 64% 98%; /* #FDFBF6 paper */
+  --foreground: 220 67% 7%; /* #060E1E ink */
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 10%;
+  --card-foreground: 220 67% 7%;
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 10%;
-  --primary: 0 0% 15%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 95%;
-  --secondary-foreground: 0 0% 15%;
-  --muted: 0 0% 95%;
-  --muted-foreground: 0 0% 43%;
-  --accent: 0 0% 95%;
-  --accent-foreground: 0 0% 15%;
-  --destructive: 0 91% 71%;
+  --popover-foreground: 220 67% 7%;
+  --primary: 220 67% 7%;
+  --primary-foreground: 43 64% 98%;
+  --secondary: 39 39% 93%; /* #F4EFE6 sand */
+  --secondary-foreground: 220 67% 7%;
+  --muted: 39 39% 93%;
+  --muted-foreground: 30 4% 42%;
+  --accent: 39 39% 93%;
+  --accent-foreground: 220 67% 7%;
+  --destructive: 6 78% 52%;
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 90%;
-  --input: 0 0% 90%;
-  --ring: 0 0% 40%;
-  --radius: 0.5rem;
-  --sidebar-background: 0 0% 97%;
-  --sidebar-foreground: 0 0% 43%;
-  --sidebar-primary: 0 0% 15%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 0 0% 95%;
-  --sidebar-accent-foreground: 0 0% 15%;
-  --sidebar-border: 0 0% 90%;
-  --sidebar-ring: 0 0% 40%;
+  --border: 39 28% 88%;
+  --input: 39 28% 86%;
+  --ring: 221 80% 60%;
+  --radius: 0.75rem;
+  --sidebar-background: 42 38% 95%; /* #F7F4ED */
+  --sidebar-foreground: 30 4% 40%;
+  --sidebar-primary: 220 67% 7%;
+  --sidebar-primary-foreground: 43 64% 98%;
+  --sidebar-accent: 39 39% 90%;
+  --sidebar-accent-foreground: 220 67% 7%;
+  --sidebar-border: 39 28% 88%;
+  --sidebar-ring: 221 80% 60%;
+  /* Unrecalled brand */
+  --ur-blue: 221 80% 60%; /* #467BEB */
+  --ur-sky: 211 97% 62%; /* #429DFC */
+  --ur-sand: 39 39% 93%;
+  --ur-shadow: 0 1px 2px #5248460d, 0 16px 40px -14px #5248463d;
+  --ur-shadow-lg: 0 2px 4px #52484610, 0 30px 70px -24px #52484659;
+  --ur-window-bar: 220 67% 9%;
   --chat-sidebar-width: 17.5rem;
   --chat-sidebar-content-inset: 0.5rem;
   --chat-sidebar-row-padding: 0.75rem;
@@ -228,35 +238,42 @@
   color: hsl(var(--sidebar-accent-foreground));
 }
 
+/* Dark: deep midnight navy + warm paper ink (not grey, not pure black). */
 .dark {
-  --background: 0 0% 13%;
-  --foreground: 0 0% 90%;
-  --card: 0 0% 16.47%;
-  --card-foreground: 0 0% 90%;
-  --popover: 0 0% 15%;
-  --popover-foreground: 0 0% 90%;
-  --primary: 0 0% 75%;
-  --primary-foreground: 0 0% 10%;
-  --secondary: 0 0% 18%;
-  --secondary-foreground: 0 0% 90%;
-  --muted: 0 0% 16%;
-  --muted-foreground: 0 0% 60%;
-  --accent: 0 0% 18%;
-  --accent-foreground: 0 0% 90%;
-  --destructive: 0 84% 60%;
+  --background: 222 34% 7%; /* #0C1018 */
+  --foreground: 39 39% 93%; /* paper */
+  --card: 222 30% 10%;
+  --card-foreground: 39 39% 93%;
+  --popover: 222 30% 11%;
+  --popover-foreground: 39 39% 93%;
+  --primary: 39 39% 93%;
+  --primary-foreground: 220 67% 7%;
+  --secondary: 222 26% 14%;
+  --secondary-foreground: 39 39% 93%;
+  --muted: 222 26% 14%;
+  --muted-foreground: 36 10% 64%;
+  --accent: 222 26% 15%;
+  --accent-foreground: 39 39% 93%;
+  --destructive: 8 86% 62%;
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 24%;
-  --input: 0 0% 24%;
-  --ring: 0 0% 60%;
-  --radius: 0.5rem;
-  --sidebar-background: 0 0% 10%;
-  --sidebar-foreground: 0 0% 60%;
-  --sidebar-primary: 0 0% 75%;
-  --sidebar-primary-foreground: 0 0% 10%;
-  --sidebar-accent: 0 0% 16%;
-  --sidebar-accent-foreground: 0 0% 90%;
-  --sidebar-border: 0 0% 20%;
-  --sidebar-ring: 0 0% 60%;
+  --border: 222 20% 18%;
+  --input: 222 20% 20%;
+  --ring: 221 90% 68%;
+  --radius: 0.75rem;
+  --sidebar-background: 222 36% 5.5%;
+  --sidebar-foreground: 36 8% 62%;
+  --sidebar-primary: 39 39% 93%;
+  --sidebar-primary-foreground: 220 67% 7%;
+  --sidebar-accent: 222 26% 12%;
+  --sidebar-accent-foreground: 39 39% 93%;
+  --sidebar-border: 222 22% 13%;
+  --sidebar-ring: 221 90% 68%;
+  --ur-blue: 221 90% 68%;
+  --ur-sky: 211 97% 70%;
+  --ur-sand: 222 26% 14%;
+  --ur-shadow: 0 1px 2px #0006, 0 18px 44px -16px #000c;
+  --ur-shadow-lg: 0 2px 6px #0008, 0 34px 80px -26px #000e;
+  --ur-window-bar: 222 30% 13%;
 }
 
 @layer base {
@@ -264,6 +281,8 @@
     @apply bg-background text-foreground;
     font-family: "Inter Variable", "Inter", sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
@@ -414,4 +433,194 @@
   .ur-indeterminate {
     animation: none;
   }
+}
+
+/* ===================================================================
+   Unrecalled premium design system (shared by every page)
+   Display: Source Serif 4 (opsz) | Text: Inter | Accent: --ur-blue
+   =================================================================== */
+@theme inline {
+  --color-ur-blue: hsl(var(--ur-blue));
+  --color-ur-sky: hsl(var(--ur-sky));
+  --color-ur-sand: hsl(var(--ur-sand));
+  --font-display: "Source Serif 4 Variable", "Source Serif 4", Georgia, serif;
+}
+
+/* Big editorial serif, like the OpenTag hero. */
+.ur-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-variation-settings: "opsz" 60;
+  font-weight: 560;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  color: hsl(var(--foreground));
+}
+.ur-title {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 36;
+  font-weight: 580;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: hsl(var(--foreground));
+}
+.ur-lede {
+  color: hsl(var(--muted-foreground));
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+
+/* Surfaces */
+.ur-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 18px;
+  box-shadow: var(--ur-shadow);
+}
+.ur-panel {
+  background: hsl(var(--ur-sand));
+  border-radius: 18px;
+}
+.ur-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  background: hsl(var(--card));
+  font-size: 13px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  white-space: nowrap;
+}
+.ur-chip[data-active="true"] {
+  background: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+/* Buttons: ink pill + soft sand pill (OpenTag "Get started" / "Book a demo"). */
+.ur-btn,
+.ur-btn-soft {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+.ur-btn {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 1px 0 #ffffff1a inset, 0 6px 16px -8px hsl(var(--foreground) / 0.5);
+}
+.ur-btn-soft {
+  background: hsl(var(--foreground) / 0.07);
+  color: hsl(var(--foreground));
+}
+.ur-btn:hover,
+.ur-btn-soft:hover {
+  transform: translateY(-1px);
+}
+.ur-btn:active,
+.ur-btn-soft:active {
+  transform: translateY(0);
+}
+.ur-btn:disabled,
+.ur-btn-soft:disabled {
+  opacity: 0.5;
+  transform: none;
+}
+
+/* App-window mockup frame with traffic lights. */
+.ur-window {
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid hsl(var(--ur-window-bar));
+  background: hsl(var(--card));
+  box-shadow: var(--ur-shadow-lg);
+}
+.ur-window__bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px;
+  background: hsl(var(--ur-window-bar));
+  color: #f4efe6cc;
+  font-size: 12px;
+}
+.ur-window__dots {
+  display: flex;
+  gap: 6px;
+}
+.ur-window__dots i {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+.ur-window__dots i:nth-child(1) { background: #ff5f57; }
+.ur-window__dots i:nth-child(2) { background: #febc2e; }
+.ur-window__dots i:nth-child(3) { background: #28c840; }
+
+/* Agent badge, like OpenTag's "AGENT" pill. */
+.ur-agent-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 5px;
+  background: hsl(var(--foreground) / 0.08);
+  color: hsl(var(--muted-foreground));
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Motion */
+@keyframes ur-float {
+  0%, 100% { transform: translateY(0) rotate(var(--ur-rot, 0deg)); }
+  50% { transform: translateY(-10px) rotate(var(--ur-rot, 0deg)); }
+}
+@keyframes ur-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ur-pop {
+  0% { opacity: 0; transform: scale(0.92); }
+  60% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes ur-typing {
+  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-2px); }
+}
+@keyframes ur-pulse-ring {
+  0% { box-shadow: 0 0 0 0 hsl(var(--ur-uncovered) / 0.45); }
+  100% { box-shadow: 0 0 0 10px hsl(var(--ur-uncovered) / 0); }
+}
+.ur-float { animation: ur-float var(--ur-dur, 7s) ease-in-out infinite; animation-delay: var(--ur-delay, 0s); }
+.ur-reveal { opacity: 0; animation: ur-fade-up 640ms cubic-bezier(0.22, 1, 0.36, 1) forwards; animation-delay: var(--ur-delay, 0ms); }
+.ur-pop { opacity: 0; animation: ur-pop 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards; animation-delay: var(--ur-delay, 0ms); }
+.ur-typing i { display: inline-block; width: 5px; height: 5px; margin-right: 3px; border-radius: 999px; background: currentColor; animation: ur-typing 1.2s infinite; }
+.ur-typing i:nth-child(2) { animation-delay: 0.15s; }
+.ur-typing i:nth-child(3) { animation-delay: 0.3s; }
+.ur-live-dot { width: 8px; height: 8px; border-radius: 999px; background: hsl(var(--ur-uncovered)); animation: ur-pulse-ring 1.6s ease-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ur-float, .ur-typing i, .ur-live-dot { animation: none; }
+  .ur-reveal, .ur-pop { animation: none; opacity: 1; }
 }

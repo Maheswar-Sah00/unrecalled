@@ -17,7 +17,7 @@ export function Page({
   return (
     <div
       className={cn(
-        "mx-auto w-full px-4 pb-16 pt-4 md:px-8 md:pt-6",
+        "mx-auto w-full px-4 pb-24 pt-6 md:px-10 md:pt-10",
         wide ? "max-w-[1400px]" : "max-w-6xl",
         className,
       )}
@@ -86,9 +86,7 @@ export function SectionHeading({
         className,
       )}
     >
-      <h2 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
-        {children}
-      </h2>
+      <h2 className="ur-title text-[1.375rem]">{children}</h2>
       {right}
     </div>
   );
