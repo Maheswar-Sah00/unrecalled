@@ -2,16 +2,16 @@ import {
   actionErrorMessage,
   useActionMutation,
 } from "@agent-native/core/client/hooks";
-import { IconLoader2, IconRadar } from "@tabler/icons-react";
+import { IconArrowRight, IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
+import { BrandMark } from "./premium";
 import type { ScanVehicleResult } from "./types";
 
 const QUICK_PICKS = [
@@ -84,11 +84,14 @@ export function ScanForm() {
     run({ make: make.trim(), model: model.trim(), yearFrom: from, yearTo: to });
   }
 
+  const inputClass =
+    "h-11 rounded-xl border-border/80 bg-background px-3.5 text-[15px] shadow-none transition-colors focus-visible:border-ur-blue/60 focus-visible:ring-ur-blue/25";
+
   return (
-    <section className="rounded-lg border bg-card">
+    <section className="ur-card overflow-hidden">
       <form
         onSubmit={submit}
-        className="grid grid-cols-2 gap-3 p-4 md:grid-cols-[1fr_1fr_6rem_6rem_auto] md:items-end"
+        className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-[1fr_1fr_5.5rem_5.5rem] md:p-5"
       >
         <Field id="scan-make" label="Make">
           <Input
@@ -98,6 +101,7 @@ export function ScanForm() {
             placeholder="Jeep"
             autoComplete="off"
             disabled={scan.isPending}
+            className={inputClass}
           />
         </Field>
         <Field id="scan-model" label="Model">
@@ -108,20 +112,21 @@ export function ScanForm() {
             placeholder="Wrangler"
             autoComplete="off"
             disabled={scan.isPending}
+            className={inputClass}
           />
         </Field>
-        <Field id="scan-from" label="Year from">
+        <Field id="scan-from" label="From year">
           <Input
             id="scan-from"
             inputMode="numeric"
             value={yearFrom}
             onChange={(e) => setYearFrom(e.target.value.replace(/\D/g, "").slice(0, 4))}
             aria-invalid={!!yearError}
-            className="ur-num"
+            className={cn("ur-num", inputClass)}
             disabled={scan.isPending}
           />
         </Field>
-        <Field id="scan-to" label="Year to">
+        <Field id="scan-to" label="To year">
           <Input
             id="scan-to"
             inputMode="numeric"
@@ -129,36 +134,36 @@ export function ScanForm() {
             onChange={(e) => setYearTo(e.target.value.replace(/\D/g, "").slice(0, 4))}
             aria-invalid={!!yearError}
             aria-describedby={yearError ? "scan-year-error" : undefined}
-            className="ur-num"
+            className={cn("ur-num", inputClass)}
             disabled={scan.isPending}
           />
         </Field>
-        <Button
-          type="submit"
-          disabled={!canSubmit}
-          className="col-span-2 md:col-span-1"
-        >
-          {scan.isPending ? (
-            <IconLoader2 className="size-4 motion-safe:animate-spin" />
-          ) : (
-            <IconRadar className="size-4" />
-          )}
-          {scan.isPending ? "Scanning…" : "Scan for gaps"}
-        </Button>
         {yearError && (yearFrom.length === 4 && yearTo.length === 4) ? (
           <p
             id="scan-year-error"
-            className="col-span-2 text-xs text-destructive md:col-span-5"
+            className="col-span-2 text-xs text-destructive sm:col-span-4"
           >
             {yearError}
           </p>
         ) : null}
+        <button
+          type="submit"
+          disabled={!canSubmit}
+          className="ur-btn col-span-2 mt-1 w-full sm:col-span-4"
+        >
+          {scan.isPending ? (
+            <IconLoader2 className="size-4 motion-safe:animate-spin" />
+          ) : null}
+          {scan.isPending ? "Scanning…" : "Scan for gaps"}
+          {scan.isPending ? null : <IconArrowRight className="size-4" strokeWidth={2} />}
+        </button>
       </form>
       {scan.isPending && scanning && startedAt ? (
         <ScanProgress vars={scanning} startedAt={startedAt} />
       ) : (
-        <div className="flex flex-wrap items-center gap-1.5 border-t px-4 py-3">
-          <span className="me-1 text-xs text-muted-foreground">Try</span>
+        <div className="flex items-center gap-2 border-t border-border/70 bg-ur-sand/50 py-3.5 ps-4 sm:pe-4 md:px-5">
+          <span className="shrink-0 text-[13px] text-muted-foreground sm:self-start sm:pt-1.5">Try</span>
+          <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto py-0.5 pe-4 [mask-image:linear-gradient(to_right,#000_calc(100%-36px),transparent)] [scrollbar-width:none] sm:flex-wrap sm:overflow-visible sm:pe-0 sm:[mask-image:none] [&::-webkit-scrollbar]:hidden">
           {QUICK_PICKS.map((q) => {
             const label = `${q.make} ${q.model} ${q.from === q.to ? q.from : `${q.from}–${q.to}`}`;
             return (
@@ -172,12 +177,13 @@ export function ScanForm() {
                   setYearTo(String(q.to));
                   run({ make: q.make, model: q.model, yearFrom: q.from, yearTo: q.to });
                 }}
-                className="h-7 rounded-full border bg-background px-3 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="ur-chip ur-num shrink-0 transition-[transform,background-color,border-color] duration-150 hover:-translate-y-px hover:border-foreground/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {label}
               </button>
             );
           })}
+          </div>
         </div>
       )}
     </section>
@@ -195,13 +201,22 @@ function Field({
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
-      <Label htmlFor={id} className="text-xs text-muted-foreground">
+      <Label htmlFor={id} className="ps-1 text-[12.5px] font-medium text-muted-foreground">
         {label}
       </Label>
       {children}
     </div>
   );
 }
+
+/** Seconds at which each step starts (the scan itself takes ~2–10 s). */
+const STEPS = [
+  { label: "Reading owner complaints", at: 0 },
+  { label: "Checking recalls", at: 1.4 },
+  { label: "Checking NHTSA investigations", at: 2.8 },
+  { label: "Checking settlements", at: 4.2 },
+  { label: "Grouping by problem", at: 5.6 },
+];
 
 function ScanProgress({
   vars,
@@ -212,35 +227,90 @@ function ScanProgress({
 }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
-    const t = window.setInterval(() => setNow(Date.now()), 500);
+    const t = window.setInterval(() => setNow(Date.now()), 200);
     return () => window.clearInterval(t);
   }, []);
-  const secs = Math.max(0, Math.floor((now - startedAt) / 1000));
-  const years = vars.yearTo - vars.yearFrom + 1;
+  const elapsed = Math.max(0, (now - startedAt) / 1000);
+  const secs = Math.floor(elapsed);
+  let active = 0;
+  STEPS.forEach((s, i) => {
+    if (elapsed >= s.at) active = i;
+  });
+  // Eases toward ~95% so the bar never claims to be done before it is.
+  const pct = Math.min(95, 100 * (1 - Math.exp(-elapsed / 4)));
+  const years =
+    vars.yearFrom === vars.yearTo
+      ? String(vars.yearFrom)
+      : `${vars.yearFrom}–${vars.yearTo}`;
+
   return (
-    <div className="border-t px-4 py-3" role="status" aria-live="polite">
-      <div className="mb-2 flex items-center justify-between gap-3 text-sm">
-        <span className="min-w-0 truncate">
-          Pulling NHTSA complaints, recalls and investigations for{" "}
-          <span className="font-medium">
-            {vars.make} {vars.model}
-          </span>{" "}
-          · {years} model year{years === 1 ? "" : "s"}
-        </span>
-        <span className="ur-num shrink-0 text-xs text-muted-foreground">
-          {secs}s
-        </span>
+    <div
+      className="border-t border-border/70 bg-ur-sand/50 px-4 py-4 md:px-5"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="flex items-start gap-3">
+        <BrandMark className="mt-0.5 size-8 shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[14px] font-semibold">Unrecalled</span>
+            <span className="ur-agent-badge">Agent</span>
+            <span className="ur-num ms-auto text-xs text-muted-foreground">
+              {secs}s
+            </span>
+          </div>
+          <p className="mt-0.5 text-[14px] text-foreground/85">
+            Looking into the{" "}
+            <span className="font-medium text-foreground">
+              {years} {vars.make} {vars.model}
+            </span>
+          </p>
+
+          <ol className="mt-3 space-y-2">
+            {STEPS.map((s, i) => {
+              const done = i < active;
+              const current = i === active;
+              return (
+                <li
+                  key={s.label}
+                  className={cn(
+                    "flex items-center gap-2.5 text-[14px] transition-opacity duration-300",
+                    i > active && "opacity-40",
+                  )}
+                >
+                  <span className="flex size-5 shrink-0 items-center justify-center">
+                    {done ? (
+                      <span className="ur-pop flex size-5 items-center justify-center rounded-full bg-ur-recalled text-white">
+                        <IconCheck className="size-3" strokeWidth={3} />
+                      </span>
+                    ) : current ? (
+                      <span className="ur-live-dot" />
+                    ) : (
+                      <span className="size-2 rounded-full border border-muted-foreground/50" />
+                    )}
+                  </span>
+                  <span
+                    className={cn(
+                      done && "text-muted-foreground",
+                      current && "font-medium text-foreground",
+                    )}
+                  >
+                    {s.label}
+                    {current ? "…" : ""}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+
+          <div className="mt-4 h-1 overflow-hidden rounded-full bg-foreground/[0.07]">
+            <div
+              className="h-full rounded-full bg-ur-blue transition-[width] duration-300 ease-out"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
       </div>
-      <div className="h-1 overflow-hidden rounded-full bg-muted">
-        <div
-          className={cn(
-            "ur-indeterminate h-full w-2/5 rounded-full bg-ur-uncovered",
-          )}
-        />
-      </div>
-      <p className="mt-2 text-xs text-muted-foreground">
-        First scans of a vehicle usually take 10–30 seconds.
-      </p>
     </div>
   );
 }

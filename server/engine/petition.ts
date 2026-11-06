@@ -68,7 +68,9 @@ function pct(x: number | null): string {
 function refWhyNot(ref: CoverageRef, uncoveredYears: number[]): string {
   const covered = ref.years.length ? `covers MY ${yearRange(ref.years)}` : "covers none of the scanned model years";
   const gap = uncoveredYears.length ? `; does not cover MY ${yearRange(uncoveredYears)}` : "";
-  const terms = ref.matchedTerms.length ? ` Matched terms: ${ref.matchedTerms.map((t) => `\`${t}\``).join(", ")}.` : "";
+  // Only plain-language reasons here; the exact matching rules are listed once in Appendix B.
+  const cites = ref.matchedTerms.filter((t) => t.startsWith("cites recall"));
+  const terms = cites.length ? ` Follows up on ${cites.map((t) => t.replace("cites ", "")).join(", ")}.` : "";
   return `${covered}${gap}.${terms}`;
 }
 

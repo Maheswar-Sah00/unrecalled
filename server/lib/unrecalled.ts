@@ -242,7 +242,7 @@ export async function scanVehicle(scope: Scope, raw: ScanArgs) {
     uncovered: results.filter((r) => r.coverage.status === "uncovered").length,
     totalComplaints: complaints.length,
     peerComplaints: peerComplaints.length,
-    recalls: recalls.length,
+    recalls: new Set(recalls.map((r) => r.campaign)).size,
     investigations: investigations.length,
     warnings,
   };

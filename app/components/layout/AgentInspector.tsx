@@ -1,10 +1,10 @@
 import { navigateWithAgentChatViewTransition } from "@agent-native/core/client/agent-chat";
-import { useT } from "@agent-native/core/client/i18n";
 import { focusAgentChat } from "@agent-native/toolkit/app/chat";
 import { AgentSidebar } from "@agent-native/toolkit/app/chat";
 import { type ReactNode } from "react";
 import { useNavigate } from "react-router";
 
+import { AGENT_SUGGESTIONS } from "@/components/unrecalled/agent/ChatWelcome";
 import { chatThreadPath } from "@/lib/chat-paths";
 import { TAB_ID } from "@/lib/tab-id";
 
@@ -21,7 +21,6 @@ export function AgentInspector({
   chatHomeHandoffPending,
 }: AgentInspectorProps) {
   const navigate = useNavigate();
-  const t = useT();
 
   function openAskAgentFullscreen(threadId?: string) {
     focusAgentChat();
@@ -37,13 +36,11 @@ export function AgentInspector({
       browserTabId={TAB_ID}
       openOnChatRunning={chatHomeHandoffActive}
       onFullscreenRequest={openAskAgentFullscreen}
-      emptyStateText={t("chat.inspectEmptyState")}
+      emptyStateText="What should we investigate?"
       agentPageHref="/settings/agent"
-      suggestions={[
-        t("chat.inspectSuggestionCapabilities"),
-        t("chat.inspectSuggestionHello"),
-        t("chat.inspectSuggestionAction"),
-      ]}
+      suggestions={[...AGENT_SUGGESTIONS]}
+      dynamicSuggestions={false}
+      composerPlaceholder="Ask about any car, defect or petition…"
     >
       {children}
     </AgentSidebar>

@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +21,7 @@ export function Sparkline({
   className?: string;
   color?: string;
 }) {
+  const gid = `ur-spark-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   if (!data.length) {
     return (
       <svg width={width} height={height} className={className} aria-hidden>
@@ -58,21 +61,28 @@ export function Sparkline({
       role="img"
       aria-label={`${fmtInt(total)} complaints ${fmtMonth(first.month)} to ${fmtMonth(last.month)}, peak ${top.count} in ${fmtMonth(top.month)}`}
     >
-      <path d={area} fill={color} opacity={0.1} />
+      <defs>
+        <linearGradient id={gid} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.22} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#${gid})`} />
       <path
         d={line}
         fill="none"
         stroke={color}
-        strokeWidth={1.25}
+        strokeWidth={1.5}
         strokeLinejoin="round"
         strokeLinecap="round"
       />
-      <circle cx={x(peak)} cy={y(top.count)} r={2} fill={color} />
+      <circle cx={x(peak)} cy={y(top.count)} r={2.5} fill="hsl(var(--ur-uncovered))" stroke="hsl(var(--card))" strokeWidth={1.5} />
     </svg>
   );
 }
 
-/** One cell per model year, coloured by coverage status. */
+/** One cell per model year, coloured by coverage status.
+ *  `sm`: compact pills for board rows. `lg`: animated year tiles. */
 export function CoverageStrip({
   byYear,
   refs,
@@ -92,41 +102,61 @@ export function CoverageStrip({
   const big = size === "lg";
   return (
     <div
-      className={cn("flex items-stretch gap-0.5", className)}
+      className={cn(
+        big
+          ? "grid grid-cols-[repeat(auto-fit,minmax(6.5rem,1fr))] gap-2.5"
+          : "flex flex-wrap items-center gap-[3px]",
+        className,
+      )}
+      style={big ? { maxWidth: `${Math.max(1, byYear.length) * 10}rem` } : undefined}
       role="list"
       aria-label="Coverage by model year"
     >
-      {byYear.map((y) => {
+      {byYear.map((y, idx) => {
         const meta = statusMeta(y.status);
         const Icon = meta.icon;
         const active = activeYear === y.year;
-        const cell = (
+        const dim = activeYear != null && !active;
+        const cell = big ? (
           <div
             role="listitem"
             className={cn(
-              "flex flex-col items-center justify-center rounded-[3px] text-white",
+              "ur-pop relative flex w-full flex-col overflow-hidden rounded-2xl border bg-card p-3 text-left shadow-[var(--ur-shadow)] transition-[transform,opacity,box-shadow] duration-200",
+              y.count === 0 && "opacity-60",
+              onSelectYear && "cursor-pointer hover:-translate-y-0.5",
+              dim && "opacity-55",
+              active && "ring-2 ring-foreground ring-offset-2 ring-offset-background",
+            )}
+            style={{ ["--ur-delay" as string]: `${120 + idx * 70}ms` }}
+          >
+            <span className={cn("absolute inset-x-0 top-0 h-1", meta.fill)} aria-hidden="true" />
+            <span className={cn("pointer-events-none absolute inset-0 opacity-[0.07]", meta.fill)} aria-hidden="true" />
+            <span className="relative font-display text-[1.25rem] leading-none tracking-tight text-foreground">
+              {y.year}
+            </span>
+            <span className={cn("relative mt-2 inline-flex items-center gap-1 text-[12px] font-medium", meta.text)}>
+              <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+              <span className="truncate">{meta.short}</span>
+            </span>
+            <span className="ur-num relative mt-1 text-[1.375rem] font-semibold leading-tight text-foreground">
+              {fmtInt(y.count)}
+            </span>
+            <span className="relative text-[11px] text-muted-foreground">complaints</span>
+          </div>
+        ) : (
+          <div
+            role="listitem"
+            className={cn(
+              "flex h-[22px] w-[30px] items-center justify-center rounded-full text-white shadow-[inset_0_-1px_0_rgb(0_0_0/0.12)]",
               meta.fill,
               y.count === 0 && "opacity-35",
-              big ? "h-12 min-w-0 flex-1 gap-0.5 px-1" : "h-5 w-7",
               onSelectYear && "cursor-pointer hover:brightness-110",
               active && "ring-2 ring-foreground ring-offset-1 ring-offset-background",
             )}
           >
-            {big ? (
-              <>
-                <span className="ur-num text-[11px] font-semibold leading-none">
-                  {y.year}
-                </span>
-                <span className="ur-num inline-flex items-center gap-0.5 text-[11px] leading-none opacity-90">
-                  <Icon className="size-3" aria-hidden="true" />
-                  {fmtInt(y.count)}
-                </span>
-              </>
-            ) : (
-              <span className="ur-num text-[10px] font-medium leading-none">
-                {String(y.year).slice(2)}
-              </span>
-            )}
+            <span className="ur-num text-[10.5px] font-semibold leading-none">
+              ’{String(y.year).slice(2)}
+            </span>
           </div>
         );
         return (
@@ -136,8 +166,8 @@ export function CoverageStrip({
                 <button
                   type="button"
                   className={cn(
-                    "rounded-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    big && "flex min-w-0 flex-1",
+                    "rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    big && "flex min-w-0",
                   )}
                   aria-pressed={active}
                   aria-label={`${y.year}: ${y.count} complaints, ${meta.label}`}
@@ -151,25 +181,22 @@ export function CoverageStrip({
             </TooltipTrigger>
             <TooltipContent className="max-w-72">
               <div className="font-medium">
-                MY{y.year} · {fmtInt(y.count)} complaints
+                {y.year} model year · {fmtInt(y.count)} complaints
               </div>
               <div>{meta.label}</div>
               {y.postRecallCount ? (
-                <div>{fmtInt(y.postRecallCount)} filed &gt;1 yr after the recall</div>
+                <div>{fmtInt(y.postRecallCount)} filed more than a year after the recall</div>
               ) : null}
               {y.refIds.length ? (
                 <ul className="mt-1 space-y-0.5 opacity-90">
                   {y.refIds.map((id) => (
-                    <li key={id}>
-                      <span className="font-mono">{id}</span>
-                      {refTitle.get(id) ? ` — ${refTitle.get(id)}` : ""}
-                    </li>
+                    <li key={id}>Covered by: {refTitle.get(id) ?? id}</li>
                   ))}
                 </ul>
               ) : null}
               {onSelectYear ? (
                 <div className="mt-1 opacity-70">
-                  {active ? "Click to clear filter" : "Click to filter complaints"}
+                  {active ? "Click to show every year" : "Click to read this year’s complaints"}
                 </div>
               ) : null}
             </TooltipContent>

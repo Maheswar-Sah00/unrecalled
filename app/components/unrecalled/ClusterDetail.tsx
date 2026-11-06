@@ -1,22 +1,24 @@
 import { actionErrorMessage, useActionQuery } from "@agent-native/core/client/hooks";
-import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { IconBellRinging, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { keepPreviousData } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router";
 
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 
+import { HowCalculated } from "./board/HowCalculated";
+import { monthsBetween, spanLabel, splitModeName } from "./board/plain";
+import { Shimmer, ShimmerStyles } from "./board/Shimmer";
+import { StatTile } from "./board/StatTile";
+import { useMediaQuery } from "./board/useMediaQuery";
 import { CoverageStrip } from "./charts-small";
 import { ComplaintList } from "./ComplaintList";
 import { CoveragePanel } from "./CoveragePanel";
 import { DraftPetitionDialog } from "./DraftPetitionDialog";
-import { fmtDate, fmtInt, fmtMonth, fmtPct, fmtRatio, HarmCounts } from "./format";
-import { SignalBadge } from "./GapBoard";
+import { fmtDate, fmtInt, fmtMonth, fmtRatio } from "./format";
 import { MonthlyBars } from "./MonthlyBars";
 import { Page, SectionHeading, useCrumbs } from "./page";
 import { PostRecallNote } from "./PostRecallNote";
+import { CountUp, PageHero } from "./premium";
 import { StatusChip, StatusLegend } from "./status";
 import type { GetClusterResult } from "./types";
 
@@ -30,6 +32,7 @@ export function ClusterDetail({
   modeId: string;
 }) {
   const [params, setParams] = useSearchParams();
+  const isWide = useMediaQuery("(min-width: 1024px)");
   const yearParam = params.get("year");
   const year = yearParam && /^\d{4}$/.test(yearParam) ? Number(yearParam) : null;
   const page = Math.max(1, Number(params.get("page")) || 1);
@@ -69,10 +72,10 @@ export function ClusterDetail({
   if (error && !data) {
     return (
       <Page>
-        <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-          {actionErrorMessage(error) ?? "Could not load this failure mode."}{" "}
+        <p className="ur-panel p-10 text-center text-sm text-muted-foreground">
+          {actionErrorMessage(error) ?? "Could not load this problem."}{" "}
           <Link to={`/gaps/${encodeURIComponent(vehicleId)}`} className="underline">
-            Back to the board
+            Back to the report
           </Link>
         </p>
       </Page>
@@ -87,115 +90,198 @@ export function ClusterDetail({
   const markers = signal?.fired && signal.firedAt
     ? [{ month: signal.firedAt, label: "Signal", color: "hsl(var(--ur-uncovered))" }]
     : [];
+  const { title, aside } = splitModeName(mode.name);
+  const months = monthsBetween(cluster.firstReported, cluster.lastReported);
+  const backTo = `/gaps/${encodeURIComponent(vehicleId)}`;
 
   return (
     <Page wide>
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-semibold tracking-tight">{mode.name}</h1>
-            <StatusChip status={cluster.coverage.status} />
-          </div>
-          {mode.hazard ? (
-            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{mode.hazard}</p>
-          ) : null}
-        </div>
-        <DraftPetitionDialog
-          vehicleId={vehicleId}
-          failureModeId={modeId}
-          disabled={cluster.count === 0}
-        />
-      </div>
+      <Link
+        to={backTo}
+        className="ur-reveal mb-6 inline-flex items-center gap-1 rounded-full text-[13px] text-muted-foreground hover:text-foreground"
+      >
+        <IconChevronLeft className="size-4" aria-hidden="true" />
+        {vehicleLabel}
+      </Link>
 
-      <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-3 border-y py-3 text-sm">
-        <Fact label="Uncovered complaints">
-          <span className={cn("font-semibold", cluster.uncoveredCount > 0 && "text-ur-uncovered")}>
-            {fmtInt(cluster.uncoveredCount)}
+      <PageHero
+        className="ur-reveal"
+        eyebrow={
+          <span className="inline-flex flex-wrap items-center gap-2">
+            <StatusChip status={cluster.coverage.status} />
+            {aside ? <span>{aside}</span> : null}
           </span>
-          <span className="text-muted-foreground"> of {fmtInt(cluster.count)}</span>
-        </Fact>
-        <Fact label="Reported">
-          {fmtDate(cluster.firstReported)} – {fmtDate(cluster.lastReported)}
-        </Fact>
-        <Fact label="Harm">
-          <HarmCounts {...cluster} />
-        </Fact>
-        <Fact label="Signal">
-          {signal ? (
-            <span className="inline-flex items-center gap-2">
-              <SignalBadge
-                c={{ signalFired: signal.fired, signalFiredAt: signal.firedAt, ratio: signal.ratio }}
-              />
-              {!signal.fired ? (
-                <span className="text-xs text-muted-foreground">
-                  share {fmtPct(signal.share)} vs peer {fmtPct(signal.peerShare)}
-                </span>
+        }
+        title={title}
+        lede={mode.hazard || undefined}
+        actions={
+          <DraftPetitionDialog
+            vehicleId={vehicleId}
+            failureModeId={modeId}
+            disabled={cluster.count === 0}
+          />
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-4">
+        <StatTile
+          delay={60}
+          label="Uncovered complaints"
+          note={
+            <>
+              of <span className="ur-num">{fmtInt(cluster.count)}</span> complaints come from model years nothing
+              covers
+            </>
+          }
+        >
+          <span className={cn(cluster.uncoveredCount > 0 ? "text-ur-uncovered" : "text-muted-foreground")}>
+            <CountUp value={cluster.uncoveredCount} />
+          </span>
+          <span className="text-[0.55em] text-muted-foreground/70"> / {fmtInt(cluster.count)}</span>
+        </StatTile>
+        <StatTile
+          delay={120}
+          label="Reported over"
+          note={
+            <>
+              {fmtDate(cluster.firstReported)} – {fmtDate(cluster.lastReported)}
+            </>
+          }
+        >
+          {spanLabel(months) || "–"}
+        </StatTile>
+        <StatTile delay={180} label="Harm owners reported" note="Counted from the complaints themselves">
+          <HarmGrid {...cluster} />
+        </StatTile>
+        <StatTile
+          delay={240}
+          label="Early-warning signal"
+          note={
+            signal?.fired ? (
+              <>
+                On since {fmtMonth(signal.firedAt)}: owners reported it{" "}
+                {signal.ratio != null ? <span className="ur-num">{fmtRatio(signal.ratio)}</span> : "far"} as often as
+                owners of similar cars.
+              </>
+            ) : signal ? (
+              <>
+                {signal.ratio != null ? (
+                  <>
+                    <span className="ur-num">{fmtRatio(signal.ratio)}</span> as often as similar cars.{" "}
+                  </>
+                ) : null}
+                The alarm needs at least 10 complaints and 5×.
+              </>
+            ) : (
+              "Not enough data yet."
+            )
+          }
+        >
+          {signal?.fired ? (
+            <span className="inline-flex flex-wrap items-center gap-2 font-sans text-base tracking-normal">
+              <span className="inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full bg-ur-uncovered px-3 text-[13px] font-semibold text-white shadow-[0_8px_20px_-10px_hsl(var(--ur-uncovered))]">
+                <IconBellRinging className="size-4" aria-hidden="true" />
+                Signal {fmtMonth(signal.firedAt)}
+              </span>
+              {signal.ratio != null ? (
+                <span className="ur-num text-[13px] text-muted-foreground">{fmtRatio(signal.ratio)} similar cars</span>
               ) : null}
             </span>
           ) : (
-            "–"
+            <span className="text-muted-foreground/70">Quiet</span>
           )}
-        </Fact>
-      </dl>
-
-      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <section className="min-w-0">
-          <SectionHeading right={<StatusLegend className="hidden xl:flex" />}>
-            Coverage by model year
-          </SectionHeading>
-          <CoverageStrip
-            byYear={cluster.byYear}
-            refs={refs}
-            size="lg"
-            activeYear={year}
-            onSelectYear={(y) => update({ year: y ? String(y) : null, page: null })}
-          />
-          <PostRecallNote postRecall={cluster.postRecall} className="mt-4" />
-          <div className="mt-4">
-            <CoveragePanel refs={refs} />
-          </div>
-        </section>
-        <section className="min-w-0">
-          <SectionHeading>Complaints per month</SectionHeading>
-          <div className="rounded-lg border bg-card p-3">
-            <MonthlyBars data={cluster.monthly} markers={markers} />
-          </div>
-          {signal?.rule ? (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Signal rule: {signal.rule}
-              {signal.fired ? ` — held from ${fmtMonth(signal.firedAt)}` : ""}
-              {signal.ratio != null ? ` (${fmtRatio(signal.ratio)} peer share)` : ""}.
-            </p>
-          ) : null}
-        </section>
+        </StatTile>
       </div>
 
-      <section className="mt-8">
+      <section className="mt-12">
         <SectionHeading
+          className="mb-1"
           right={
-            <div className="flex flex-wrap items-center gap-2">
-              {year ? (
-                <Button size="xs" variant="outline" onClick={() => update({ year: null, page: null })}>
-                  MY{year} ×
-                </Button>
-              ) : null}
-              <ToggleGroup
-                type="single"
-                size="sm"
-                variant="outline"
-                value={scope}
-                onValueChange={(v) => v && update({ scope: v === "all" ? null : v, page: null })}
-                aria-label="Complaint scope"
+            year ? (
+              <button
+                type="button"
+                className="ur-chip"
+                data-active="true"
+                onClick={() => update({ year: null, page: null })}
               >
-                <ToggleGroupItem value="all" className="px-3 text-xs">All</ToggleGroupItem>
-                <ToggleGroupItem value="uncovered" className="px-3 text-xs">Uncovered years</ToggleGroupItem>
-              </ToggleGroup>
+                Showing {year} only ×
+              </button>
+            ) : null
+          }
+        >
+          Coverage by model year
+        </SectionHeading>
+        <p className="mb-4 text-[14px] text-muted-foreground">
+          Each tile is one model year. Tap a year to read only its complaints.
+        </p>
+        <CoverageStrip
+          byYear={cluster.byYear}
+          refs={refs}
+          size="lg"
+          activeYear={year}
+          onSelectYear={(y) => update({ year: y ? String(y) : null, page: null })}
+        />
+        <StatusLegend className="mt-4" />
+        <PostRecallNote postRecall={cluster.postRecall} className="mt-5" />
+      </section>
+
+      <section className="mt-12">
+        <SectionHeading className="mb-1">What already covers it</SectionHeading>
+        <p className="mb-4 text-[14px] text-muted-foreground">
+          Recalls, government investigations and settlements that match this problem.
+        </p>
+        <CoveragePanel refs={refs} />
+      </section>
+
+      <section className="mt-12">
+        <SectionHeading className="mb-1">Complaints over time</SectionHeading>
+        <p className="mb-4 text-[14px] text-muted-foreground">
+          New owner complaints each month{signal?.fired ? ", with the month the warning turned on" : ""}.
+        </p>
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+          <div className="ur-card p-4 md:p-5">
+            <MonthlyBars data={cluster.monthly} markers={markers} height={isWide ? 372 : 220} />
+          </div>
+          <HowCalculated defaultOpen />
+        </div>
+      </section>
+
+      <section className="mt-14">
+        <SectionHeading
+          className="mb-1"
+          right={
+            <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Which complaints">
+              {year ? (
+                <button type="button" className="ur-chip" onClick={() => update({ year: null, page: null })}>
+                  {year} ×
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="ur-chip"
+                data-active={scope === "all"}
+                aria-pressed={scope === "all"}
+                onClick={() => update({ scope: null, page: null })}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                className="ur-chip"
+                data-active={scope === "uncovered"}
+                aria-pressed={scope === "uncovered"}
+                onClick={() => update({ scope: "uncovered", page: null })}
+              >
+                Uncovered years
+              </button>
             </div>
           }
         >
-          Complaints · <span className="ur-num">{fmtInt(total)}</span>
+          What owners say · <span className="ur-num">{fmtInt(total)}</span>
         </SectionHeading>
+        <p className="mb-4 text-[14px] text-muted-foreground">
+          Their own words. Highlighted phrases are why each complaint was grouped under this problem.
+        </p>
         <div className={cn("transition-opacity", isFetching && "opacity-60")}>
           <ComplaintList
             vehicleId={vehicleId}
@@ -205,27 +291,27 @@ export function ClusterDetail({
           />
         </div>
         {pages > 1 ? (
-          <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="mt-5 flex items-center justify-between gap-3 text-[13px] text-muted-foreground">
             <span className="ur-num">
               Page {page} of {pages}
             </span>
-            <div className="flex gap-1">
-              <Button
-                size="sm"
-                variant="outline"
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="ur-btn-soft h-9 px-3.5 text-[13px]"
                 disabled={page <= 1}
                 onClick={() => update({ page: page - 1 > 1 ? String(page - 1) : null })}
               >
                 <IconChevronLeft className="size-4" /> Previous
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
+              </button>
+              <button
+                type="button"
+                className="ur-btn-soft h-9 px-3.5 text-[13px]"
                 disabled={page >= pages}
                 onClick={() => update({ page: String(page + 1) })}
               >
                 Next <IconChevronRight className="size-4" />
-              </Button>
+              </button>
             </div>
           </div>
         ) : null}
@@ -234,39 +320,71 @@ export function ClusterDetail({
   );
 }
 
-function Fact({ label, children }: { label: string; children: React.ReactNode }) {
+function HarmGrid({
+  crashes,
+  fires,
+  injuries,
+  deaths,
+}: {
+  crashes: number;
+  fires: number;
+  injuries: number;
+  deaths: number;
+}) {
+  const items = [
+    { label: "crashes", v: crashes },
+    { label: "injuries", v: injuries },
+    { label: "fires", v: fires },
+    { label: "deaths", v: deaths },
+  ];
   return (
-    <div className="min-w-0">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="ur-num mt-0.5">{children}</dd>
-    </div>
+    <span className="grid grid-cols-4 gap-2">
+      {items.map((it) => (
+        <span key={it.label} className="flex min-w-0 flex-col">
+          <span
+            className={cn(
+              "ur-num text-[1.75rem] leading-none",
+              it.v > 0 ? "text-foreground" : "text-muted-foreground/40",
+            )}
+          >
+            {fmtInt(it.v)}
+          </span>
+          <span className="mt-1.5 font-sans text-[11.5px] tracking-normal text-muted-foreground">{it.label}</span>
+        </span>
+      ))}
+    </span>
   );
 }
 
 function DetailSkeleton() {
   return (
     <Page wide>
-      <Skeleton className="h-7 w-80" />
-      <Skeleton className="mt-2 h-4 w-[28rem] max-w-full" />
-      <div className="mt-4 flex gap-8 border-y py-3">
+      <ShimmerStyles />
+      <Shimmer className="h-4 w-40" />
+      <Shimmer className="mt-8 h-6 w-32 rounded-full" />
+      <Shimmer className="mt-4 h-12 w-[24rem] max-w-full rounded-2xl" />
+      <Shimmer className="mt-4 h-4 w-[36rem] max-w-full" />
+      <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="space-y-1.5">
-            <Skeleton className="h-3 w-20" />
-            <Skeleton className="h-4 w-28" />
+          <div key={i} className="ur-card p-5">
+            <Shimmer className="h-3 w-28" />
+            <Shimmer className="mt-3 h-9 w-24 rounded-xl" />
+            <Shimmer className="mt-3 h-3 w-40 max-w-full" />
           </div>
         ))}
       </div>
-      <div className="mt-6 grid gap-8 lg:grid-cols-2">
-        <div className="space-y-3">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-28 w-full" />
-        </div>
-        <Skeleton className="h-40 w-full" />
-      </div>
-      <div className="mt-8 space-y-2">
-        {[0, 1, 2].map((i) => (
-          <Skeleton key={i} className="h-20 w-full" />
+      <Shimmer className="mt-12 h-7 w-64 rounded-xl" />
+      <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(6.5rem,1fr))] gap-2.5">
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <Shimmer key={i} className="h-[7.5rem] rounded-2xl" />
         ))}
+      </div>
+      <div className="mt-12 grid gap-10 lg:grid-cols-2">
+        <div className="space-y-3">
+          <Shimmer className="h-32 w-full rounded-2xl" />
+          <Shimmer className="h-32 w-full rounded-2xl" />
+        </div>
+        <Shimmer className="h-48 w-full rounded-2xl" />
       </div>
     </Page>
   );

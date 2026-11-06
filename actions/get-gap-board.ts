@@ -72,7 +72,8 @@ export default defineAction({
         lastScannedAt: vehicle.lastScannedAt,
         watch: vehicle.watch,
         peers: vehicle.peers as { make: string; model: string }[],
-        recallCount: (vehicle.recalls as unknown[]).length,
+        // One recall campaign appears once per model year it covers; count campaigns.
+        recallCount: new Set((vehicle.recalls as { campaign: string }[]).map((r) => r.campaign)).size,
         investigationCount: (vehicle.investigations as unknown[]).length,
         warnings: vehicle.warnings as string[],
       },

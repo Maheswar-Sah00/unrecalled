@@ -1,1 +1,490 @@
-/* Agent chat panel theme. Owned by the chat-theme agent. */
+/* Agent chat theme: restyles the agent-native toolkit chat (AgentKit transcript,
+   composer, work rows, suggestions, sidebar panel, menus) to the Unrecalled
+   paper/ink look. Owned by the chat-theme agent.
+
+   This file is imported before Tailwind and the toolkit, so every rule here is
+   unlayered (it beats the toolkit's @layer components rules) and token
+   overrides use doubled selectors to win over the toolkit's later :root. */
+
+/* ---------- Tokens ---------- */
+:root:root {
+  --agent-kit-conversation-max-width: 46rem;
+  --agent-kit-composer-radius: 1.25rem;
+  --agent-kit-shadow-color: 30 20% 30%;
+  --agent-kit-composer-elevation: 0 1px 2px #5248460d, 0 18px 44px -18px #52484647;
+  --agent-kit-control-elevation: 0 1px 2px #5248460f;
+  --agent-kit-overlay-elevation: 0 2px 6px #52484614, 0 24px 60px -20px #52484659;
+  --agent-kit-composer-focus-border-color: hsl(var(--ur-blue) / 0.55);
+  --agent-kit-focus: hsl(var(--ur-blue));
+  --agent-kit-subtle-surface: hsl(var(--ur-sand));
+  --agent-kit-composer-font-size: 0.9375rem;
+  --agent-kit-composer-line-height: 1.5rem;
+  --ur-agent-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html.dark:root,
+:root:root.dark {
+  --agent-kit-composer-surface: hsl(var(--card));
+  --agent-kit-subtle-surface: hsl(222 26% 14%);
+  --agent-kit-composer-border-color: hsl(var(--border));
+  --agent-kit-composer-elevation: 0 1px 0 hsl(0 0% 100% / 0.03) inset, 0 20px 50px -22px hsl(222 60% 2% / 0.9);
+  --agent-kit-control-elevation: 0 1px 2px hsl(222 60% 2% / 0.5);
+  --agent-kit-overlay-elevation: 0 24px 60px -20px hsl(222 60% 2% / 0.9), 0 0 0 1px hsl(0 0% 100% / 0.04);
+  --agent-kit-composer-focus-border-color: hsl(var(--ur-blue) / 0.6);
+}
+
+/* ---------- Canvas ---------- */
+.agentkit-chat {
+  --agentkit-radius-inner: 1rem;
+  --agentkit-transcript-message-line-height: 1.6rem;
+  --agentkit-user-bubble-padding-block: 0.625rem;
+  --agentkit-user-bubble-padding-inline: 1rem;
+  font-size: 0.9375rem;
+}
+
+/* ---------- Empty state (full /chat page) ---------- */
+.ur-chat-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+  max-width: 40rem;
+  margin-inline: auto;
+  padding-inline: 0.5rem;
+  text-align: center;
+}
+
+.ur-chat-welcome__mark {
+  display: inline-grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1rem;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: var(--ur-shadow);
+}
+
+.agentkit-chat-empty-copy.ur-chat-welcome h1 {
+  margin: 0.25rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5.2vw, 3rem);
+  font-weight: 560;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.ur-chat-welcome .ur-lede {
+  max-width: 32rem;
+  margin: 0;
+  font-size: 1rem;
+  text-wrap: pretty;
+}
+
+.ur-chat-welcome__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.ur-chat-welcome__chips .ur-chip {
+  height: 34px;
+  padding: 0 14px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  transition:
+    transform 180ms var(--ur-agent-ease),
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.ur-chat-welcome__chips .ur-chip:hover {
+  transform: translateY(-1px);
+  border-color: hsl(var(--ur-blue) / 0.45);
+  box-shadow: 0 6px 18px -10px hsl(var(--ur-blue) / 0.6);
+}
+
+.ur-chat-welcome__chips .ur-chip:focus-visible {
+  outline: 2px solid hsl(var(--ur-blue));
+  outline-offset: 2px;
+}
+
+/* ---------- Composer ---------- */
+.agentkit-composer[data-agent-composer-slot="root"],
+.agent-composer-root {
+  border-color: var(--agent-kit-composer-border-color) !important;
+  border-radius: var(--agent-kit-composer-radius) !important;
+  background: var(--agent-kit-composer-surface, hsl(var(--card))) !important;
+  box-shadow: var(--agent-kit-composer-elevation) !important;
+  transition:
+    border-color 200ms ease,
+    box-shadow 240ms var(--ur-agent-ease);
+}
+
+.agentkit-composer[data-agent-composer-slot="root"]:focus-within,
+.agent-composer-root:focus-within {
+  border-color: var(--agent-kit-composer-focus-border-color) !important;
+  box-shadow:
+    0 0 0 4px hsl(var(--ur-blue) / 0.12),
+    var(--agent-kit-composer-elevation) !important;
+}
+
+.dark .agentkit-composer[data-agent-composer-slot="root"]:focus-within,
+.dark .agent-composer-root:focus-within {
+  border-color: hsl(var(--ur-blue) / 0.45) !important;
+  box-shadow:
+    0 0 0 3px hsl(var(--ur-blue) / 0.1),
+    var(--agent-kit-composer-elevation) !important;
+}
+
+.agent-composer-prosemirror {
+  caret-color: hsl(var(--ur-blue));
+}
+
+/* Send button: ink circle (paper in dark). */
+[data-agent-composer-slot="submit-button"],
+[data-agent-composer-slot="send-button"],
+.agent-composer-root button[type="submit"] {
+  border-radius: 999px !important;
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  transition:
+    transform 160ms var(--ur-agent-ease),
+    opacity 160ms ease;
+}
+
+[data-agent-composer-slot="submit-button"]:disabled,
+[data-agent-composer-slot="send-button"]:disabled,
+.agent-composer-root button[type="submit"]:disabled {
+  opacity: 0.28 !important;
+}
+
+[data-agent-composer-slot="submit-button"]:not(:disabled):hover,
+.agent-composer-root button[type="submit"]:not(:disabled):hover {
+  transform: scale(1.06);
+}
+
+[data-agent-composer-slot="model-button"] {
+  border-radius: 999px !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+[data-agent-composer-slot="model-button"]:hover {
+  background: hsl(var(--ur-sand)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark [data-agent-composer-slot="model-button"]:hover {
+  background: hsl(var(--muted)) !important;
+}
+
+/* ---------- Transcript ---------- */
+/* User turn: soft sand bubble, ink text, gentle rounding with a "tail". */
+.agentkit-message[data-role="user"] .agentkit-message-content {
+  border: 1px solid hsl(var(--border) / 0.8);
+  border-radius: 1.125rem 1.125rem 0.375rem 1.125rem;
+  background: hsl(var(--ur-sand));
+  color: hsl(var(--foreground));
+  box-shadow: 0 1px 2px #5248460a;
+}
+
+.dark .agentkit-message[data-role="user"] .agentkit-message-content {
+  border-color: hsl(var(--border));
+  background: hsl(222 26% 14%);
+  box-shadow: none;
+}
+
+/* Agent turn: an "Unrecalled  AGENT" byline like a Slack thread. */
+.agentkit-message[data-role="assistant"] {
+  position: relative;
+}
+
+.agentkit-message[data-role="assistant"]::before {
+  content: "Unrecalled";
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 1.75rem;
+  margin-bottom: 0.25rem;
+  padding-left: 2.25rem;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5l3.1 2.6 4-.6 1.5 3.8 3.8 1.5-.6 4 2.6 3.1-2.6 3.1.6 4-3.8 1.5-1.5 3.8-4-.6L16 29.5l-3.1-2.6-4 .6-1.5-3.8-3.8-1.5.6-4L1.6 16l2.6-3.1-.6-4 3.8-1.5 1.5-3.8 4 .6z' fill='%23467BEB'/%3E%3Ccircle cx='12.4' cy='14.6' r='1.7' fill='%23fff'/%3E%3Ccircle cx='19.6' cy='14.6' r='1.7' fill='%23fff'/%3E%3Cpath d='M12.6 19.4c1.9 1.6 4.9 1.6 6.8 0' stroke='%23fff' stroke-width='1.6' stroke-linecap='round' fill='none'/%3E%3C/svg%3E")
+      left center / 1.75rem 1.75rem no-repeat;
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.agentkit-message[data-role="assistant"]::after {
+  content: "AGENT";
+  position: absolute;
+  top: 0.3125rem;
+  left: 7.25rem;
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 5px;
+  background: hsl(var(--foreground) / 0.07);
+  color: hsl(var(--muted-foreground));
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+}
+
+/* Consecutive agent rows in one turn keep a single byline. */
+.agentkit-message[data-role="assistant"] + .agentkit-message[data-role="assistant"]::before,
+.agentkit-message[data-role="assistant"] + .agentkit-message[data-role="assistant"]::after {
+  display: none;
+}
+
+.agentkit-message[data-role="assistant"] > :not(.agentkit-message-actions) {
+  padding-left: 2.25rem;
+}
+
+.agentkit-message[data-role="assistant"] > .agentkit-message-actions {
+  box-sizing: border-box;
+  padding-left: 2.25rem;
+}
+
+@media (max-width: 30rem) {
+  .agentkit-message[data-role="assistant"] > :not(.agentkit-message-actions),
+  .agentkit-message[data-role="assistant"] > .agentkit-message-actions {
+    padding-left: 0;
+  }
+}
+
+/* Markdown inside replies */
+.agentkit-markdown {
+  line-height: 1.65;
+}
+
+.agentkit-markdown li > p {
+  margin-block: 0;
+}
+
+.agentkit-markdown li > :is(ul, ol) {
+  margin-block: 0.25rem 0.375rem;
+}
+
+.agentkit-markdown li + li {
+  margin-block-start: 0.125rem;
+}
+
+.agentkit-markdown li::marker {
+  color: hsl(var(--ur-blue) / 0.75);
+}
+
+.agentkit-markdown :is(h1, h2, h3) {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.agentkit-markdown a {
+  color: hsl(var(--ur-blue));
+  text-decoration-color: hsl(var(--ur-blue) / 0.35);
+  text-underline-offset: 3px;
+}
+
+.agentkit-markdown strong {
+  font-weight: 650;
+}
+
+.agentkit-markdown :is(code):not(pre code) {
+  padding: 0.1em 0.35em;
+  border-radius: 0.375rem;
+  background: hsl(var(--ur-sand));
+  font-size: 0.85em;
+}
+
+.dark .agentkit-markdown :is(code):not(pre code) {
+  background: hsl(var(--muted));
+}
+
+.agentkit-markdown-table,
+.agentkit-markdown table {
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+/* Work / tool rows ("List vehicles", "Worked for 24s"): calm, muted, a hair
+   of sand on hover. */
+.agentkit-disclosure-row,
+.agentkit-activity-row,
+.agentkit-work-group-row {
+  border-radius: 0.625rem;
+  color: hsl(var(--muted-foreground));
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.agentkit-disclosure-row[data-expandable="true"]:hover,
+.agentkit-work-group-row:hover {
+  background: hsl(var(--ur-sand) / 0.7);
+}
+
+.dark .agentkit-disclosure-row[data-expandable="true"]:hover,
+.dark .agentkit-work-group-row:hover {
+  background: hsl(var(--muted) / 0.7);
+}
+
+.agentkit-disclosure-summary {
+  font-size: 0.8125rem;
+}
+
+.agentkit-work-object,
+.agentkit-object {
+  border-radius: 999px;
+}
+
+.agentkit-disclosure-content {
+  border-left: 1.5px solid hsl(var(--border));
+  margin-left: 0.5rem;
+  padding-left: 0.875rem;
+}
+
+.agentkit-agent {
+  border-radius: 6px;
+}
+
+.agentkit-code-block,
+.agentkit-markdown pre {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.875rem;
+  background: hsl(var(--ur-sand) / 0.6);
+}
+
+.dark .agentkit-code-block,
+.dark .agentkit-markdown pre {
+  background: hsl(222 30% 9%);
+}
+
+/* Message actions (copy, thumbs): quiet until hover. */
+.agentkit-message-actions button {
+  border-radius: 999px;
+}
+
+/* Suggestions under a reply / in the side panel: paper pills like .ur-chip. */
+[data-agent-suggestion-chip="true"] {
+  height: 30px !important;
+  padding: 0 12px !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 999px !important;
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500;
+  box-shadow: 0 1px 2px #5248460a;
+  transition:
+    transform 180ms var(--ur-agent-ease),
+    border-color 180ms ease !important;
+}
+
+[data-agent-suggestion-chip="true"]:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: hsl(var(--ur-blue) / 0.45) !important;
+}
+
+/* Scroll-to-bottom pill */
+.agentkit-scroll-to-bottom-control button {
+  background: hsl(var(--card)) !important;
+}
+
+/* ---------- Side panel (AgentSidebar on /gaps etc.) ---------- */
+.agentkit-empty-state-greeting,
+.agentkit-empty-state-greeting > span {
+  font-family: var(--font-display) !important;
+  font-size: 1.625rem !important;
+  font-weight: 560 !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.03em !important;
+  color: hsl(var(--foreground)) !important;
+  text-wrap: balance;
+}
+
+.agentkit-empty-state-greeting::before {
+  content: "";
+  display: block;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0 auto 0.875rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.875rem;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5l3.1 2.6 4-.6 1.5 3.8 3.8 1.5-.6 4 2.6 3.1-2.6 3.1.6 4-3.8 1.5-1.5 3.8-4-.6L16 29.5l-3.1-2.6-4 .6-1.5-3.8-3.8-1.5.6-4L1.6 16l2.6-3.1-.6-4 3.8-1.5 1.5-3.8 4 .6z' fill='%23467BEB'/%3E%3Ccircle cx='12.4' cy='14.6' r='1.7' fill='%23fff'/%3E%3Ccircle cx='19.6' cy='14.6' r='1.7' fill='%23fff'/%3E%3Cpath d='M12.6 19.4c1.9 1.6 4.9 1.6 6.8 0' stroke='%23fff' stroke-width='1.6' stroke-linecap='round' fill='none'/%3E%3C/svg%3E")
+      center / 1.75rem no-repeat,
+    hsl(var(--card));
+  box-shadow: var(--ur-shadow);
+}
+
+.agentkit-empty-suggestions [data-agent-suggestion-track="true"] {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.agent-sidebar-panel .agent-empty-state {
+  gap: 0.5rem;
+}
+
+.agent-sidebar-panel .agent-empty-state :is(h2, h3, p:first-of-type) {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 560;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: hsl(var(--foreground));
+}
+
+.agent-sidebar-panel .agent-empty-state > svg {
+  color: hsl(var(--ur-blue) / 0.7);
+}
+
+/* ---------- Focus rings ---------- */
+.agentkit-chat :focus-visible,
+.agent-sidebar-panel :focus-visible {
+  outline-color: hsl(var(--ur-blue));
+}
+
+/* ---------- Menus, popovers, dialogs from the toolkit ---------- */
+[role="menu"],
+[role="listbox"],
+[data-radix-popper-content-wrapper] > [data-state],
+[role="dialog"]:not([data-vaul-drawer]) {
+  border-color: hsl(var(--border));
+}
+
+[role="menu"],
+[role="listbox"],
+[data-radix-popper-content-wrapper] > [role="dialog"] {
+  border-radius: 0.875rem !important;
+  box-shadow: var(--agent-kit-overlay-elevation) !important;
+}
+
+.dark [role="menu"],
+.dark [role="listbox"],
+.dark [data-radix-popper-content-wrapper] > [data-state] {
+  background-color: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+}
+
+[role="menuitem"],
+[role="option"],
+[role="menuitemradio"],
+[role="menuitemcheckbox"] {
+  border-radius: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ur-chat-welcome__chips .ur-chip,
+  [data-agent-suggestion-chip="true"] {
+    transition: none !important;
+  }
+}

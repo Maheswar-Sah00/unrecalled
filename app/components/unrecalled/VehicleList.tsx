@@ -3,7 +3,7 @@ import {
   useActionMutation,
   useActionQuery,
 } from "@agent-native/core/client/hooks";
-import { IconChevronRight } from "@tabler/icons-react";
+import { IconArrowUpRight } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 
 import { fmtInt, fmtRelative, yearRange } from "./format";
 import { SectionHeading } from "./page";
+import { BrandMark, CountUp } from "./premium";
 import type { ListVehiclesResult, VehicleSummary } from "./types";
 
 export function VehicleList() {
@@ -22,22 +23,37 @@ export function VehicleList() {
   const vehicles = data?.vehicles ?? [];
 
   return (
-    <section className="mt-8">
-      <SectionHeading>Scanned vehicles</SectionHeading>
+    <section className="mt-4">
+      <SectionHeading
+        right={
+          vehicles.length > 0 ? (
+            <span className="ur-num text-sm text-muted-foreground">
+              {vehicles.length} vehicle{vehicles.length === 1 ? "" : "s"}
+            </span>
+          ) : null
+        }
+      >
+        Scanned vehicles
+      </SectionHeading>
       {isLoading ? (
         <ListSkeleton />
       ) : error ? (
-        <p className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+        <p className="ur-panel mt-2 p-6 text-sm text-muted-foreground">
           {actionErrorMessage(error) ?? "Could not load scanned vehicles."}
         </p>
       ) : vehicles.length === 0 ? (
-        <p className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
-          No vehicles scanned yet. Pick one above.
-        </p>
+        <div className="ur-panel mt-2 flex flex-col items-center px-6 py-10 text-center">
+          <BrandMark className="ur-float size-10" />
+          <p className="ur-title mt-4 text-[1.25rem]">Nothing scanned yet</p>
+          <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">
+            Pick a car above and Unrecalled will read what owners are
+            reporting about it.
+          </p>
+        </div>
       ) : (
-        <ul className="divide-y rounded-lg border bg-card">
-          {vehicles.map((v) => (
-            <VehicleRow key={v.id} v={v} />
+        <ul className="mt-2 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {vehicles.map((v, i) => (
+            <VehicleRow key={v.id} v={v} index={i} />
           ))}
         </ul>
       )}
@@ -45,7 +61,7 @@ export function VehicleList() {
   );
 }
 
-function VehicleRow({ v }: { v: VehicleSummary }) {
+function VehicleRow({ v, index }: { v: VehicleSummary; index: number }) {
   const qc = useQueryClient();
   const setWatch = useActionMutation<
     unknown,
@@ -77,71 +93,91 @@ function VehicleRow({ v }: { v: VehicleSummary }) {
   const label =
     v.label || `${v.make} ${v.model} ${yearRange(v.yearFrom, v.yearTo)}`;
   const switchId = `watch-${v.id}`;
+  const name = titleCase(`${v.make} ${v.model}`.trim()) || label;
+  const uncovered = v.uncoveredModes > 0;
   return (
-    <li className="flex items-center gap-3 px-3 py-2.5 md:px-4">
-      <Link
-        to={`/gaps/${encodeURIComponent(v.id)}`}
-        className="group flex min-w-0 flex-1 items-center gap-3 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-medium group-hover:underline">
-            {label}
-          </div>
-          <div className="ur-num truncate text-xs text-muted-foreground">
-            {fmtInt(v.totalComplaints)} complaints · scanned{" "}
-            {fmtRelative(v.lastScannedAt)}
+    <li
+      className="ur-card ur-reveal group relative flex flex-col p-5 transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-[var(--ur-shadow-lg)] focus-within:ring-2 focus-within:ring-ring"
+      style={{ ["--ur-delay" as string]: `${Math.min(index, 8) * 60}ms` }}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <Link
+            to={`/gaps/${encodeURIComponent(v.id)}`}
+            className="ur-title line-clamp-2 block text-[1.375rem] after:absolute after:inset-0 after:rounded-[18px] after:content-[''] focus-visible:outline-none"
+          >
+            {name}
+          </Link>
+          <div className="ur-num mt-1 text-[13px] text-muted-foreground">
+            {yearRange(v.yearFrom, v.yearTo)} · {fmtInt(v.totalComplaints)}{" "}
+            complaints
           </div>
         </div>
-        <span
-          className={cn(
-            "ur-num shrink-0 text-right text-sm",
-            v.uncoveredModes > 0
-              ? "font-semibold text-ur-uncovered"
-              : "text-muted-foreground",
-          )}
-        >
-          {v.uncoveredModes}
-          <span className="ms-1 hidden text-xs font-normal text-muted-foreground sm:inline">
-            uncovered
-          </span>
-        </span>
-        <IconChevronRight
-          className="size-4 shrink-0 text-muted-foreground"
+        <IconArrowUpRight
+          className="mt-1 size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground"
           aria-hidden="true"
         />
-      </Link>
-      <div className="flex shrink-0 items-center gap-2 border-s ps-3">
-        <label
-          htmlFor={switchId}
-          className="hidden text-xs text-muted-foreground sm:inline"
-        >
-          Watch
-        </label>
-        <Switch
-          id={switchId}
-          size="sm"
-          checked={v.watch}
-          aria-label={`Watch ${label} weekly`}
-          onCheckedChange={(watch) =>
-            setWatch.mutate({ vehicleId: v.id, watch: watch ? "true" : "false" })
-          }
+      </div>
+
+      <div className="mt-6 flex items-end gap-3">
+        <CountUp
+          value={v.uncoveredModes}
+          className={cn(
+            "font-display text-[3rem] font-semibold leading-none tracking-tight",
+            uncovered ? "text-ur-uncovered" : "text-muted-foreground",
+          )}
         />
+        <span className="mb-1 text-[13px] leading-snug text-muted-foreground">
+          {v.uncoveredModes === 1 ? "problem" : "problems"} nothing
+          <br />
+          covers yet
+        </span>
+      </div>
+
+      <div className="relative z-10 mt-5 flex items-center justify-between gap-3 border-t border-border/70 pt-3.5">
+        <span className="truncate text-xs text-muted-foreground">
+          Scanned {fmtRelative(v.lastScannedAt)}
+        </span>
+        <div className="flex shrink-0 items-center gap-2">
+          <label
+            htmlFor={switchId}
+            className="cursor-pointer text-xs text-muted-foreground"
+          >
+            Watch weekly
+          </label>
+          <Switch
+            id={switchId}
+            size="sm"
+            checked={v.watch}
+            aria-label={`Watch ${label} weekly`}
+            onCheckedChange={(watch) =>
+              setWatch.mutate({ vehicleId: v.id, watch: watch ? "true" : "false" })
+            }
+          />
+        </div>
       </div>
     </li>
   );
 }
 
+/** "JEEP WRANGLER" -> "Jeep Wrangler"; keeps short acronyms like BMW / GMC. */
+function titleCase(s: string): string {
+  return s.replace(/[A-Za-z]+/g, (w) =>
+    w === w.toUpperCase() && w.length > 3
+      ? w[0] + w.slice(1).toLowerCase()
+      : w,
+  );
+}
+
 function ListSkeleton() {
   return (
-    <ul className="divide-y rounded-lg border">
+    <ul className="mt-2 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {[0, 1, 2].map((i) => (
-        <li key={i} className="flex items-center gap-3 px-4 py-3">
-          <div className="flex-1 space-y-1.5">
-            <Skeleton className="h-4 w-48" />
-            <Skeleton className="h-3 w-32" />
-          </div>
-          <Skeleton className="h-4 w-8" />
-          <Skeleton className="h-4 w-8 rounded-full" />
+        <li key={i} className="ur-card space-y-3 p-5">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-3.5 w-28" />
+          <Skeleton className="mt-6 h-12 w-16" />
+          <Skeleton className="mt-4 h-4 w-full" />
         </li>
       ))}
     </ul>

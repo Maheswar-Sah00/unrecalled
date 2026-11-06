@@ -12,7 +12,6 @@ import {
 } from "@agent-native/toolkit/app/chat/ownership-history";
 import { OrgSwitcher } from "@agent-native/toolkit/app/org";
 import { openCommandMenu } from "@agent-native/toolkit/app/shared";
-import { AgentNativeIcon } from "@agent-native/toolkit/app/shared/AgentNativeIcon";
 import {
   IconChartLine,
   IconEdit,
@@ -33,6 +32,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { BrandMark } from "@/components/unrecalled/premium";
 import { APP_TITLE } from "@/lib/app-config";
 import { chatThreadPath, threadIdFromPath } from "@/lib/chat-paths";
 import { cn } from "@/lib/utils";
@@ -127,10 +127,19 @@ const DOMAIN_LINKS = [
   { to: "/rules", label: "Rules", icon: IconListSearch },
 ] as const;
 
+const NAV_ITEM =
+  "group flex items-center transition-[background-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring";
+const NAV_IDLE =
+  "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground";
+const NAV_ACTIVE =
+  "bg-card text-sidebar-accent-foreground shadow-[0_1px_2px_hsl(var(--foreground)/0.06),0_6px_16px_-10px_hsl(var(--foreground)/0.25)] ring-1 ring-sidebar-border";
+const NAV_COLLAPSED = "size-9 justify-center rounded-xl";
+const NAV_EXPANDED = "h-9 w-full gap-3 rounded-xl px-3 text-[14px] font-medium";
+
 function DomainNavLinks({ collapsed }: { collapsed: boolean }) {
   const location = useLocation();
   return (
-    <div className={cn(collapsed ? "contents" : "flex flex-col gap-0.5 px-2 pb-3")}>
+    <div className={cn(collapsed ? "contents" : "flex flex-col gap-1 px-3 pb-4")}>
       {DOMAIN_LINKS.map(({ to, label, icon: Icon }) => {
         const active =
           location.pathname === to || location.pathname.startsWith(`${to}/`);
@@ -141,14 +150,18 @@ function DomainNavLinks({ collapsed }: { collapsed: boolean }) {
             aria-current={active ? "page" : undefined}
             aria-label={collapsed ? label : undefined}
             className={cn(
-              "flex items-center text-sidebar-accent-foreground transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-              active && "bg-sidebar-accent",
-              collapsed
-                ? "size-8 justify-center rounded-md"
-                : "h-8 w-full gap-3 rounded-lg px-3 text-sm font-medium",
+              NAV_ITEM,
+              active ? NAV_ACTIVE : NAV_IDLE,
+              collapsed ? NAV_COLLAPSED : NAV_EXPANDED,
             )}
           >
-            <Icon className="size-4 shrink-0" strokeWidth={1.8} />
+            <Icon
+              className={cn(
+                "size-[18px] shrink-0 transition-colors",
+                active ? "text-ur-blue" : "opacity-80",
+              )}
+              strokeWidth={1.7}
+            />
             <span className={collapsed ? "sr-only" : "truncate"}>{label}</span>
           </Link>
         );
@@ -255,14 +268,13 @@ function ChatThreadsSection({ collapsed }: { collapsed: boolean }) {
       type="button"
       onClick={() => void handleNewChat()}
       className={cn(
-        "flex items-center text-sidebar-accent-foreground transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-        collapsed
-          ? "size-8 justify-center rounded-md"
-          : "h-8 w-full gap-3 rounded-lg px-3 text-sm font-medium",
+        NAV_ITEM,
+        NAV_IDLE,
+        collapsed ? NAV_COLLAPSED : NAV_EXPANDED,
       )}
       aria-label={collapsed ? t("chat.newChat") : undefined}
     >
-      <IconEdit className="size-4 shrink-0" strokeWidth={1.8} />
+      <IconEdit className="size-[18px] shrink-0 opacity-80" strokeWidth={1.7} />
       <span className={collapsed ? "sr-only" : "truncate"}>
         {t("chat.newChat")}
       </span>
@@ -280,7 +292,7 @@ function ChatThreadsSection({ collapsed }: { collapsed: boolean }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="px-2 pb-3">{newChatButton}</div>
+      <div className="px-3 pb-2">{newChatButton}</div>
       <OwnershipChatHistoryRail
         {...history}
         onNewChat={() => void handleNewChat()}
@@ -330,7 +342,7 @@ export function Sidebar({
         <button
           type="button"
           onClick={() => onCollapsedChange?.(!collapsed)}
-          className="flex size-8 shrink-0 items-center justify-center rounded-md text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+          className="flex size-8 shrink-0 items-center justify-center rounded-lg text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
           aria-label={
             collapsed
               ? t("navigation.expandSidebar")
@@ -354,7 +366,7 @@ export function Sidebar({
           type="button"
           onClick={openCommandMenu}
           aria-label={t("root.commandSearch")}
-          className="flex size-8 items-center justify-center rounded-md text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+          className="flex size-8 items-center justify-center rounded-lg text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
         >
           <IconSearch className="size-4" strokeWidth={1.8} />
         </button>
@@ -373,8 +385,8 @@ export function Sidebar({
     >
       <div
         className={cn(
-          "flex h-14 shrink-0 items-center",
-          collapsed ? "justify-center px-1" : "gap-1 px-3",
+          "flex h-16 shrink-0 items-center",
+          collapsed ? "justify-center px-1" : "gap-1 px-5",
         )}
       >
         {collapsed ? (
@@ -385,10 +397,7 @@ export function Sidebar({
                 aria-label={APP_TITLE}
                 className="flex size-8 items-center justify-center rounded outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
               >
-                <AgentNativeIcon
-                  aria-hidden="true"
-                  className="h-3.5 w-6 text-sidebar-accent-foreground"
-                />
+                <BrandMark className="size-7" />
               </Link>
             </TooltipTrigger>
             <TooltipContent side="right">{APP_TITLE}</TooltipContent>
@@ -397,14 +406,11 @@ export function Sidebar({
           <>
             <Link
               to="/"
-              className="flex min-w-0 flex-1 items-center gap-3 rounded outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+              className="group flex min-w-0 flex-1 items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
             >
-              <AgentNativeIcon
-                aria-hidden="true"
-                className="h-3.5 w-6 shrink-0 text-sidebar-accent-foreground"
-              />
-              <span className="truncate text-sm font-semibold text-sidebar-accent-foreground">
-                {APP_TITLE}
+              <BrandMark className="size-8 shrink-0 transition-transform duration-300 group-hover:rotate-[18deg]" />
+              <span className="ur-title truncate text-[1.375rem] text-sidebar-accent-foreground">
+                Unrecalled
               </span>
             </Link>
           </>
@@ -415,14 +421,14 @@ export function Sidebar({
         aria-label={t("navigation.navigation")}
         className={cn(
           "flex min-h-0 flex-1 flex-col",
-          collapsed ? "items-center gap-1 px-1 py-2" : "pt-1",
+          collapsed ? "items-center gap-1.5 px-1 py-2" : "pt-2",
         )}
       >
         <DomainNavLinks collapsed={collapsed} />
         <ChatThreadsSection collapsed={collapsed} />
       </nav>
 
-      <div className="mt-auto shrink-0 border-t border-sidebar-border p-2">
+      <div className="mt-auto shrink-0 border-t border-sidebar-border/70 p-2">
         <div
           className={cn(
             collapsed

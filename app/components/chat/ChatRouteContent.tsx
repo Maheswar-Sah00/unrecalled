@@ -81,6 +81,7 @@ import {
 import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 
+import { ChatWelcome } from "@/components/unrecalled/agent/ChatWelcome";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -1189,12 +1190,7 @@ function ChatMcpConnectionSuggestion({
 }
 
 function ChatEmptyState() {
-  const t = useT();
-  return (
-    <div className="agentkit-chat-empty-copy">
-      <h1>{t("chat.heroTitle")}</h1>
-    </div>
-  );
+  return <ChatWelcome />;
 }
 
 function ChatCanvas({

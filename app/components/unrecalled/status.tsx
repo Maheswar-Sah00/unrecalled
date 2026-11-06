@@ -32,7 +32,7 @@ export const STATUS_META: Record<CoverageStatus, StatusMeta> = {
     icon: IconAlertTriangleFilled,
     text: "text-ur-uncovered",
     fill: "bg-ur-uncovered",
-    tint: "bg-ur-uncovered/12 border-ur-uncovered/30",
+    tint: "bg-ur-uncovered/10 border-ur-uncovered/25",
     color: "hsl(var(--ur-uncovered))",
   },
   under_investigation: {
@@ -102,13 +102,12 @@ export function StatusChip({
   return (
     <span
       className={cn(
-        "inline-flex h-6 shrink-0 items-center gap-1 whitespace-nowrap rounded-md border px-1.5 text-xs font-medium",
+        "inline-flex h-6 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 text-xs font-medium",
         meta.tint,
-        meta.text,
         className,
       )}
     >
-      <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+      <Icon className={cn("size-3.5 shrink-0", meta.text)} aria-hidden="true" />
       <span className="text-foreground/90">
         {short ? meta.short : meta.label}
       </span>
@@ -116,21 +115,32 @@ export function StatusChip({
   );
 }
 
+const LEGEND_HINT: Record<CoverageStatus, string> = {
+  uncovered: "nothing covers it",
+  under_investigation: "being looked into",
+  settlement: "owners compensated",
+  closed_no_recall: "looked into, no fix",
+  recalled: "fix issued",
+};
+
 export function StatusLegend({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground",
+        "flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-muted-foreground",
         className,
       )}
     >
       {STATUS_ORDER.map((s) => (
-        <span key={s} className="inline-flex items-center gap-1.5">
+        <span key={s} className="inline-flex items-center gap-2">
           <span
-            className={cn("size-2.5 rounded-[3px]", STATUS_META[s].fill)}
+            className={cn("h-2.5 w-4 rounded-full", STATUS_META[s].fill)}
             aria-hidden="true"
           />
-          {STATUS_META[s].short}
+          <span>
+            <span className="font-medium text-foreground">{STATUS_META[s].short}</span>
+            <span className="hidden sm:inline"> · {LEGEND_HINT[s]}</span>
+          </span>
         </span>
       ))}
     </div>

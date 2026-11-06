@@ -159,7 +159,7 @@ function LayoutShell({ children }: LayoutProps) {
           onOpenNavigation={openMobileSidebar}
         />
       ) : settingsOwnsChrome ? null : (
-        <Suspense fallback={<div className="h-12 shrink-0" />}>
+        <Suspense fallback={<div className="h-14 shrink-0" />}>
           <Header onOpenMobileSidebar={openMobileSidebar} />
         </Suspense>
       )}

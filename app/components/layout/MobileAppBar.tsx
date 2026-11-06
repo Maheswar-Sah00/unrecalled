@@ -3,6 +3,7 @@ import { IconMenu2 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { BrandMark } from "@/components/unrecalled/premium";
 import { cn } from "@/lib/utils";
 
 interface MobileAppBarProps {
@@ -28,7 +29,7 @@ export function MobileAppBar({
     <header
       data-mobile-app-bar=""
       className={cn(
-        "flex h-12 shrink-0 items-center gap-2 border-b border-border bg-background px-2",
+        "relative z-20 flex h-14 shrink-0 items-center gap-2 border-b border-foreground/[0.07] bg-background/75 px-3 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-background/65",
         className,
       )}
     >
@@ -42,7 +43,8 @@ export function MobileAppBar({
       >
         <IconMenu2 className="size-4" />
       </Button>
-      <div className="flex min-w-0 flex-1 items-center truncate text-sm font-medium">
+      <BrandMark className="size-6 shrink-0 md:hidden" />
+      <div className="flex min-w-0 flex-1 items-center truncate text-[14px] tracking-[-0.005em] text-muted-foreground">
         {title}
       </div>
       {actions ? (

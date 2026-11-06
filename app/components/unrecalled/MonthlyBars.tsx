@@ -18,7 +18,7 @@ export function MonthlyBars({
   const [hover, setHover] = useState<number | null>(null);
   const padL = 32;
   const padR = 8;
-  const padT = 14;
+  const padT = 18;
   const padB = 20;
   const innerW = Math.max(10, width - padL - padR);
   const innerH = height - padT - padB;
@@ -58,7 +58,8 @@ export function MonthlyBars({
               y1={y(t)}
               y2={y(t)}
               stroke="hsl(var(--border))"
-              strokeDasharray={t === 0 ? undefined : "2 3"}
+              strokeOpacity={t === 0 ? 1 : 0.7}
+              strokeDasharray={t === 0 ? undefined : "1 4"}
             />
             <text
               x={padL - 6}
@@ -83,8 +84,8 @@ export function MonthlyBars({
               width={barW}
               height={Math.max(1, hgt)}
               rx={Math.min(2, barW / 2)}
-              fill="hsl(var(--ur-ink))"
-              opacity={hover == null || hover === i ? 0.85 : 0.35}
+              fill={hover === i ? "hsl(var(--ur-blue))" : "hsl(var(--ur-ink))"}
+              opacity={hover == null || hover === i ? 0.8 : 0.3}
             />
           );
         })}
@@ -115,10 +116,11 @@ export function MonthlyBars({
                 strokeWidth={1.5}
                 strokeDasharray="3 2"
               />
+              <circle cx={x} cy={padT - 4} r={3} fill={m.color} />
               <text
-                x={x + 4}
-                y={padT + 4}
-                className="text-[10px] font-medium"
+                x={x + 7}
+                y={padT - 1}
+                className="text-[10.5px] font-semibold"
                 fill={m.color}
               >
                 {m.label}
@@ -129,16 +131,17 @@ export function MonthlyBars({
       </svg>
       {h ? (
         <div
-          className="pointer-events-none absolute top-0 z-10 rounded-md border bg-popover px-2 py-1 text-xs shadow-sm"
+          className="pointer-events-none absolute -top-2 z-10 rounded-full border bg-popover px-2.5 py-1 text-xs shadow-[var(--ur-shadow)]"
           style={{
             left: Math.min(
-              width - 120,
+              width - 150,
               Math.max(0, padL + (hover ?? 0) * step - 40),
             ),
           }}
         >
           <span className="text-muted-foreground">{fmtMonth(h.month)}</span>{" "}
-          <span className="ur-num font-medium">{fmtInt(h.count)}</span>
+          <span className="ur-num font-semibold">{fmtInt(h.count)}</span>
+          <span className="text-muted-foreground"> complaints</span>
         </div>
       ) : null}
     </div>
