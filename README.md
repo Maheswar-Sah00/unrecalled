@@ -37,7 +37,7 @@ Builder.io **Agent-Native Hackathon** 2026 · built on [`@agent-native/core`](ht
 | **Solution** | Scan any car. Unrecalled groups its complaints into failure modes, checks each model year against every recall, ODI investigation and class settlement, flags what nothing covers, and drafts a 49 CFR Part 552 petition that cites the complaints. |
 | **Result** | **2021–23 Jeep Wrangler "death wobble": 380 owner complaints in model years nothing covers**, 248 of them filed after NHTSA closed its investigation without a recall. |
 | **Proof** | Backtested on Hyundai/Kia Theta II engine seizure: the same rule the app runs today fires **30 months before the recall**. |
-| **Agent-Native** | 22 actions shared by the UI, the in-app agent, HTTP, the CLI and MCP. Corrections become rules. Marking a petition "filed" always asks the human. |
+| **Agent-Native** | 23 actions shared by the UI, the in-app agent, HTTP, the CLI and MCP. Corrections become rules. Marking a petition "filed" always asks the human. |
 
 ---
 
@@ -203,13 +203,13 @@ The petition page shows the checklist, a plain-language "How to send it" with NH
 
 ## 5. How Unrecalled uses Agent-Native
 
-<p align="center"><img src="docs/diagrams/04-one-action.svg" alt="The UI, the in-app agent, HTTP, the CLI and MCP/A2A all call the same defineAction actions (scan-vehicle, get-gap-board, draft-petition, update-petition with approval, label-complaint, set-watch; 22 actions), which call a pure TypeScript engine" width="900"></p>
+<p align="center"><img src="docs/diagrams/04-one-action.svg" alt="The UI, the in-app agent, HTTP, the CLI and MCP/A2A all call the same defineAction actions (scan-vehicle, get-gap-board, draft-petition, update-petition with approval, label-complaint, set-watch; 23 actions), which call a pure TypeScript engine" width="900"></p>
 
 Builder's thesis is "if the UI can do it, the agent can do it". Unrecalled follows it exactly:
 
 | Agent-Native feature | How Unrecalled uses it |
 | --- | --- |
-| **`defineAction`** | 22 actions. "Scan a car" on the homepage and "scan the 2021 Wrangler" in chat call the same `scan-vehicle`. Each one is also an HTTP endpoint, a CLI command and an MCP tool. |
+| **`defineAction`** | 23 actions. "Scan a car" on the homepage and "scan the 2021 Wrangler" in chat call the same `scan-vehicle`. Each one is also an HTTP endpoint, a CLI command and an MCP tool. |
 | **`needsApproval`** | Marking a petition "filed" stops for a human yes, whoever asks. |
 | **Application state** | The agent sees which car, problem or petition is on screen, so "draft a petition for this" just works. |
 | **Live sync** | When the agent scans, labels or drafts, the open page updates without a reload. |
@@ -217,7 +217,7 @@ Builder's thesis is "if the UI can do it, the agent can do it". Unrecalled follo
 | **Agent loop, not one prompt** | The agent chains real actions (scan → board → cluster → draft → navigate) and answers only with numbers from action results. |
 | **Less AI where it counts** | Grouping, coverage, the signal and the petition checklist are deterministic code. The model reads, explains, drafts and navigates. |
 
-<p align="center"><img src="docs/diagrams/05-architecture.svg" alt="Browser pages and agent chat talk to the Unrecalled server: 22 actions, the agent loop on Gemini, the engine, Drizzle on PGlite or Postgres, and a weekly automation; the engine fetches and caches the NHTSA complaints, recalls, FLAT_INV investigations, vPIC and safetyIssues APIs" width="900"></p>
+<p align="center"><img src="docs/diagrams/05-architecture.svg" alt="Browser pages and agent chat talk to the Unrecalled server: 23 actions, the agent loop on Gemini, the engine, Drizzle on PGlite or Postgres, and a weekly automation; the engine fetches and caches the NHTSA complaints, recalls, FLAT_INV investigations, vPIC and safetyIssues APIs" width="900"></p>
 
 ## 6. The product
 
@@ -307,7 +307,7 @@ local PGlite.
 | `add-settlement` | Record a settlement that covers some model years |
 | `draft-petition`, `get-petition`, `update-petition`, `list-petitions` | The 552 petition (`filed` needs approval) |
 | `get-backtest` | The Theta II backtest |
-| `set-watch`, `rescan-watchlist`, `list-alerts` | Weekly watch and its updates |
+| `set-watch`, `rescan-watchlist`, `list-alerts`, `mark-alerts-seen` | Weekly watch, its updates, and marking them seen |
 
 Every action is also an HTTP endpoint and a CLI command:
 
@@ -323,7 +323,7 @@ HTTP: `POST /_agent-native/actions/<name>` (signed-in session). `get-gap-board` 
 
 ```
 unrecalled/
-├── actions/                 ← 22 actions: one capability each, shared by UI, agent, HTTP, CLI, MCP
+├── actions/                 ← 23 actions: one capability each, shared by UI, agent, HTTP, CLI, MCP
 ├── server/
 │   ├── engine/              ← pure TypeScript, no framework imports
 │   │   ├── nhtsa.ts         ←   complaints, recalls, FLAT_INV.zip, vPIC (+ cache.ts)

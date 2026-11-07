@@ -106,7 +106,7 @@ export function WatchCar({
           )}
         </button>
         {on ? (
-          <button type="button" onClick={() => rescan.mutate({})} disabled={busy} className="ur-wt__quiet">
+          <button type="button" onClick={() => rescan.mutate({})} disabled={busy || !alertData} className="ur-wt__quiet">
             {busy ? (
               <IconLoader2 className="size-4 motion-safe:animate-spin" aria-hidden="true" />
             ) : (
