@@ -74,6 +74,20 @@ export interface ListVehiclesResult {
   vehicles: VehicleSummary[];
 }
 
+export interface AlertRow {
+  id: string;
+  vehicleId: string;
+  failureModeId: string;
+  kind: "signal" | "growth" | string;
+  message: string;
+  createdAt: string;
+  seen: boolean;
+}
+
+export interface ListAlertsResult {
+  alerts: AlertRow[];
+}
+
 export interface ScanVehicleResult {
   id: string;
   label: string;

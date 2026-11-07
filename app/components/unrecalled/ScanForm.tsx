@@ -1,5 +1,13 @@
-import { useActionMutation } from "@agent-native/core/client/hooks";
-import { IconAlertTriangle, IconArrowUp, IconCheck, IconLoader2, IconX } from "@tabler/icons-react";
+import { callAction, useActionMutation } from "@agent-native/core/client/hooks";
+import {
+  IconAlertTriangle,
+  IconArrowUp,
+  IconCheck,
+  IconCircleCheckFilled,
+  IconInfoCircle,
+  IconLoader2,
+  IconX,
+} from "@tabler/icons-react";
 import { type ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -7,6 +15,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 import { Msg } from "./landing/shared";
+import { ModeSwitch, type ScanMode, VIN_LENGTH, cleanVin, prettyName, vinProblem } from "./VinScan";
 import type { ScanVehicleResult } from "./types";
 
 const QUICK_PICKS = [
@@ -45,6 +54,12 @@ export function ScanForm({ thread }: { thread?: ReactNode }) {
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [scanning, setScanning] = useState<ScanVars | null>(null);
   const [failure, setFailure] = useState<{ title: string; body: string } | null>(null);
+  const [mode, setMode] = useState<ScanMode>("model");
+  const [vin, setVin] = useState("");
+  const [vinTouched, setVinTouched] = useState(false);
+  const [decoding, setDecoding] = useState(false);
+  const [decoded, setDecoded] = useState<string | null>(null);
+  const [vinError, setVinError] = useState<string | null>(null);
 
   const scan = useActionMutation<ScanVehicleResult, ScanVars>("scan-vehicle", {
     timeoutMs: 180_000,
@@ -89,7 +104,8 @@ export function ScanForm({ thread }: { thread?: ReactNode }) {
   }
 
   function pick(q: (typeof QUICK_PICKS)[number]) {
-    if (scan.isPending) return;
+    if (scan.isPending || decoding) return;
+    setMode("model");
     setMake(q.make);
     setModel(q.model);
     setYearFrom(String(q.from));
@@ -108,6 +124,53 @@ export function ScanForm({ thread }: { thread?: ReactNode }) {
     e.preventDefault();
     if (!canSubmit) return;
     run({ make: make.trim(), model: model.trim(), yearFrom: from, yearTo: to });
+  }
+
+  const vinIssue = vinProblem(vin);
+  // Bad characters show at once; a short VIN only once they try to scan it.
+  const showVinIssue = !!vinIssue && (vinTouched || !!vinProblem(vin.padEnd(VIN_LENGTH, "0")));
+  const vinMessage = vinError ?? (showVinIssue ? vinIssue : null);
+
+  /** VIN to make, model, year (NHTSA vPIC), then the same scan as make & model mode. */
+  async function submitVin(e: React.FormEvent) {
+    e.preventDefault();
+    if (scan.isPending || decoding) return;
+    setVinTouched(true);
+    setVinError(null);
+    setDecoded(null);
+    if (vinIssue) return;
+    setFailure(null);
+    setDecoding(true);
+    try {
+      const car = await callAction<{ make: string; model: string; modelYear: number }>(
+        "decode-vin",
+        { vin },
+        { method: "GET", timeoutMs: 20_000 },
+      );
+      const vars = {
+        make: prettyName(car.make),
+        model: prettyName(car.model),
+        yearFrom: car.modelYear,
+        yearTo: car.modelYear,
+      };
+      setDecoded(`${car.modelYear} ${vars.make} ${vars.model}`);
+      run(vars);
+    } catch (error) {
+      const status = (error as { status?: number } | null)?.status;
+      setVinError(
+        status === 401 || status === 403
+          ? "Your session ended. Refresh the page and sign in again."
+          : UNREADABLE_VIN,
+      );
+    } finally {
+      setDecoding(false);
+    }
+  }
+
+  function switchMode(m: ScanMode) {
+    setMode(m);
+    setVinError(null);
+    setFailure(null);
   }
 
   const busy = scan.isPending;
@@ -152,11 +215,33 @@ export function ScanForm({ thread }: { thread?: ReactNode }) {
       </div>
 
       <div className="px-3 pb-3 sm:px-5 sm:pb-5">
-        <form onSubmit={submit} className="lp-composer" aria-label="Scan a car">
-          <div className="flex items-center gap-2 px-3.5 pt-3 text-[14px] text-muted-foreground sm:px-4">
-            <span className="lp-mention font-medium">@Unrecalled</span>
-            <span className="truncate">find the problems nobody is fixing on…</span>
+        <form
+          onSubmit={mode === "vin" ? submitVin : submit}
+          className="lp-composer"
+          aria-label="Scan a car"
+          noValidate
+        >
+          <div className="flex items-center gap-2 pe-2.5 ps-3.5 pt-2.5 text-[14px] text-muted-foreground sm:pe-3 sm:ps-4 sm:pt-3">
+            <span className="lp-mention shrink-0 font-medium">@Unrecalled</span>
+            <span className="min-w-0 flex-1 truncate">find the problems nobody is fixing on…</span>
+            <ModeSwitch value={mode} onChange={switchMode} disabled={busy || decoding} />
           </div>
+          {mode === "vin" ? (
+            <VinRow
+              vin={vin}
+              onVin={(v) => {
+                setVin(v);
+                setVinError(null);
+                setDecoded(null);
+                setVinTouched(false);
+              }}
+              message={vinMessage}
+              onModelMode={() => switchMode("model")}
+              decoding={decoding}
+              decoded={decoded}
+              busy={busy}
+            />
+          ) : (
           <div className="grid grid-cols-2 gap-2 p-2.5 sm:p-3 md:grid-cols-[1fr_1fr_7.5rem_7.5rem_auto]">
             <Field id="scan-make" label="Make">
               <input
@@ -225,6 +310,15 @@ export function ScanForm({ thread }: { thread?: ReactNode }) {
               </p>
             ) : null}
           </div>
+          )}
+          {mode === "vin" ? (
+            <div className="flex items-start gap-2 border-t border-border/80 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-muted-foreground sm:px-4">
+              <IconInfoCircle className="mt-[3px] size-3.5 shrink-0" aria-hidden="true" />
+              <p id="scan-vin-help">
+                On your registration, insurance card, or the windshield (driver’s side)
+              </p>
+            </div>
+          ) : (
           <div className="flex items-center gap-2 border-t border-border/80 py-2.5 ps-3.5 sm:px-4">
             <span className="shrink-0 text-[12.5px] text-muted-foreground">Try</span>
             <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-0.5 pe-3 [mask-image:linear-gradient(to_right,#000_calc(100%-28px),transparent)] [scrollbar-width:none] md:flex-wrap md:overflow-visible md:pe-0 md:[mask-image:none] [&::-webkit-scrollbar]:hidden">
@@ -244,8 +338,102 @@ export function ScanForm({ thread }: { thread?: ReactNode }) {
               })}
             </div>
           </div>
+          )}
         </form>
       </div>
+    </div>
+  );
+}
+
+const UNREADABLE_VIN = "We couldn’t read that VIN. Check it, or scan by make and model.";
+
+function VinRow({
+  vin,
+  onVin,
+  message,
+  onModelMode,
+  decoding,
+  decoded,
+  busy,
+}: {
+  vin: string;
+  onVin: (v: string) => void;
+  message: string | null;
+  onModelMode: () => void;
+  decoding: boolean;
+  decoded: string | null;
+  busy: boolean;
+}) {
+  const ready = vin.length === VIN_LENGTH && !message;
+  return (
+    <div className="grid grid-cols-1 gap-2 p-2.5 sm:p-3 md:grid-cols-[1fr_auto]">
+      <div className="lp-field" data-invalid={message ? "true" : undefined}>
+        <label htmlFor="scan-vin">VIN</label>
+        <input
+          id="scan-vin"
+          value={vin}
+          onChange={(e) => onVin(cleanVin(e.target.value))}
+          placeholder="17 characters"
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          aria-invalid={!!message}
+          aria-describedby={message ? "scan-vin-error" : "scan-vin-help"}
+          className="font-mono tracking-[0.06em] placeholder:font-sans placeholder:font-normal placeholder:tracking-normal"
+          disabled={busy || decoding}
+        />
+        <span
+          className={cn(
+            "ur-num flex h-5 min-w-9 shrink-0 items-center justify-end text-[12px] tabular-nums",
+            ready ? "text-ur-recalled" : "text-muted-foreground",
+          )}
+          aria-live="polite"
+        >
+          {ready ? (
+            <IconCheck className="ur-pop size-4" strokeWidth={2.6} aria-label="17 of 17 characters" />
+          ) : (
+            `${vin.length}/${VIN_LENGTH}`
+          )}
+        </span>
+      </div>
+      <button type="submit" disabled={busy || decoding || !vin} className="lp-send">
+        {busy || decoding ? <IconLoader2 className="size-4 motion-safe:animate-spin" /> : null}
+        {decoding ? "Reading VIN…" : busy ? "Scanning…" : "Scan"}
+        {busy || decoding ? null : (
+          <span className="flex size-5 items-center justify-center rounded-full bg-primary-foreground/15">
+            <IconArrowUp className="size-3.5" strokeWidth={2.4} />
+          </span>
+        )}
+      </button>
+      {message ? (
+        <p id="scan-vin-error" role="alert" className="lp-swap px-1 text-xs text-destructive md:col-span-2">
+          {message === UNREADABLE_VIN ? (
+            <>
+              We couldn’t read that VIN. Check it, or{" "}
+              <button
+                type="button"
+                onClick={onModelMode}
+                className="font-medium underline underline-offset-2 hover:text-foreground"
+              >
+                scan by make and model
+              </button>
+              .
+            </>
+          ) : (
+            message
+          )}
+        </p>
+      ) : decoded ? (
+        <p
+          role="status"
+          className="lp-swap flex items-center gap-1.5 px-1 text-[13px] text-muted-foreground md:col-span-2"
+        >
+          <IconCircleCheckFilled className="size-4 shrink-0 text-ur-recalled" aria-hidden="true" />
+          <span>
+            Found your car: <span className="font-semibold text-foreground">{decoded}</span>
+          </span>
+        </p>
+      ) : null}
     </div>
   );
 }

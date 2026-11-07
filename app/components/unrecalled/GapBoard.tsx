@@ -21,6 +21,7 @@ import { Frame, Msg } from "./board/Frame";
 import { HowCalculated } from "./board/HowCalculated";
 import { splitModeName, splitVehicleLabel } from "./board/plain";
 import { Shimmer } from "./board/Shimmer";
+import { WatchCar } from "./board/Watch";
 import { CoverageStrip, Sparkline } from "./charts-small";
 import { DraftPetitionDialog } from "./DraftPetitionDialog";
 import { compactYears, fmtInt, fmtMonth, fmtRatio, fmtRelative } from "./format";
@@ -163,6 +164,9 @@ export function GapBoard({ vehicleId }: { vehicleId: string }) {
             <a href="#how" className="ur-btn-soft">
               How we calculated this
             </a>
+          </div>
+          <div className="mt-8">
+            <WatchCar vehicleId={vehicleId} watching={!!v.watch} clusters={all} />
           </div>
         </div>
 

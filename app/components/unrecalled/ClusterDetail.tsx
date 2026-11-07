@@ -7,6 +7,7 @@ import {
   IconCarCrash,
   IconChevronLeft,
   IconChevronRight,
+  IconExternalLink,
   IconFirstAidKit,
   IconFlame,
   IconMessages,
@@ -449,8 +450,8 @@ export function ClusterDetail({ vehicleId, modeId }: { vehicleId: string; modeId
         </Frame>
       </section>
 
-      {cluster.count > 0 ? (
-        <section className="rp-section" aria-labelledby="rp-next">
+      <section className="rp-section" aria-labelledby={cluster.count > 0 ? "rp-next" : "rp-voice"}>
+        {cluster.count > 0 ? (
           <div className="ur-reveal flex flex-col items-start gap-6 rounded-[24px] border border-border bg-card px-6 py-8 shadow-[var(--ur-shadow)] md:flex-row md:items-center md:justify-between md:px-10 md:py-10">
             <div className="max-w-2xl">
               <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Your next step</p>
@@ -469,12 +470,56 @@ export function ClusterDetail({ vehicleId, modeId }: { vehicleId: string; modeId
               <DraftPetitionDialog vehicleId={vehicleId} failureModeId={modeId} />
             </span>
           </div>
-        </section>
-      ) : null}
+        ) : null}
+        <AddYourVoice ownerLabel={ownerLabel} className={cluster.count > 0 ? "mt-4" : undefined} />
+      </section>
 
       <div className="rp-section">
         <HowCalculated compact />
       </div>
+    </div>
+  );
+}
+
+const NHTSA_COMPLAINT_URL = "https://www.nhtsa.gov/report-a-safety-problem";
+
+function AddYourVoice({ ownerLabel, className }: { ownerLabel: string; className?: string | undefined }) {
+  const car = ownerLabel.trim();
+  return (
+    <div
+      className={cn(
+        "ur-reveal flex flex-col items-start gap-5 rounded-[20px] border border-border bg-foreground/[0.025] px-6 py-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-10 md:py-7 dark:bg-white/[0.02]",
+        className,
+      )}
+      style={{ ["--ur-delay" as string]: "80ms" }}
+    >
+      <div className="flex min-w-0 items-start gap-4">
+        <span
+          className="mt-0.5 hidden size-10 shrink-0 items-center justify-center rounded-xl bg-card text-foreground shadow-[var(--ur-shadow)] ring-1 ring-inset ring-border sm:inline-flex"
+          aria-hidden="true"
+        >
+          <IconMessages className="size-[18px]" />
+        </span>
+        <div className="min-w-0 max-w-2xl">
+          <p className="text-[12.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Add your voice</p>
+          <h3 id="rp-voice" className="mt-1.5 font-display text-[1.2rem] font-[560] leading-snug tracking-[-0.02em] text-foreground">
+            {car ? `Had this happen to your ${car}?` : "Had this happen to you?"}
+          </h3>
+          <p className="mt-1.5 text-[14.5px] leading-relaxed text-muted-foreground">
+            File your own complaint with NHTSA. Every report adds weight to the petition and helps NHTSA spot the pattern.
+          </p>
+        </div>
+      </div>
+      <a
+        href={NHTSA_COMPLAINT_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="ur-btn-soft rp-btn-sm shrink-0 whitespace-nowrap"
+      >
+        File a complaint at NHTSA
+        <IconExternalLink className="size-4" aria-hidden="true" />
+        <span className="sr-only">(opens in a new tab)</span>
+      </a>
     </div>
   );
 }

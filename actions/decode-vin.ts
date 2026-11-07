@@ -15,7 +15,9 @@ export default defineAction({
   http: { method: "GET" },
   readOnly: true,
   run: async ({ vin }) => {
-    const r = await decodeVin(vin.toUpperCase());
+    // decodeVin throws when vPIC can't resolve make/model/year; report that as a
+    // clean 404 instead of a server error.
+    const r = await decodeVin(vin.toUpperCase()).catch(() => null);
     if (!r?.make || !r?.model || !r?.modelYear)
       fail("NHTSA could not decode that VIN.", {
         statusCode: 404,

@@ -1,5 +1,5 @@
 import { actionErrorMessage, useActionQuery } from "@agent-native/core/client/hooks";
-import { IconArrowRight, IconCar } from "@tabler/icons-react";
+import { IconArrowRight, IconBell, IconCar } from "@tabler/icons-react";
 import { Link } from "react-router";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,12 +8,17 @@ import { cn } from "@/lib/utils";
 import { fmtInt, fmtRelative, yearRange } from "./format";
 import { CountUp } from "./premium";
 import { scrollToScan } from "./landing/shared";
-import type { ListVehiclesResult, VehicleSummary } from "./types";
+import type { ListAlertsResult, ListVehiclesResult, VehicleSummary } from "./types";
 
 export function VehicleList() {
   const { data, isLoading, error } =
     useActionQuery<ListVehiclesResult>("list-vehicles", {});
   const vehicles = data?.vehicles ?? [];
+  const { data: alertData } = useActionQuery<ListAlertsResult>("list-alerts", {});
+  const unseenBy = new Map<string, number>();
+  for (const a of alertData?.alerts ?? []) {
+    if (!a.seen) unseenBy.set(a.vehicleId, (unseenBy.get(a.vehicleId) ?? 0) + 1);
+  }
 
   return (
     <section className="lp-section lp-vehicles pt-0" aria-labelledby="lp-vehicles">
@@ -58,7 +63,7 @@ export function VehicleList() {
           ) : (
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
               {vehicles.map((v, i) => (
-                <VehicleRow key={v.id} v={v} index={i} />
+                <VehicleRow key={v.id} v={v} index={i} unseen={unseenBy.get(v.id) ?? 0} />
               ))}
             </ul>
           )}
@@ -68,7 +73,7 @@ export function VehicleList() {
   );
 }
 
-function VehicleRow({ v, index }: { v: VehicleSummary; index: number }) {
+function VehicleRow({ v, index, unseen }: { v: VehicleSummary; index: number; unseen: number }) {
   const label =
     v.label || `${v.make} ${v.model} ${yearRange(v.yearFrom, v.yearTo)}`;
   const name = titleCase(`${v.make} ${v.model}`.trim()) || label;
@@ -91,6 +96,21 @@ function VehicleRow({ v, index }: { v: VehicleSummary; index: number }) {
             complaints
           </div>
         </div>
+        {v.watch || unseen > 0 ? (
+          <div className="flex shrink-0 flex-col items-end gap-1.5 pt-1">
+            {v.watch ? (
+              <span className="inline-flex h-6 items-center gap-1 rounded-full border border-ur-recalled/30 bg-ur-recalled/[0.08] px-2 text-[11.5px] font-semibold text-foreground/80">
+                <IconBell className="size-3 text-ur-recalled" aria-hidden="true" />
+                Watching
+              </span>
+            ) : null}
+            {unseen > 0 ? (
+              <span className="ur-num inline-flex h-6 items-center rounded-full bg-ur-uncovered px-2 text-[11.5px] font-semibold text-white dark:bg-ur-uncovered/15 dark:text-ur-uncovered">
+                {unseen} new {unseen === 1 ? "update" : "updates"}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-6 flex items-end gap-3">

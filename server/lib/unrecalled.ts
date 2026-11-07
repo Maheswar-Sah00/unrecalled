@@ -12,6 +12,8 @@ import {
   scan,
   withInvestigationUrls,
 } from "../engine/index.js";
+import { watchAlerts } from "../engine/alerts.js";
+import { keepStoredWhenShorter } from "../engine/merge.js";
 import { DEFAULT_PEERS, SEED_MODES, SEED_SETTLEMENTS } from "../engine/rules.js";
 import type {
   ClusterResult,
@@ -157,8 +159,8 @@ export async function scanVehicle(scope: Scope, raw: ScanArgs) {
     loadInvestigations({ cacheDir: CACHE_DIR }),
   ]);
 
-  const complaints = dedupe(own.flat());
-  const peerComplaints = dedupe(peerLists.flat());
+  let complaints = dedupe(own.flat());
+  let peerComplaints = dedupe(peerLists.flat());
   const recalls: Recall[] = recallLists.flat();
   const investigations: Investigation[] = await withInvestigationUrls(
     investigationsFor(allInv, make, model, years),
@@ -182,6 +184,18 @@ export async function scanVehicle(scope: Scope, raw: ScanArgs) {
     .limit(1);
   const id = existing?.id ?? crypto.randomUUID();
   const label = vehicleLabel(make, model, yearFrom, yearTo);
+
+  // A re-scan never shrinks a model year: if NHTSA answered short (rate limit,
+  // partial page), keep that year's previously stored complaints.
+  if (existing) {
+    const [prevOwn, prevPeer] = await Promise.all([loadComplaints(id, false), loadComplaints(id, true)]);
+    const own2 = keepStoredWhenShorter(complaints, prevOwn);
+    const peer2 = keepStoredWhenShorter(peerComplaints, prevPeer);
+    complaints = own2.complaints;
+    peerComplaints = peer2.complaints;
+    if (own2.kept.length)
+      console.warn(`[unrecalled] NHTSA answered short for ${own2.kept.join(", ")}; kept the previous scan's complaints for those years.`);
+  }
   const now = new Date().toISOString();
 
   await db.transaction(async (tx) => {
@@ -333,16 +347,7 @@ export async function recompute(scope: Scope, vehicleId: string, opts: { alert?:
       .where(eq(schema.vehicles.id, vehicleId));
 
     if (opts.alert) {
-      const alerts = [];
-      for (const r of results) {
-        const p = prior.get(r.failureModeId);
-        const name = modeName.get(r.failureModeId) ?? r.failureModeId;
-        if (r.signal.fired && !p?.signalFired) {
-          alerts.push({ kind: "signal", message: `${vehicle.label}: early-warning signal fired for "${name}" (${r.uncoveredCount} uncovered complaints).`, failureModeId: r.failureModeId });
-        } else if (r.coverage.status === "uncovered" && p && r.uncoveredCount - p.uncoveredCount >= 5) {
-          alerts.push({ kind: "growth", message: `${vehicle.label}: "${name}" grew by ${r.uncoveredCount - p.uncoveredCount} uncovered complaints since the last scan.`, failureModeId: r.failureModeId });
-        }
-      }
+      const alerts = watchAlerts(vehicle.label, results, prior, modeName);
       if (alerts.length) {
         await tx.insert(schema.alerts).values(
           alerts.map((a) => ({ id: crypto.randomUUID(), vehicleId, ...a, ownerEmail: scope.ownerEmail, orgId: scope.orgId })),
