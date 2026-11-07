@@ -4,9 +4,6 @@ import {
 } from "@agent-native/core/client/hooks";
 import {
   IconCarCrash,
-  IconCircleCheck,
-  IconCircleX,
-  IconExternalLink,
   IconFirstAidKit,
   IconFlame,
   IconSkull,
@@ -18,7 +15,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 import { Shimmer, ShimmerStyles } from "./board/Shimmer";
-import { fmtDate, nhtsaComplaintUrl } from "./format";
+import { fmtDate } from "./format";
 import { statusMeta } from "./status";
 import type { ClusterComplaint, GetClusterResult, LabelVerdict } from "./types";
 
@@ -250,40 +247,9 @@ function ComplaintItem({
               {open ? "Show less" : "Read the full report"}
             </button>
           ) : null}
-          <a
-            href={nhtsaComplaintUrl(c.odiNumber)}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-0.5 text-muted-foreground hover:text-foreground hover:underline"
-            title="Open on nhtsa.gov"
-          >
-            NHTSA <span className="ur-num">#{c.odiNumber}</span>
-            <IconExternalLink className="size-3" aria-hidden="true" />
-          </a>
-        </div>
-        <div className="rp-msg__actions" role="group" aria-label="Label this report">
-          <button
-            type="button"
-            className="rp-act"
-            data-kind="include"
-            aria-pressed={included}
-            onClick={() => onLabel(included ? "clear" : "include")}
-            title={included ? "Clear label" : "Confirm this report is about this problem"}
-          >
-            <IconCircleCheck aria-hidden="true" />
-            {included ? "Included" : "Include"}
-          </button>
-          <button
-            type="button"
-            className="rp-act"
-            data-kind="exclude"
-            aria-pressed={excluded}
-            onClick={() => onLabel(excluded ? "clear" : "exclude")}
-            title={excluded ? "Undo exclude" : "Not about this problem: exclude it"}
-          >
-            <IconCircleX aria-hidden="true" />
-            {excluded ? "Undo" : "Exclude"}
-          </button>
+          <span className="text-muted-foreground" title="The number NHTSA gave this complaint">
+            NHTSA report <span className="ur-num">#{c.odiNumber}</span>
+          </span>
         </div>
       </div>
     </li>

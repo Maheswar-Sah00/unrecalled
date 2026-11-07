@@ -14,8 +14,7 @@ interface HeaderProps {
 
 const LINKS = [
   { to: "/#how", label: "How it works", match: null },
-  { to: "/petitions", label: "Petitions", match: "/petitions" },
-  { to: "/backtest", label: "Proof", match: "/backtest" },
+  { to: "/petitions", label: "My petitions", match: "/petitions" },
   { to: "/chat", label: "Ask the agent", match: "/chat" },
 ];
 

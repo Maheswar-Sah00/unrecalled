@@ -1,19 +1,13 @@
-import {
-  actionErrorMessage,
-  useActionMutation,
-  useActionQuery,
-} from "@agent-native/core/client/hooks";
-import { IconArrowUpRight, IconCar } from "@tabler/icons-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { actionErrorMessage, useActionQuery } from "@agent-native/core/client/hooks";
+import { IconArrowRight, IconCar } from "@tabler/icons-react";
 import { Link } from "react-router";
-import { toast } from "sonner";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 import { fmtInt, fmtRelative, yearRange } from "./format";
 import { CountUp } from "./premium";
+import { scrollToScan } from "./landing/shared";
 import type { ListVehiclesResult, VehicleSummary } from "./types";
 
 export function VehicleList() {
@@ -27,15 +21,15 @@ export function VehicleList() {
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <h2 id="lp-vehicles" className="lp-h3">
-              Scanned vehicles
+              Your scanned cars
             </h2>
             <p className="lp-body mt-3 max-w-[34rem]">
-              Every car scanned so far. Open one to see its gaps, or watch it weekly.
+              Every car you have scanned. Open one to see what nobody covers.
             </p>
           </div>
           {vehicles.length > 0 ? (
             <span className="ur-num rounded-full border border-border px-3.5 py-1.5 text-sm text-muted-foreground">
-              {vehicles.length} vehicle{vehicles.length === 1 ? "" : "s"}
+              {vehicles.length} car{vehicles.length === 1 ? "" : "s"}
             </span>
           ) : null}
         </div>
@@ -44,18 +38,22 @@ export function VehicleList() {
             <ListSkeleton />
           ) : error ? (
             <p className="ur-panel p-6 text-sm text-muted-foreground">
-              {actionErrorMessage(error) ?? "Could not load scanned vehicles."}
+              {actionErrorMessage(error) ?? "We couldn’t load your scanned cars. Refresh the page to try again."}
             </p>
           ) : vehicles.length === 0 ? (
             <div className="ur-panel flex flex-col items-center px-6 py-14 text-center">
               <span className="flex size-14 items-center justify-center rounded-2xl border border-border text-muted-foreground">
                 <IconCar className="size-7" stroke={1.5} />
               </span>
-              <p className="lp-h4 mt-4">Nothing scanned yet</p>
+              <p className="lp-h4 mt-4">No cars scanned yet</p>
               <p className="mt-1.5 max-w-sm text-[15px] text-muted-foreground">
-                Pick a car above and Unrecalled will read what owners are
-                reporting about it.
+                Scan your car above. In a few seconds you will see every problem
+                owners report, and which ones nobody covers.
               </p>
+              <button type="button" onClick={() => scrollToScan()} className="ur-btn mt-6">
+                Scan your car
+                <IconArrowRight className="size-4" stroke={2} />
+              </button>
             </div>
           ) : (
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
@@ -71,37 +69,8 @@ export function VehicleList() {
 }
 
 function VehicleRow({ v, index }: { v: VehicleSummary; index: number }) {
-  const qc = useQueryClient();
-  const setWatch = useActionMutation<
-    unknown,
-    { vehicleId: string; watch: "true" | "false" }
-  >("set-watch", {
-    onMutate: async ({ vehicleId, watch: watchArg }) => {
-      const watch = watchArg === "true";
-      const key = ["action", "list-vehicles", {}];
-      await qc.cancelQueries({ queryKey: key });
-      const prev = qc.getQueryData<ListVehiclesResult>(key);
-      qc.setQueryData<ListVehiclesResult>(key, (old) =>
-        old
-          ? {
-              vehicles: old.vehicles.map((x) =>
-                x.id === vehicleId ? { ...x, watch } : x,
-              ),
-            }
-          : old,
-      );
-      return { prev };
-    },
-    onError: (error, _vars, ctx) => {
-      const prev = (ctx as { prev?: ListVehiclesResult } | undefined)?.prev;
-      if (prev) qc.setQueryData(["action", "list-vehicles", {}], prev);
-      toast.error(actionErrorMessage(error) ?? "Could not update watch.");
-    },
-  });
-
   const label =
     v.label || `${v.make} ${v.model} ${yearRange(v.yearFrom, v.yearTo)}`;
-  const switchId = `watch-${v.id}`;
   const name = titleCase(`${v.make} ${v.model}`.trim()) || label;
   const uncovered = v.uncoveredModes > 0;
   return (
@@ -122,10 +91,6 @@ function VehicleRow({ v, index }: { v: VehicleSummary; index: number }) {
             complaints
           </div>
         </div>
-        <IconArrowUpRight
-          className="mt-1 size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground"
-          aria-hidden="true"
-        />
       </div>
 
       <div className="mt-6 flex items-end gap-3">
@@ -143,27 +108,14 @@ function VehicleRow({ v, index }: { v: VehicleSummary; index: number }) {
         </span>
       </div>
 
-      <div className="relative z-10 mt-5 flex items-center justify-between gap-3 border-t border-border/70 pt-3.5">
+      <div className="mt-5 flex items-center justify-between gap-3 border-t border-border/70 pt-3.5">
         <span className="truncate text-xs text-muted-foreground">
           Scanned {fmtRelative(v.lastScannedAt)}
         </span>
-        <div className="flex shrink-0 items-center gap-2">
-          <label
-            htmlFor={switchId}
-            className="cursor-pointer text-xs text-muted-foreground"
-          >
-            Watch weekly
-          </label>
-          <Switch
-            id={switchId}
-            size="sm"
-            checked={v.watch}
-            aria-label={`Watch ${label} weekly`}
-            onCheckedChange={(watch) =>
-              setWatch.mutate({ vehicleId: v.id, watch: watch ? "true" : "false" })
-            }
-          />
-        </div>
+        <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-foreground/70 transition-colors group-hover:text-foreground">
+          Open report
+          <IconArrowRight className="size-3.5" aria-hidden="true" />
+        </span>
       </div>
     </li>
   );

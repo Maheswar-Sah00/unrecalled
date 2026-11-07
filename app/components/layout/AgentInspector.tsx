@@ -36,8 +36,8 @@ export function AgentInspector({
       browserTabId={TAB_ID}
       openOnChatRunning={chatHomeHandoffActive}
       onFullscreenRequest={openAskAgentFullscreen}
-      emptyStateText="What should we investigate?"
-      agentPageHref="/settings/agent"
+      emptyStateText="What’s wrong with your car?"
+      showModelSelector={false}
       suggestions={[...AGENT_SUGGESTIONS]}
       dynamicSuggestions={false}
       composerPlaceholder="Ask about any car, defect or petition…"

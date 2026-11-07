@@ -7,9 +7,9 @@ import type { ReactNode } from "react";
 import { BrandMark } from "@/components/unrecalled/premium";
 
 export const AGENT_SUGGESTIONS = [
-  "Find gaps for the 2021–2023 Jeep Wrangler",
-  "Explain the death wobble cluster",
-  "Draft a petition for the biggest gap",
+  "Is my 2021 Wrangler’s steering shake covered?",
+  "What problems do 2021 Tesla Model 3 owners report that nobody fixes?",
+  "Draft a petition for the Jeep Wrangler death wobble",
 ] as const;
 
 const CHIP_ICONS: ReactNode[] = [
@@ -62,14 +62,14 @@ export function ChatWelcome() {
         className="ur-display ur-reveal"
         style={{ ["--ur-delay" as string]: "80ms" }}
       >
-        What should we investigate?
+        What’s wrong with your car?
       </h1>
       <p
         className="ur-lede ur-reveal"
         style={{ ["--ur-delay" as string]: "140ms" }}
       >
-        Name a car. I’ll read every owner complaint sent to NHTSA, find the
-        problems no recall covers, and help you write the petition.
+        Tell me your car and what it’s doing. I’ll check what owners report to
+        NHTSA, whether a recall covers it, and draft a petition if nothing does.
       </p>
       <div
         className="ur-chat-welcome__chips ur-reveal"
@@ -94,7 +94,7 @@ export function ChatWelcome() {
         style={{ ["--ur-delay" as string]: "260ms" }}
       >
         <span className="ur-agent-badge">Agent</span>
-        Drafts for you. You review and file; it never files.
+        Drafts for you. You read it and send it; it never sends anything.
       </p>
     </div>
   );

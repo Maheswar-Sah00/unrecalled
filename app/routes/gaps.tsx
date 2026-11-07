@@ -3,7 +3,7 @@ import { Outlet } from "react-router";
 import { APP_TITLE } from "@/lib/app-config";
 
 export function meta() {
-  return [{ title: `Gaps · ${APP_TITLE}` }];
+  return [{ title: `Car report · ${APP_TITLE}` }];
 }
 
 export default function GapsLayout() {

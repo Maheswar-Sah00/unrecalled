@@ -1,6 +1,6 @@
 import { useSetPageTitle } from "@agent-native/toolkit/app-shell/header-actions";
 import { IconChevronRight } from "@tabler/icons-react";
-import { Fragment, type ReactNode } from "react";
+import { Fragment, type ReactNode, useEffect } from "react";
 import { Link } from "react-router";
 
 import { cn } from "@/lib/utils";
@@ -90,4 +90,12 @@ export function SectionHeading({
       {right}
     </div>
   );
+}
+
+/** Sets a plain browser-tab title ("Jeep Wrangler 2018–2023 · Unrecalled") once data is in. */
+export function useDocTitle(title: string | null | undefined) {
+  useEffect(() => {
+    if (!title) return;
+    document.title = `${title} · Unrecalled`;
+  }, [title]);
 }

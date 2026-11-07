@@ -24,7 +24,7 @@ import { Shimmer } from "./board/Shimmer";
 import { CoverageStrip, Sparkline } from "./charts-small";
 import { DraftPetitionDialog } from "./DraftPetitionDialog";
 import { compactYears, fmtInt, fmtMonth, fmtRatio, fmtRelative } from "./format";
-import { useCrumbs } from "./page";
+import { useCrumbs, useDocTitle } from "./page";
 import { PostRecallNote } from "./PostRecallNote";
 import { CountUp } from "./premium";
 import { StatusChip, StatusLegend } from "./status";
@@ -70,7 +70,8 @@ export function GapBoard({ vehicleId }: { vehicleId: string }) {
   const show = parseShow(params.get("show"));
   const { data, isLoading, error } = useActionQuery<GapBoardResult>("get-gap-board", { vehicleId });
   const label = data?.vehicle.label ?? "Vehicle";
-  useCrumbs([{ label: "Gaps", to: "/gaps" }, { label: isLoading ? "…" : label }]);
+  useCrumbs([{ label: "Home", to: "/" }, { label: isLoading ? "…" : label }]);
+  useDocTitle(data?.vehicle.label);
   const [expanded, setExpanded] = useState(false);
 
   const all = data?.clusters ?? [];
@@ -98,14 +99,16 @@ export function GapBoard({ vehicleId }: { vehicleId: string }) {
     return (
       <div className="rp-wrap">
         <EmptyState
-          title="We couldn’t load this report"
+          title={(error as { status?: number } | null)?.status === 404 ? "We couldn’t find this report" : "We couldn’t load this report"}
           action={
-            <Link to="/gaps" className="ur-btn">
-              Back to vehicles
+            <Link to="/#scan" className="ur-btn">
+              Scan a car
             </Link>
           }
         >
-          {actionErrorMessage(error) ?? "Something went wrong while reading the complaints."}
+          {(error as { status?: number } | null)?.status === 404
+            ? "The link may be old, or the car was scanned on another account. Scan it again; it only takes a few seconds."
+            : (actionErrorMessage(error) ?? "Something went wrong while reading the complaints. Refresh the page to try again.")}
         </EmptyState>
       </div>
     );
@@ -123,13 +126,9 @@ export function GapBoard({ vehicleId }: { vehicleId: string }) {
   return (
     <div className="rp-wrap">
       {v.warnings?.length ? (
-        <div className="mb-8 space-y-1 rounded-2xl border border-ur-investigation/30 bg-ur-investigation/[0.08] px-4 py-3 text-[13.5px]">
-          {v.warnings.map((w, i) => (
-            <p key={i} className="flex gap-2">
-              <IconAlertTriangle className="mt-0.5 size-4 shrink-0 text-ur-investigation" />
-              {w}
-            </p>
-          ))}
+        <div className="mb-8 flex gap-2.5 rounded-2xl border border-ur-investigation/30 bg-ur-investigation/[0.08] px-4 py-3 text-[14px]">
+          <IconAlertTriangle className="mt-0.5 size-4 shrink-0 text-ur-investigation" aria-hidden="true" />
+          <p>{plainWarnings(v.warnings)}</p>
         </div>
       ) : null}
 
@@ -311,6 +310,31 @@ export function GapBoard({ vehicleId }: { vehicleId: string }) {
           )}
         </div>
       </section>
+
+      {biggest ? (
+        <section className="rp-section" aria-labelledby="rp-next">
+          <div className="ur-reveal flex flex-col items-start gap-6 rounded-[24px] border border-border bg-card px-6 py-8 shadow-[var(--ur-shadow)] md:flex-row md:items-center md:justify-between md:px-10 md:py-10">
+            <div className="max-w-2xl">
+              <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Your next step</p>
+              <h2 id="rp-next" className="rp-h3 mt-2">
+                Ask NHTSA to look into {splitModeName(biggest.name).title.toLowerCase()}.
+              </h2>
+              <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">
+                Open a problem to read what owners say, then let the agent draft a formal petition. You review it
+                and send it yourself; it takes about two minutes.
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-3">
+              <Link to={clusterPath(vehicleId, biggest.failureModeId)} className="ur-btn-soft">
+                Open this problem
+              </Link>
+              <span className="rp-cta">
+                <DraftPetitionDialog vehicleId={vehicleId} failureModeId={biggest.failureModeId} />
+              </span>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <div id="how" className="rp-section scroll-mt-24">
         <HowCalculated />
@@ -608,4 +632,22 @@ function BoardSkeleton() {
       </div>
     </div>
   );
+}
+
+/** "No complaints returned for 2026 JEEP WRANGLER." x N -> one plain sentence. */
+function plainWarnings(warnings: string[]): string {
+  const years: string[] = [];
+  const other: string[] = [];
+  for (const w of warnings) {
+    const m = /^No complaints returned for (\d{4})/.exec(w);
+    if (m) years.push(m[1]!);
+    else other.push(w);
+  }
+  const parts: string[] = [];
+  if (years.length) {
+    parts.push(
+      `NHTSA has no owner complaints for the ${compactYears(years.map(Number))} model ${years.length === 1 ? "year" : "years"} yet, so ${years.length === 1 ? "it is" : "they are"} not part of this report.`,
+    );
+  }
+  return [...parts, ...other].join(" ");
 }

@@ -26,7 +26,6 @@ import { AppToolkitProvider } from "@/components/ui/toolkit-provider";
 import { useNavigationState } from "@/hooks/use-navigation-state";
 import { APP_TITLE } from "@/lib/app-config";
 import {
-  HOME_PATH,
   isChatPathname,
   NEW_CHAT_PATH,
   skeletonLayoutForPath,
@@ -140,8 +139,8 @@ function AppContent() {
               {t("chat.newChat")}
             </CommandMenu.Item>
           ) : null}
-          {location.pathname !== HOME_PATH ? (
-            <CommandMenu.Item onSelect={() => navigate(HOME_PATH)}>
+          {location.pathname !== "/" ? (
+            <CommandMenu.Item onSelect={() => navigate("/")}>
               {t("navigation.home")}
             </CommandMenu.Item>
           ) : null}
@@ -150,19 +149,6 @@ function AppContent() {
               {t("navigation.chat")}
             </CommandMenu.Item>
           ) : null}
-          <CommandMenu.Item
-            onSelect={() => navigate("/settings/agent")}
-            keywords={[
-              "agent",
-              "context",
-              "files",
-              "connections",
-              "jobs",
-              "access",
-            ]}
-          >
-            {t("settings.openAgentSettings")}
-          </CommandMenu.Item>
         </CommandMenu.Group>
         <CommandMenu.Group heading={t("root.commandAppearance")}>
           <ThemeToggleItem />

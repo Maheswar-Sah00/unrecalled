@@ -1403,6 +1403,7 @@ function ChatCanvas({
         onStartNewChat={() => void navigate(NEW_CHAT_PATH)}
         composerProps={{
           requireAgentEngine: true,
+          showModelSelector: false,
           contextUsageSlot: <ChatContextRing threadId={threadId} />,
           ...(initialText === undefined ? {} : { initialText }),
           ...(initialTextKey === undefined ? {} : { initialTextKey }),

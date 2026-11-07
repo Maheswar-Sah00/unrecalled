@@ -168,8 +168,8 @@ export function DraftPetitionDialog({
               </div>
               <p className="flex items-start gap-2 text-[12.5px] leading-relaxed text-muted-foreground">
                 <IconLock className="mt-0.5 size-3.5 shrink-0" />
-                Saved on this device only, so you do not have to type it again.
-                Nothing is sent to NHTSA; you file it yourself.
+                It goes on your petition and is remembered on this device, so you
+                don’t retype it. Nothing is sent to NHTSA; you send it yourself.
               </p>
             </div>
           )}

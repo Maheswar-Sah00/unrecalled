@@ -18,12 +18,18 @@ export function Closing() {
         </div>
         <div className="flex flex-col gap-3 text-[14px] text-muted-foreground md:items-end">
           <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link to="/petitions" className="hover:text-foreground">Petitions</Link>
-            <Link to="/backtest" className="hover:text-foreground">Proof</Link>
-            <Link to="/rules" className="hover:text-foreground">Problem types</Link>
+            <Link to="/#how" className="hover:text-foreground">How it works</Link>
+            <Link to="/#scan" className="hover:text-foreground">Scan a car</Link>
+            <Link to="/petitions" className="hover:text-foreground">My petitions</Link>
             <Link to="/chat" className="hover:text-foreground">Ask the agent</Link>
           </nav>
-          <p className="text-[13px]">Data: NHTSA complaints, recalls and investigations.</p>
+          <p className="text-[13px]">
+            Data: official{" "}
+            <a href="https://www.nhtsa.gov/" target="_blank" rel="noreferrer" className="underline-offset-4 hover:text-foreground hover:underline">
+              NHTSA
+            </a>{" "}
+            complaints, recalls and investigations. Not affiliated with NHTSA.
+          </p>
         </div>
       </div>
     </footer>

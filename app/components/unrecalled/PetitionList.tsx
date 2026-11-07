@@ -37,7 +37,7 @@ type Filter = "all" | DocStatus;
 const STAGE_TONE: Record<DocStatus, Tone> = { draft: "sand", ready: "sage", filed: "ocean" };
 
 export function PetitionList() {
-  useCrumbs([{ label: "Petitions" }]);
+  useCrumbs([{ label: "My petitions" }]);
   const { data, isLoading, error } = useActionQuery<
     { petitions: PetitionSummary[] } | PetitionSummary[]
   >("list-petitions", {});
@@ -53,12 +53,12 @@ export function PetitionList() {
       {/* Hero */}
       <section className="relative pb-14 pt-6 text-center md:pb-20 md:pt-14">
         <Reveal>
-          <h1 className="ur-display ur-hero-xl">Petitions</h1>
+          <h1 className="ur-display ur-hero-xl">My petitions</h1>
         </Reveal>
         <Reveal delay={80}>
           <p className="ur-lede mx-auto mt-6 max-w-2xl text-[1.125rem] md:text-[1.25rem]">
-            Drafted requests asking NHTSA to open a defect investigation. You review and
-            file them; the agent never files for you.
+            Formal requests asking NHTSA to investigate a defect. The agent drafts them; you
+            read them, sign them and send them yourself.
           </p>
         </Reveal>
         <Reveal delay={140} className="mt-8">
@@ -70,13 +70,13 @@ export function PetitionList() {
             <i aria-hidden="true" />
             <span className="inline-flex items-center gap-2">
               <IconShieldHalf className="size-4 text-muted-foreground" aria-hidden="true" />
-              You file it, never the agent
+              You send it, never the agent
             </span>
           </div>
         </Reveal>
         <Reveal delay={200} className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link to="/gaps" className="ur-btn-soft">
-            Find a problem to petition
+          <Link to="/#scan" className="ur-btn-soft">
+            Scan another car
           </Link>
           {latest ? (
             <Link to={`/petitions/${encodeURIComponent(latest.id)}`} className="ur-btn">
@@ -101,7 +101,7 @@ export function PetitionList() {
                   {count("ready") ? (
                     <>
                       <b className="ur-num">{count("ready")}</b> {count("ready") === 1 ? "is" : "are"} ready for
-                      you to file
+                      you to send
                     </>
                   ) : (
                     "None are marked ready yet"
@@ -112,7 +112,7 @@ export function PetitionList() {
                       review
                     </>
                   ) : null}
-                  . Filing is always your call.
+                  . Sending them is always your call.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {latest ? (
@@ -177,8 +177,10 @@ export function PetitionList() {
               </span>
               <p className="text-[15px] text-muted-foreground">
                 {filter === "filed"
-                  ? "Nothing filed yet. When you send a petition to NHTSA yourself, mark it here."
-                  : `No ${filter} petitions right now.`}
+                  ? "Nothing marked as sent yet. Once you have mailed a petition, ask the agent to mark it as filed."
+                  : filter === "ready"
+                    ? "None are ready yet. Open a draft, read it through and mark it ready."
+                    : "No drafts right now. Every petition here has been reviewed."}
               </p>
             </div>
           ) : (
@@ -237,12 +239,17 @@ function EmptyState() {
           </div>
           <h2 className="ur-title text-[2rem] md:text-[2.4rem]">No petitions yet</h2>
           <p className="ur-lede mx-auto mt-3 max-w-md text-[15.5px]">
-            Open a problem that no recall covers and ask the agent to draft a petition. It
-            shows up here for you to read, edit and file.
+            Scan your car, open a problem nobody covers and press Draft petition. The agent
+            writes it in about a minute, and it lands here for you to read, edit and send.
           </p>
-          <Link to="/gaps" className="ur-btn mt-8">
-            Find an uncovered problem <IconArrowRight className="size-4" />
-          </Link>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link to="/#scan" className="ur-btn">
+              Scan your car <IconArrowRight className="size-4" />
+            </Link>
+            <Link to="/chat" className="ur-btn-soft">
+              Ask the agent
+            </Link>
+          </div>
         </Window>
       </Perch>
     </Reveal>

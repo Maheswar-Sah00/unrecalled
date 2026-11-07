@@ -699,3 +699,35 @@
   backdrop-filter: saturate(1.4) blur(14px);
   border-bottom: 1px solid hsl(var(--border) / 0.8);
 }
+
+/* Printing a petition page (Ctrl+P) prints only the petition document. */
+.ur-print-copy {
+  display: none;
+}
+@media print {
+  body:has(.ur-print-copy) > *:not(.ur-print-copy) {
+    display: none !important;
+  }
+  .ur-print-copy {
+    display: block !important;
+    font: 11.5pt/1.55 Georgia, "Times New Roman", serif;
+    color: #111;
+    background: #fff;
+  }
+  .ur-print-copy table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+  }
+  .ur-print-copy th,
+  .ur-print-copy td {
+    border: 0.6pt solid #999;
+    padding: 3pt 5pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  .ur-print-copy button,
+  .ur-print-copy svg {
+    display: none !important;
+  }
+}

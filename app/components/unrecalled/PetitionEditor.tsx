@@ -17,6 +17,7 @@ import {
   IconShieldCheck,
 } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import { toast } from "sonner";
 
@@ -65,6 +66,9 @@ export function PetitionEditor({ id }: { id: string }) {
   const [text, setText] = useState<string | null>(null);
   const [pane, setPane] = useState<"preview" | "edit">("preview");
   const lastServer = useRef<{ id: string; markdown: string } | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   // Adopt server text on first load, and on later server changes (e.g. the
   // agent edited the petition) as long as there are no local edits.
@@ -136,14 +140,23 @@ export function PetitionEditor({ id }: { id: string }) {
   async function copy() {
     try {
       await navigator.clipboard.writeText(markdown);
-      toast.success("Markdown copied");
+      toast.success("Petition text copied");
     } catch {
-      toast.error("Clipboard not available in this browser.");
+      toast.error("Your browser blocked copying. Use Edit text, then select all and copy.");
     }
   }
 
+  function printPdf() {
+    const html = printRef.current?.innerHTML;
+    if (!html) {
+      toast.error("The document is still loading. Try again in a second.");
+      return;
+    }
+    printDocument(data?.title ?? "Petition", html);
+  }
+
   function download() {
-    const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+    const blob = new Blob([markdown], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     const slug = (data?.title ?? "petition")
@@ -152,7 +165,7 @@ export function PetitionEditor({ id }: { id: string }) {
       .replace(/^-|-$/g, "")
       .slice(0, 80);
     a.href = url;
-    a.download = `${slug || "petition"}.md`;
+    a.download = `${slug || "petition"}.txt`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
@@ -174,7 +187,7 @@ export function PetitionEditor({ id }: { id: string }) {
             type="button"
             className="ur-btn h-10 px-3.5 text-sm sm:px-4"
             disabled={save.isPending || missing > 0}
-            title={missing > 0 ? `${missing} Part 552.4 item${missing === 1 ? "" : "s"} still missing` : undefined}
+            title={missing > 0 ? `${missing} thing${missing === 1 ? "" : "s"} NHTSA asks for ${missing === 1 ? "is" : "are"} still missing` : undefined}
           >
             <IconSend className="size-4" /> Ready to file
           </button>
@@ -188,9 +201,8 @@ export function PetitionEditor({ id }: { id: string }) {
               Mark this petition ready to file?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-[14.5px] leading-relaxed">
-              All {data.checklist.length} Part 552.4 items are present.
-              Marking it ready records that you reviewed it; filing with
-              NHTSA is still up to you.
+              Everything NHTSA asks for is in place. Marking it ready records
+              that you have read it; sending it to NHTSA is still up to you.
               {dirty ? " Unsaved edits are saved first." : ""}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -216,9 +228,10 @@ export function PetitionEditor({ id }: { id: string }) {
       uncovered={facts.uncovered}
       when={fmtRelative(data.updatedAt)}
       onCopy={copy}
-      onDownload={download}
+      onPrint={printPdf}
     />
   );
+  const sendPanel = <SendPanel onPrint={printPdf} onCopy={copy} missing={missing} />;
 
   return (
     <Page wide className="flex min-h-full max-w-[1320px] flex-col">
@@ -256,11 +269,14 @@ export function PetitionEditor({ id }: { id: string }) {
             </p>
           ) : null}
           <div className="mt-7 flex flex-wrap items-center gap-1 sm:gap-1.5">
+            <button type="button" className={ACTION_BTN} onClick={printPdf}>
+              <IconFileText className="size-4" /> Save as PDF
+            </button>
             <button type="button" className={ACTION_BTN} onClick={copy}>
-              <IconCopy className="size-4" /> Copy
+              <IconCopy className="size-4" /> Copy text
             </button>
             <button type="button" className={ACTION_BTN} onClick={download}>
-              <IconDownload className="size-4" /> .md
+              <IconDownload className="size-4" /> Download
             </button>
             <button
               type="button"
@@ -273,7 +289,7 @@ export function PetitionEditor({ id }: { id: string }) {
               ) : (
                 <IconDeviceFloppy className="size-4" />
               )}
-              Save
+              {dirty ? "Save changes" : "Saved"}
             </button>
             {readyAction ? <div className="ms-auto sm:ms-2">{readyAction}</div> : null}
           </div>
@@ -336,11 +352,22 @@ export function PetitionEditor({ id }: { id: string }) {
             </Window>
           </Perch>
           <div className="mt-6 lg:hidden">{agentNote}</div>
+          {/* A clean copy of the document for "Save as PDF" and for Ctrl+P
+              (global.css prints only this when the page is printed). */}
+          {mounted
+            ? createPortal(
+                <div ref={printRef} className="ur-print-copy" aria-hidden="true">
+                  <Markdown text={markdown} />
+                </div>,
+                document.body,
+              )
+            : null}
         </Reveal>
 
         {/* Ready-to-file card + agent note */}
         <Reveal delay={140} className="order-1 space-y-5 lg:sticky lg:top-6 lg:order-2">
           <Checklist items={data.checklist} />
+          {sendPanel}
           <div className="hidden lg:block">{agentNote}</div>
         </Reveal>
       </div>
@@ -353,13 +380,13 @@ function AgentNote({
   uncovered,
   when,
   onCopy,
-  onDownload,
+  onPrint,
 }: {
   complaints: number | null;
   uncovered: number | null;
   when: string;
   onCopy: () => void;
-  onDownload: () => void;
+  onPrint: () => void;
 }) {
   return (
     <section className="ur-card p-5" aria-label="Note from the agent">
@@ -380,14 +407,14 @@ function AgentNote({
           . Read it through and add anything I missed.
         </p>
         <p className="mt-2 text-[14.5px] leading-relaxed">
-          You stay in charge; <b>I never file.</b>
+          You stay in charge: <b>I never send anything.</b>
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <button type="button" className="ur-chip h-8 cursor-pointer hover:border-foreground/30" onClick={onCopy}>
             <IconCopy className="size-3.5" /> Copy text
           </button>
-          <button type="button" className="ur-chip h-8 cursor-pointer hover:border-foreground/30" onClick={onDownload}>
-            <IconDownload className="size-3.5" /> Download
+          <button type="button" className="ur-chip h-8 cursor-pointer hover:border-foreground/30" onClick={onPrint}>
+            <IconFileText className="size-3.5" /> Save as PDF
           </button>
           <Link to="/chat" className="ur-chip h-8 hover:border-foreground/30">
             Ask for changes
@@ -396,6 +423,143 @@ function AgentNote({
       </AgentMessage>
     </section>
   );
+}
+
+/** The official address, quoted from 49 CFR 552.4 (eCFR, checked Nov 2026). */
+const ECFR_552_4 = "https://www.ecfr.gov/current/title-49/subtitle-B/chapter-V/part-552/section-552.4";
+const ECFR_552_5 = "https://www.ecfr.gov/current/title-49/subtitle-B/chapter-V/part-552/section-552.5";
+
+function SendPanel({
+  onPrint,
+  onCopy,
+  missing,
+}: {
+  onPrint: () => void;
+  onCopy: () => void;
+  missing: number;
+}) {
+  return (
+    <section className="ur-card p-5 md:p-6" aria-labelledby="send-title">
+      <div className="flex items-center gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-foreground text-background">
+          <IconSend className="size-[18px]" aria-hidden="true" />
+        </span>
+        <h2 id="send-title" className="ur-title text-[1.45rem]">
+          How to send it
+        </h2>
+      </div>
+      <ol className="mt-5 space-y-5 text-[14px] leading-relaxed">
+        <li className="grid grid-cols-[24px_minmax(0,1fr)] gap-x-3">
+          <StepNum n={1} />
+          <div>
+            <p className="font-semibold text-foreground">Read it through</p>
+            <p className="text-muted-foreground">
+              {missing > 0
+                ? `Add the ${missing === 1 ? "missing item" : `${missing} missing items`} listed above with Edit text.`
+                : "Change anything with Edit text. It is your petition, in your name."}
+            </p>
+          </div>
+        </li>
+        <li className="grid grid-cols-[24px_minmax(0,1fr)] gap-x-3">
+          <StepNum n={2} />
+          <div>
+            <p className="font-semibold text-foreground">Save it as a PDF, print it and sign it</p>
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              <button type="button" className="ur-btn h-9 px-3.5 text-[13.5px]" onClick={onPrint}>
+                <IconFileText className="size-4" /> Save as PDF
+              </button>
+              <button type="button" className="ur-btn-soft h-9 px-3.5 text-[13.5px]" onClick={onCopy}>
+                <IconCopy className="size-4" /> Copy text
+              </button>
+            </div>
+          </div>
+        </li>
+        <li className="grid grid-cols-[24px_minmax(0,1fr)] gap-x-3">
+          <StepNum n={3} />
+          <div className="min-w-0">
+            <p className="font-semibold text-foreground">Mail it to NHTSA</p>
+            <p className="text-muted-foreground">The federal rule says a petition should be addressed and submitted to:</p>
+            <blockquote className="mt-2 rounded-xl border border-border bg-foreground/[0.03] px-3.5 py-3 text-[14px] leading-snug text-foreground">
+              Administrator, National Highway Traffic Safety Administration, 400 Seventh Street, S.W., Washington,
+              DC 20590.
+            </blockquote>
+            <p className="mt-2 text-[12.5px] leading-relaxed text-muted-foreground">
+              Source:{" "}
+              <a href={ECFR_552_4} target="_blank" rel="noreferrer" className="font-medium text-foreground underline underline-offset-2">
+                49 CFR 552.4
+              </a>
+              . NHTSA’s offices are now at 1200 New Jersey Avenue, S.E., Washington, DC 20590. Under{" "}
+              <a href={ECFR_552_5} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-foreground">
+                49 CFR 552.5(a)
+              </a>
+              , a complete petition still counts if it is addressed differently.
+            </p>
+          </div>
+        </li>
+      </ol>
+      <p className="mt-5 flex items-start gap-2 border-t pt-4 text-[12.5px] leading-relaxed text-muted-foreground">
+        <IconShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+        Unrecalled never sends anything for you. Keep a copy and note the date you mailed it.
+      </p>
+    </section>
+  );
+}
+
+function StepNum({ n }: { n: number }) {
+  return (
+    <span className="ur-num mt-0.5 flex size-6 items-center justify-center rounded-full bg-foreground/[0.07] text-[12px] font-semibold text-foreground">
+      {n}
+    </span>
+  );
+}
+
+const PRINT_CSS = `
+  @page { margin: 22mm 20mm; }
+  * { box-sizing: border-box; }
+  body { font: 11.5pt/1.55 Georgia, "Times New Roman", serif; color: #111; margin: 0; }
+  h1 { font-size: 19pt; line-height: 1.2; margin: 0 0 14pt; }
+  h2 { font-size: 13.5pt; margin: 18pt 0 6pt; }
+  h3 { font-size: 12pt; margin: 14pt 0 6pt; }
+  p, li { margin: 0 0 7pt; }
+  ul, ol { padding-left: 18pt; }
+  a { color: inherit; text-decoration: none; }
+  table { width: 100%; border-collapse: collapse; margin: 8pt 0 12pt; font-size: 9.5pt; }
+  tr { page-break-inside: avoid; }
+  th, td { border: 0.6pt solid #999; padding: 3pt 5pt; text-align: left; vertical-align: top; }
+  th { background: #f2f2f2; }
+  hr { border: 0; border-top: 0.6pt solid #999; margin: 12pt 0; }
+  code { font-family: inherit; }
+  button, svg { display: none !important; }
+  .sig { margin-top: 30pt; page-break-inside: avoid; }
+  .sig div { border-top: 0.6pt solid #111; width: 240pt; padding-top: 4pt; margin-top: 34pt; font-size: 10pt; }
+`;
+
+/** Prints only the petition, through a hidden iframe, so the print dialog's "Save as PDF" gives a clean document. */
+function printDocument(title: string, bodyHtml: string) {
+  const frame = document.createElement("iframe");
+  frame.setAttribute("aria-hidden", "true");
+  frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
+  document.body.appendChild(frame);
+  const doc = frame.contentDocument;
+  const win = frame.contentWindow;
+  if (!doc || !win) {
+    frame.remove();
+    window.print();
+    return;
+  }
+  const safeTitle = title.replace(/[<>&"]/g, "");
+  doc.open();
+  doc.write(
+    `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${safeTitle}</title><style>${PRINT_CSS}</style></head><body>${bodyHtml}<div class="sig"><div>Signature</div><div>Date</div></div></body></html>`,
+  );
+  doc.close();
+  const cleanup = () => window.setTimeout(() => frame.remove(), 500);
+  win.addEventListener("afterprint", cleanup, { once: true });
+  window.setTimeout(() => {
+    win.focus();
+    win.print();
+    window.setTimeout(cleanup, 60_000);
+  }, 120);
 }
 
 function TabButton({
@@ -446,11 +610,14 @@ function Checklist({ items }: { items: Petition["checklist"] }) {
         type="button"
         onClick={() => setShowList((v) => !v)}
         aria-expanded={showList}
-        className="mt-4 text-[13px] font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline lg:hidden"
+        className={cn(
+          "mt-4 text-[13px] font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
+          left > 0 && "lg:hidden",
+        )}
       >
         {showList ? "Hide checklist" : `Show all ${items.length} checks`}
       </button>
-      <ul className={cn("mt-4 space-y-0.5 border-t pt-4 lg:mt-5 lg:block", !showList && "hidden")}>
+      <ul className={cn("mt-4 space-y-0.5 border-t pt-4 lg:mt-5", left > 0 && "lg:block", !showList && "hidden")}>
         {items.map((i) => (
           <li
             key={i.item}

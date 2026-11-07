@@ -10,23 +10,29 @@ import {
   OwnershipChatHistoryRail,
   useOwnershipChatHistory,
 } from "@agent-native/toolkit/app/chat/ownership-history";
-import { OrgSwitcher } from "@agent-native/toolkit/app/org";
-import { openCommandMenu } from "@agent-native/toolkit/app/shared";
+import { useSession } from "@agent-native/core/client/hooks";
+import { signOut } from "@agent-native/core/client/sign-out";
 import {
-  IconChartLine,
   IconEdit,
   IconFileText,
-  IconListSearch,
+  IconInfoCircle,
   IconRadar,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
   IconLoader2,
-  IconSearch,
 } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
@@ -122,10 +128,9 @@ function persistActiveThreadId(threadId: string) {
 }
 
 const DOMAIN_LINKS = [
-  { to: "/gaps", label: "Gaps", icon: IconRadar },
-  { to: "/petitions", label: "Petitions", icon: IconFileText },
-  { to: "/backtest", label: "Backtest", icon: IconChartLine },
-  { to: "/rules", label: "Rules", icon: IconListSearch },
+  { to: "/#scan", label: "Scan a car", icon: IconRadar },
+  { to: "/#how", label: "How it works", icon: IconInfoCircle },
+  { to: "/petitions", label: "My petitions", icon: IconFileText },
 ] as const;
 
 const NAV_ITEM =
@@ -143,7 +148,8 @@ function DomainNavLinks({ collapsed }: { collapsed: boolean }) {
     <div className={cn(collapsed ? "contents" : "flex flex-col gap-1 px-3 pb-4")}>
       {DOMAIN_LINKS.map(({ to, label, icon: Icon }) => {
         const active =
-          location.pathname === to || location.pathname.startsWith(`${to}/`);
+          !to.includes("#") &&
+          (location.pathname === to || location.pathname.startsWith(`${to}/`));
         const link = (
           <Link
             key={to}
@@ -360,21 +366,6 @@ export function Sidebar({
       </TooltipContent>
     </Tooltip>
   ) : null;
-  const searchButton = (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          onClick={openCommandMenu}
-          aria-label={t("root.commandSearch")}
-          className="flex size-8 items-center justify-center rounded-lg text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
-        >
-          <IconSearch className="size-4" strokeWidth={1.8} />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="right">{t("root.commandSearch")}</TooltipContent>
-    </Tooltip>
-  );
 
   return (
     <aside
@@ -437,21 +428,49 @@ export function Sidebar({
               : "flex items-center gap-0.5",
           )}
         >
-          <OrgSwitcher
-            reserveSpace
-            compact={collapsed}
-            currentAppId="chat"
-            className={
-              collapsed
-                ? "size-8 bg-transparent p-0 hover:bg-sidebar-accent"
-                : "min-w-0 flex-1 h-11 rounded-lg bg-transparent px-3 py-2 text-sm text-sidebar-accent-foreground hover:bg-sidebar-accent"
-            }
-          />
+          <AccountMenu collapsed={collapsed} />
           <ThemeToggle className="size-8 rounded-lg" />
-          {searchButton}
           {collapseButton}
         </div>
       </div>
     </aside>
+  );
+}
+
+/** The signed-in person and a way to log out; nothing else from the framework's account menu. */
+function AccountMenu({ collapsed }: { collapsed: boolean }) {
+  const { session } = useSession();
+  const email = session?.email ?? null;
+  if (!email) return <div className={collapsed ? "size-8" : "min-w-0 flex-1"} />;
+  const initial = email.charAt(0).toUpperCase();
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label={`Account: ${email}`}
+          className={cn(
+            "flex items-center gap-2.5 rounded-lg text-left text-sm text-sidebar-accent-foreground transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+            collapsed ? "size-8 justify-center" : "h-11 min-w-0 flex-1 px-2.5",
+          )}
+        >
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-foreground/[0.08] text-[12px] font-semibold">
+            {initial}
+          </span>
+          {collapsed ? null : <span className="min-w-0 truncate">{email}</span>}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="top" align="start" className="min-w-56">
+        <DropdownMenuLabel className="truncate font-normal text-muted-foreground">{email}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onSelect={() => {
+            void signOut({ redirectTo: "/" }).catch(() => toast.error("Could not log out. Try again."));
+          }}
+        >
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

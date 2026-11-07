@@ -94,9 +94,10 @@ export function buildPetition(input: PetitionInput): PetitionOutput {
   L.push(`# ${docTitle}`, "");
   L.push(`**Date:** ${generatedOn}`, "");
   L.push(
-    "**To:** Administrator, National Highway Traffic Safety Administration, 400 Seventh Street, S.W., Washington, DC 20590 " +
-      "(address as stated in 49 CFR 552.4; NHTSA headquarters is now at 1200 New Jersey Avenue, S.E., Washington, DC 20590. " +
-      "Under 49 CFR 552.5(a), a petition not addressed as specified is still treated as properly filed).",
+    // 552.4 still prints the old 400 Seventh St address; 552.5(a) treats a petition
+    // sent elsewhere as properly filed, so the document uses today's headquarters.
+    // The "How to send it" panel quotes the regulation text.
+    "**To:** Administrator, National Highway Traffic Safety Administration, 1200 New Jersey Avenue, S.E., Washington, DC 20590",
     "",
   );
   // §552.4(e)

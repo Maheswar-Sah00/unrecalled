@@ -1,8 +1,5 @@
-import {
-  actionErrorMessage,
-  useActionMutation,
-} from "@agent-native/core/client/hooks";
-import { IconArrowUp, IconCheck, IconLoader2 } from "@tabler/icons-react";
+import { useActionMutation } from "@agent-native/core/client/hooks";
+import { IconAlertTriangle, IconArrowUp, IconCheck, IconLoader2, IconX } from "@tabler/icons-react";
 import { type ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -47,18 +44,20 @@ export function ScanForm({ thread }: { thread?: ReactNode }) {
   const [yearTo, setYearTo] = useState("2023");
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [scanning, setScanning] = useState<ScanVars | null>(null);
+  const [failure, setFailure] = useState<{ title: string; body: string } | null>(null);
 
   const scan = useActionMutation<ScanVehicleResult, ScanVars>("scan-vehicle", {
     timeoutMs: 180_000,
     onSuccess: (res) => {
-      for (const w of res.warnings ?? []) toast.warning(w);
       toast.success(
-        `${res.label}: ${res.uncovered} uncovered of ${res.clusters} failure modes`,
+        res.uncovered === 0
+          ? `${res.label}: every problem owners report is covered`
+          : `${res.label}: ${res.uncovered} ${res.uncovered === 1 ? "problem" : "problems"} nobody covers`,
       );
       navigate(`/gaps/${encodeURIComponent(res.id)}`);
     },
-    onError: (error) => {
-      toast.error(actionErrorMessage(error) ?? "Scan failed. Try again.");
+    onError: (error, vars) => {
+      setFailure(friendlyScanError(error, vars));
     },
     onSettled: () => {
       setStartedAt(null);
@@ -72,17 +71,18 @@ export function ScanForm({ thread }: { thread?: ReactNode }) {
     !Number.isInteger(from) || !Number.isInteger(to)
       ? "Enter model years"
       : from < 1990 || to > THIS_YEAR
-        ? `Years must be 1990–${THIS_YEAR}`
+        ? `Pick model years between 1990 and ${THIS_YEAR}`
         : from > to
-          ? "From must be before To"
-          : to - from > 9
-            ? "Scan at most 10 model years"
+          ? "The first year should come before the last"
+          : to - from > 7
+            ? "Scan at most 8 model years at a time"
             : null;
   const showYearError = !!yearError && yearFrom.length === 4 && yearTo.length === 4;
   const canSubmit =
     make.trim() && model.trim() && !yearError && !scan.isPending;
 
   function run(vars: ScanVars) {
+    setFailure(null);
     setStartedAt(Date.now());
     setScanning(vars);
     scan.mutate(vars);
@@ -128,6 +128,26 @@ export function ScanForm({ thread }: { thread?: ReactNode }) {
             </Msg>
             <ScanProgress vars={scanning} startedAt={startedAt} />
           </>
+        ) : null}
+        {!busy && failure ? (
+          <div
+            role="alert"
+            className="lp-swap flex items-start gap-3 rounded-2xl border border-ur-uncovered/25 bg-ur-uncovered/[0.06] px-4 py-3.5 text-left"
+          >
+            <IconAlertTriangle className="mt-0.5 size-5 shrink-0 text-ur-uncovered" aria-hidden="true" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] font-semibold text-foreground">{failure.title}</p>
+              <p className="mt-0.5 text-[14px] leading-relaxed text-muted-foreground">{failure.body}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setFailure(null)}
+              className="-me-1 -mt-1 inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground"
+              aria-label="Dismiss"
+            >
+              <IconX className="size-4" />
+            </button>
+          </div>
         ) : null}
       </div>
 
@@ -339,4 +359,38 @@ function ScanProgress({
       </Msg>
     </div>
   );
+}
+
+/** Turns a failed scan into a plain title + one helpful sentence. */
+function friendlyScanError(error: unknown, vars: ScanVars): { title: string; body: string } {
+  const e = (error ?? {}) as { status?: number; errorCode?: string; actionMessage?: string; message?: string };
+  const car = `${vars.yearFrom === vars.yearTo ? vars.yearFrom : `${vars.yearFrom}–${vars.yearTo}`} ${vars.make} ${vars.model}`;
+  if (e.errorCode === "no_complaints" || e.status === 404) {
+    return {
+      title: `We couldn’t find complaints for the ${car}`,
+      body: "Check the spelling of the make and model as NHTSA writes them, for example “F-150”, “Model 3” or “CR-V”, or try other model years.",
+    };
+  }
+  if (e.errorCode === "too_many_years") {
+    return { title: "That’s a lot of model years", body: "Scan at most 8 model years at a time, then scan the rest separately." };
+  }
+  if (e.errorCode === "invalid_years" || e.errorCode === "invalid_vehicle" || e.status === 400) {
+    return {
+      title: "Something in the form needs a look",
+      body: e.actionMessage ?? "Enter a make, a model and the model years you want to check.",
+    };
+  }
+  if (e.status === 408) {
+    return {
+      title: "NHTSA is taking too long to answer",
+      body: "Their servers are slow right now. Give it a minute and try again; fewer model years also helps.",
+    };
+  }
+  if (e.status === 401 || e.status === 403) {
+    return { title: "Please sign in again", body: "Your session ended. Refresh the page, sign in and run the scan again." };
+  }
+  return {
+    title: "We couldn’t reach NHTSA just now",
+    body: "Check your internet connection and try again in a moment. If it keeps happening, NHTSA’s servers may be down for a while.",
+  };
 }

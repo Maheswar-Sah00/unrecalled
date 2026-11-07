@@ -33,7 +33,7 @@ import { CoveragePanel } from "./CoveragePanel";
 import { DraftPetitionDialog } from "./DraftPetitionDialog";
 import { compactYears, fmtDate, fmtInt, fmtMonth, fmtRatio } from "./format";
 import { MonthlyBars } from "./MonthlyBars";
-import { useCrumbs } from "./page";
+import { useCrumbs, useDocTitle } from "./page";
 import { PostRecallNote } from "./PostRecallNote";
 import { CountUp } from "./premium";
 import { StatusChip, StatusLegend } from "./status";
@@ -63,8 +63,9 @@ export function ClusterDetail({ vehicleId, modeId }: { vehicleId: string; modeId
   });
 
   const vehicleLabel = data?.vehicle?.label ?? "Vehicle";
+  useDocTitle(data?.mode.name ? `${splitModeName(data.mode.name).title} · ${data.vehicle?.label ?? ""}`.replace(/ · $/, "") : null);
   useCrumbs([
-    { label: "Gaps", to: "/gaps" },
+    { label: "Home", to: "/" },
     { label: vehicleLabel, to: `/gaps/${encodeURIComponent(vehicleId)}` },
     { label: data?.mode.name ? splitModeName(data.mode.name).title : "…" },
   ]);
@@ -383,8 +384,7 @@ export function ClusterDetail({ vehicleId, modeId }: { vehicleId: string; modeId
               </p>
             )}
             <p className="mt-1.5 text-muted-foreground">
-              I highlighted the words that tie each report to this problem. If one doesn’t belong, choose{" "}
-              <b className="text-foreground">Exclude</b>.
+              I highlighted the words that tie each report to this problem.
             </p>
             {cluster.uncoveredCount > 0 ? (
               <div className="mt-3 flex flex-wrap gap-2">
@@ -448,6 +448,29 @@ export function ClusterDetail({ vehicleId, modeId }: { vehicleId: string; modeId
           ) : null}
         </Frame>
       </section>
+
+      {cluster.count > 0 ? (
+        <section className="rp-section" aria-labelledby="rp-next">
+          <div className="ur-reveal flex flex-col items-start gap-6 rounded-[24px] border border-border bg-card px-6 py-8 shadow-[var(--ur-shadow)] md:flex-row md:items-center md:justify-between md:px-10 md:py-10">
+            <div className="max-w-2xl">
+              <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Your next step</p>
+              <h2 id="rp-next" className="rp-h3 mt-2">
+                {cluster.uncoveredCount > 0
+                  ? "Ask NHTSA to investigate."
+                  : "Want NHTSA to take another look?"}
+              </h2>
+              <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">
+                {cluster.uncoveredCount > 0
+                  ? `The agent drafts a formal petition citing these ${fmtInt(cluster.count)} owner reports. You read it, edit anything, and send it yourself.`
+                  : "Every year is covered today, but you can still petition if the fix isn’t working. The agent drafts it; you send it."}
+              </p>
+            </div>
+            <span className="rp-cta shrink-0">
+              <DraftPetitionDialog vehicleId={vehicleId} failureModeId={modeId} />
+            </span>
+          </div>
+        </section>
+      ) : null}
 
       <div className="rp-section">
         <HowCalculated compact />
