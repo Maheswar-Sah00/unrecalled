@@ -134,13 +134,6 @@
   text-transform: uppercase;
   color: hsl(var(--muted-foreground));
 }
-.lp-kicker::before {
-  content: "";
-  width: 22px;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.6;
-}
 .lp-stepnum {
   display: flex;
   align-items: baseline;
