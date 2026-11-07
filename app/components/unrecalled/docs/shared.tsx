@@ -5,7 +5,6 @@ import type { CSSProperties, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-import { Mascot, type MascotColor, type MascotPose } from "../mascots";
 
 /* ---------- OpenTag-style building blocks ---------- */
 
@@ -81,38 +80,20 @@ export function GradientTile({
   );
 }
 
-/** Wraps a window/card so a mascot sits on its top edge. */
+/** Wrapper that used to seat a mascot on a window. Now just spacing; the props
+ *  other than children/className are accepted for older call sites. */
 export function Perch({
-  pose,
-  color = "blue",
-  side = "right",
-  size = 104,
   children,
   className,
 }: {
-  pose: MascotPose;
-  color?: MascotColor;
+  pose?: string;
+  color?: string;
   side?: "left" | "right";
   size?: number;
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <div className={cn("ur-perch", className)} style={{ marginTop: size - 14 }}>
-      <div
-        className="ur-perch__mascot ur-float"
-        style={{
-          [side]: "clamp(16px, 6%, 64px)",
-          width: size,
-          height: size,
-          ["--ur-dur" as string]: "6s",
-        }}
-      >
-        <Mascot pose={pose} color={color} className="size-full" />
-      </div>
-      {children}
-    </div>
-  );
+  return <div className={cn("ur-perch", className)}>{children}</div>;
 }
 
 /** Title pill shown in a Window's chrome bar. */

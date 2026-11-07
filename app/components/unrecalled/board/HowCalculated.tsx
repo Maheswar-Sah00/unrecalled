@@ -4,12 +4,10 @@ import { IconBellRinging, IconCalendarSearch, IconMessages } from "@tabler/icons
 
 import { cn } from "@/lib/utils";
 
-import { Mascot } from "../mascots";
-
 const STEPS = [
   {
     icon: IconMessages,
-    tint: "bg-ur-blue/12 text-ur-blue",
+    tint: "bg-foreground/[0.06] text-foreground",
     title: "We group what owners say",
     body: "Every complaint owners filed with NHTSA is read and grouped by the words they use to describe the problem, like “wobble” or “shaking at highway speed”.",
   },
@@ -21,7 +19,7 @@ const STEPS = [
   },
   {
     icon: IconBellRinging,
-    tint: "bg-ur-investigation/15 text-ur-investigation",
+    tint: "bg-foreground/[0.06] text-foreground",
     title: "We watch for early warnings",
     body: "The warning turns on when there are at least 10 complaints and the problem shows up 5 times more often than in similar cars.",
   },
@@ -30,11 +28,11 @@ const STEPS = [
 /** "How we calculated this": an editorial three-step explainer (OpenTag "How it works"). */
 export function HowCalculated({
   className,
-  compact = false,
 }: {
   className?: string;
   /** kept for older call sites */
   defaultOpen?: boolean;
+  /** kept for older call sites */
   compact?: boolean;
 }) {
   return (
@@ -44,11 +42,6 @@ export function HowCalculated({
         <p className="rp-lede mt-4 max-w-md">
           Three plain steps. No guesswork, and every number links back to the owners’ own reports.
         </p>
-        {compact ? null : (
-          <div className="mt-8 hidden w-36 lg:block">
-            <Mascot pose="read" color="violet" className="ur-float h-auto w-full" />
-          </div>
-        )}
       </div>
       <ol className="min-w-0">
         {STEPS.map((s, i) => {
@@ -81,15 +74,6 @@ export function HowCalculated({
 }
 
 function Squiggle() {
-  return (
-    <svg viewBox="0 0 46 60" className="rp-squiggle h-[60px] grow" aria-hidden="true" preserveAspectRatio="xMidYMin meet">
-      <path
-        d="M23 6 C 31 13, 15 19, 23 26 S 15 39, 23 46 S 31 52, 23 58"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
+  return <span className="my-2 block w-px grow bg-border" aria-hidden="true" />;
 }
+

@@ -154,7 +154,8 @@ export function CoverageStrip({
           <div
             role="listitem"
             className={cn(
-              "flex h-[22px] w-[30px] items-center justify-center rounded-full text-white shadow-[inset_0_-1px_0_rgb(0_0_0/0.12)]",
+              "flex h-[22px] w-[30px] items-center justify-center rounded-full text-white shadow-[inset_0_-1px_0_rgb(0_0_0/0.12)] dark:shadow-none",
+              meta.pillDark,
               meta.fill,
               y.count === 0 && "opacity-35",
               onSelectYear && "cursor-pointer hover:brightness-110",

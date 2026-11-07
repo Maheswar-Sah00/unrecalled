@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import { EmptyState } from "./board/EmptyState";
 import { Frame, Msg } from "./board/Frame";
 import { HowCalculated } from "./board/HowCalculated";
-import { channelSlug, modelOnly, monthsBetween, splitModeName, splitVehicleLabel } from "./board/plain";
+import { modelOnly, monthsBetween, splitModeName, splitVehicleLabel } from "./board/plain";
 import { Shimmer } from "./board/Shimmer";
 import { useMediaQuery } from "./board/useMediaQuery";
 import { CoverageStrip } from "./charts-small";
@@ -32,7 +32,6 @@ import { ComplaintList } from "./ComplaintList";
 import { CoveragePanel } from "./CoveragePanel";
 import { DraftPetitionDialog } from "./DraftPetitionDialog";
 import { compactYears, fmtDate, fmtInt, fmtMonth, fmtRatio } from "./format";
-import { Mascot } from "./mascots";
 import { MonthlyBars } from "./MonthlyBars";
 import { useCrumbs } from "./page";
 import { PostRecallNote } from "./PostRecallNote";
@@ -85,8 +84,6 @@ export function ClusterDetail({ vehicleId, modeId }: { vehicleId: string; modeId
     return (
       <div className="rp-wrap">
         <EmptyState
-          pose="alert"
-          color="coral"
           title="We couldn’t load this problem"
           action={
             <Link to={backTo} className="ur-btn">
@@ -143,7 +140,7 @@ export function ClusterDetail({ vehicleId, modeId }: { vehicleId: string; modeId
           <div className="flex flex-wrap items-center gap-2">
             <StatusChip status={cluster.coverage.status} className="h-8 px-3 text-[13px]" />
             {signal?.fired ? (
-              <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-ur-uncovered px-3 text-[13px] font-semibold text-white">
+              <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-ur-uncovered px-3 text-[13px] font-semibold text-white dark:bg-ur-uncovered/15 dark:text-ur-uncovered dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-ur-uncovered/30">
                 <IconBellRinging className="size-4" aria-hidden="true" />
                 Early warning since {fmtMonth(signal.firedAt)}
               </span>
@@ -184,7 +181,7 @@ export function ClusterDetail({ vehicleId, modeId }: { vehicleId: string; modeId
           ) : null}
         </div>
 
-        <div className="ur-reveal relative min-w-0 pt-20 lg:pt-24" style={{ ["--ur-delay" as string]: "160ms" }}>
+        <div className="ur-reveal relative min-w-0" style={{ ["--ur-delay" as string]: "160ms" }}>
           <div className="rp-glow" aria-hidden="true" />
           <Frame
             search="Complaints over time"
@@ -202,7 +199,6 @@ export function ClusterDetail({ vehicleId, modeId }: { vehicleId: string; modeId
                 {fmtInt(cluster.count)} reports
               </span>
             }
-            perch={<Mascot pose="alert" color="coral" />}
           >
             <div className="px-3 pb-4 pt-6 md:px-5">
               <MonthlyBars data={cluster.monthly} markers={markers} height={isWide ? 300 : 220} />
@@ -301,12 +297,10 @@ export function ClusterDetail({ vehicleId, modeId }: { vehicleId: string; modeId
         </p>
 
         <Frame
-          className="mt-28 max-w-[1040px]"
+          className="mt-12 max-w-[1040px]"
           search={`Search ${fmtInt(cluster.count)} owner reports`}
-          channel={`# ${channelSlug(title)}`}
+          channel={title}
           sub={`${fmtInt(cluster.count)} owner reports · ${vehicleLabel}`}
-          perch={<Mascot pose="read" color="teal" />}
-          perchSide="left"
         >
           <div className="border-b border-border px-4 py-3 md:px-[22px]">
             <div className="rp-tabs rp-tabs--sm" role="tablist" aria-label="Which reports">

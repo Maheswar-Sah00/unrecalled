@@ -7,26 +7,30 @@ import {
 // every control and the sign-in logic. We prepend one stylesheet that restyles
 // it to the Unrecalled paper/ink look. It carries data-precedence so React's
 // hydration skips it as a hoistable style instead of treating it as a mismatch.
-const BRAND_MARK =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5l3.1 2.6 4-.6 1.5 3.8 3.8 1.5-.6 4 2.6 3.1-2.6 3.1.6 4-3.8 1.5-1.5 3.8-4-.6L16 29.5l-3.1-2.6-4 .6-1.5-3.8-3.8-1.5.6-4L1.6 16l2.6-3.1-.6-4 3.8-1.5 1.5-3.8 4 .6z' fill='%23467BEB'/%3E%3Ccircle cx='12.4' cy='14.6' r='1.7' fill='%23fff'/%3E%3Ccircle cx='19.6' cy='14.6' r='1.7' fill='%23fff'/%3E%3Cpath d='M12.6 19.4c1.9 1.6 4.9 1.6 6.8 0' stroke='%23fff' stroke-width='1.6' stroke-linecap='round' fill='none'/%3E%3C/svg%3E";
+const crest = (fill: string) =>
+  `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='${fill}' fill-rule='evenodd' d='M6.4 2.5H25.6Q27.5 2.5 27.5 4.4V15.2C27.5 22.1 22.6 27 16 30.2C9.4 27 4.5 22.1 4.5 15.2V4.4Q4.5 2.5 6.4 2.5ZM9.5 7.1H22.5V8.7H9.5ZM10.3 11.4H13V17.1A3 3 0 0 0 19 17.1V11.4H21.7V17.1A5.7 5.7 0 0 1 10.3 17.1Z'/%3E%3C/svg%3E`;
+const BRAND_MARK = crest("%2315120F");
+const BRAND_MARK_DARK = crest("%23FAFAFA");
 
 const BRAND_CSS = `
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap");
 :root {
-  --u-bg: #FDFBF6; --u-ink: #060E1E; --u-card: #FFFFFF; --u-sand: #F4EFE6;
-  --u-border: #E9E2D6; --u-muted: #6E6860; --u-blue: #467BEB;
+  --u-bg: #FDFBF6; --u-ink: #15120F; --u-card: #FFFFFF; --u-sand: #F4EFE6;
+  --u-border: #E9E2D6; --u-muted: #6E6860; --u-blue: #B6741A;
   --u-shadow: 0 1px 2px #5248460d, 0 30px 70px -28px #52484659;
-  --u-btn-bg: #060E1E; --u-btn-fg: #FDFBF6;
+  --u-btn-bg: #15120F; --u-btn-fg: #FDFBF6;
   --u-glow: radial-gradient(50rem 26rem at 50% 108%, #F4EFE6, transparent 70%);
+  --u-mark: url("${BRAND_MARK}");
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --u-bg: #0C1018; --u-ink: #F4EFE6; --u-card: #121722; --u-sand: #1A2030;
-    --u-border: #242B3A; --u-muted: #A39E95;
-    --u-shadow: 0 0 0 1px #ffffff08, 0 30px 70px -28px #000000e6;
-    --u-btn-bg: #F4EFE6; --u-btn-fg: #060E1E;
-    --u-glow: radial-gradient(60rem 30rem at 50% -10%, #467BEB1f, transparent 70%);
+    --u-bg: #0A0A0A; --u-ink: #FAFAFA; --u-card: #111111; --u-sand: #171717;
+    --u-border: #262626; --u-muted: #A3A3A3; --u-blue: #FAFAFA;
+    --u-shadow: inset 0 1px 0 #ffffff0d, 0 0 0 1px #ffffff0a, 0 30px 70px -28px #000;
+    --u-btn-bg: #FAFAFA; --u-btn-fg: #0A0A0A;
+    --u-glow: radial-gradient(60rem 30rem at 50% -10%, #ffffff12, transparent 70%);
+    --u-mark: url("${BRAND_MARK_DARK}");
     color-scheme: dark;
   }
 }
@@ -40,9 +44,9 @@ html body .auth-wave-background { display: none !important; }
 html body .auth-page-content::before {
   content: "Unrecalled";
   position: fixed; top: max(1.25rem, env(safe-area-inset-top)); left: max(1.5rem, env(safe-area-inset-left));
-  display: flex; align-items: center; gap: .55rem; height: 2rem; padding-left: 2.35rem;
-  background: url("${BRAND_MARK}") left center / 1.85rem no-repeat;
-  font-family: "Source Serif 4", Georgia, serif; font-size: 1.3rem; font-weight: 600; letter-spacing: -.02em;
+  display: flex; align-items: center; gap: .55rem; height: 2rem; padding-left: 2.25rem;
+  background: var(--u-mark) left center / 1.6rem no-repeat;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: .8rem; font-weight: 600; letter-spacing: .24em; text-transform: uppercase;
   color: var(--u-ink);
 }
 html body .locale-trigger { color: var(--u-muted); border-radius: 999px; }
@@ -67,7 +71,7 @@ html body .card {
 html body .card::before {
   content: ""; display: block; width: 3rem; height: 3rem; margin: 0 auto 1.25rem;
   border-radius: 1rem; border: 1px solid var(--u-border);
-  background: url("${BRAND_MARK}") center / 1.9rem no-repeat, var(--u-bg);
+  background: var(--u-mark) center / 1.75rem no-repeat, var(--u-bg);
 }
 html body .card > h1#heading {
   font-size: 0; line-height: 0; margin: 0; text-align: center;
@@ -92,7 +96,7 @@ html body .card button[type="submit"], html body .card .btn-primary {
   min-height: 2.875rem; border-radius: 999px; border: 0;
   background: var(--u-btn-bg); color: var(--u-btn-fg);
   font-family: inherit; font-size: .95rem; font-weight: 600; letter-spacing: -.01em;
-  box-shadow: 0 1px 2px #0000001f, 0 10px 24px -14px #060e1e99;
+  box-shadow: 0 1px 2px #0000001f, 0 10px 24px -14px #15120f99;
   transition: transform .18s cubic-bezier(.22,1,.36,1), opacity .18s ease;
 }
 html body .card button[type="submit"]:hover, html body .card .btn-primary:hover { opacity: .92; transform: translateY(-1px); }

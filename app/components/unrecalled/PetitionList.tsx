@@ -28,9 +28,8 @@ import {
   WindowTitle,
 } from "./docs/shared";
 import { fmtRelative } from "./format";
-import { Mascot } from "./mascots";
 import { Page, useCrumbs } from "./page";
-import { AgentMessage, Reveal, Window } from "./premium";
+import { AgentMessage, BrandMark, Reveal, Window } from "./premium";
 import type { PetitionSummary } from "./types";
 
 type Filter = "all" | DocStatus;
@@ -54,10 +53,7 @@ export function PetitionList() {
       {/* Hero */}
       <section className="relative pb-14 pt-6 text-center md:pb-20 md:pt-14">
         <Reveal>
-          <h1 className="ur-display ur-hero-xl">
-            <Mascot pose="write" color="blue" className="ur-hero-mascot ur-float [--ur-dur:6s]" />
-            Petitions
-          </h1>
+          <h1 className="ur-display ur-hero-xl">Petitions</h1>
         </Reveal>
         <Reveal delay={80}>
           <p className="ur-lede mx-auto mt-6 max-w-2xl text-[1.125rem] md:text-[1.25rem]">
@@ -68,12 +64,12 @@ export function PetitionList() {
         <Reveal delay={140} className="mt-8">
           <div className="ur-trust">
             <span className="inline-flex items-center gap-2">
-              <IconScale className="size-4 text-ur-blue" aria-hidden="true" />
+              <IconScale className="size-4 text-muted-foreground" aria-hidden="true" />
               A formal request under US law
             </span>
             <i aria-hidden="true" />
             <span className="inline-flex items-center gap-2">
-              <IconShieldHalf className="size-4 text-ur-recalled" aria-hidden="true" />
+              <IconShieldHalf className="size-4 text-muted-foreground" aria-hidden="true" />
               You file it, never the agent
             </span>
           </div>
@@ -93,7 +89,7 @@ export function PetitionList() {
       {/* Agent summary window */}
       {!isLoading && !error && petitions.length > 0 ? (
         <Reveal delay={260} className="mx-auto mb-24 max-w-[760px]">
-          <Perch pose="read" color="coral" side="left" size={96}>
+          <Perch>
             <Window
               title={<WindowTitle icon={<IconFileText className="size-3.5" />}>Petitions desk</WindowTitle>}
               bodyClassName="p-5 md:p-7"
@@ -176,7 +172,9 @@ export function PetitionList() {
           </Reveal>
           {shown.length === 0 ? (
             <div className="ur-panel flex flex-col items-center gap-3 px-6 py-14 text-center">
-              <Mascot pose="sit" color="violet" className="size-20" />
+              <span className="ur-icon-tile" aria-hidden="true">
+                <BrandMark className="size-6" />
+              </span>
               <p className="text-[15px] text-muted-foreground">
                 {filter === "filed"
                   ? "Nothing filed yet. When you send a petition to NHTSA yourself, mark it here."
@@ -227,7 +225,7 @@ export function PetitionList() {
 function EmptyState() {
   return (
     <Reveal className="relative mx-auto max-w-[760px]">
-      <Perch pose="write" color="blue" size={110}>
+      <Perch>
         <Window title={<WindowTitle>Petitions desk</WindowTitle>} bodyClassName="px-6 py-14 text-center md:py-16">
           <div className="relative mx-auto mb-8 h-[120px] w-[170px]" aria-hidden="true">
             <div className="ur-float absolute left-0 top-2 [--ur-dur:8s] [--ur-rot:-8deg]">

@@ -19,7 +19,6 @@ import { cn } from "@/lib/utils";
 
 import { Shimmer, ShimmerStyles } from "./board/Shimmer";
 import { fmtDate, nhtsaComplaintUrl } from "./format";
-import { Mascot } from "./mascots";
 import { statusMeta } from "./status";
 import type { ClusterComplaint, GetClusterResult, LabelVerdict } from "./types";
 
@@ -152,8 +151,7 @@ export function ComplaintList({
   if (!complaints.length) {
     return (
       <div className="flex flex-col items-center px-6 py-12 text-center">
-        <Mascot pose="read" color="violet" className="ur-float h-auto w-24" />
-        <p className="mt-3 text-[15px] font-medium text-foreground">No owner reports match this filter.</p>
+        <p className=" text-[15px] font-medium text-foreground">No owner reports match this filter.</p>
         <p className="mt-1 text-[13.5px] text-muted-foreground">Try another model year, or show every year.</p>
       </div>
     );
@@ -198,7 +196,9 @@ function ComplaintItem({
   const long = c.summary.length > 420;
   const excluded = c.label === "exclude";
   const included = c.label === "include";
-  const fill = status ? statusMeta(status).fill : "bg-ur-ink";
+  const fill = status
+    ? `${statusMeta(status).fill} ${statusMeta(status).pillDark}`
+    : "bg-ur-ink dark:bg-foreground/10 dark:text-foreground";
   return (
     <li
       className={cn("rp-msg ur-reveal", excluded && "opacity-60")}

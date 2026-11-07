@@ -6,8 +6,8 @@ export default defineAppConfig({
     name: "Unrecalled",
     // The source template keeps a renamed app from inheriting first-party email branding.
     sourceTemplate: "chat",
-    // Keep the template's authenticated entry explicit after renaming the app.
-    homePath: "/gaps",
+    // The homepage ("/") is the authenticated entry; sign-in returns there.
+    homePath: "/",
     // Optional: use your own absolute HTTPS logo URL in transactional emails.
     // logoUrl: "https://example.com/logo.png",
   },

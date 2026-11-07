@@ -2,35 +2,39 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-import { Mascot, type MascotColor, type MascotPose } from "../mascots";
+import { BrandMark } from "../premium";
 
-/** Friendly empty / error state with a mascot. */
+/** Quiet empty / error state: an icon on a glass tile, a serif title and a line of help. */
 export function EmptyState({
   title,
   children,
   action,
-  pose = "sit",
-  color = "blue",
+  icon,
   className,
 }: {
   title: ReactNode;
   children?: ReactNode;
   action?: ReactNode;
-  pose?: MascotPose;
-  color?: MascotColor;
+  /** Defaults to the brand crest. */
+  icon?: ReactNode;
+  /** Accepted for older call sites; no longer drawn. */
+  pose?: string;
+  color?: string;
   className?: string;
 }) {
   return (
     <div
       className={cn(
-        "ur-reveal flex flex-col items-center rounded-[24px] border border-dashed border-border bg-card/60 px-6 py-12 text-center",
+        "ur-reveal flex flex-col items-center rounded-[24px] border border-border bg-card/60 px-6 py-14 text-center",
         className,
       )}
     >
-      <Mascot pose={pose} color={color} className="ur-float h-auto w-28" />
-      <h3 className="rp-h3 mt-4">{title}</h3>
+      <span className="ur-icon-tile" aria-hidden="true">
+        {icon ?? <BrandMark className="size-6" />}
+      </span>
+      <h3 className="rp-h3 mt-5">{title}</h3>
       {children ? <p className="mt-2 max-w-md text-[15px] leading-relaxed text-muted-foreground">{children}</p> : null}
-      {action ? <div className="mt-5">{action}</div> : null}
+      {action ? <div className="mt-6">{action}</div> : null}
     </div>
   );
 }

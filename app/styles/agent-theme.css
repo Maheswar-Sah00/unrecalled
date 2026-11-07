@@ -20,17 +20,21 @@
   --agent-kit-composer-font-size: 0.9375rem;
   --agent-kit-composer-line-height: 1.5rem;
   --ur-agent-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Brand crest (same geometry as BrandMark / favicon.svg). */
+  --ur-crest-uri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%2315120F' fill-rule='evenodd' d='M6.4 2.5H25.6Q27.5 2.5 27.5 4.4V15.2C27.5 22.1 22.6 27 16 30.2C9.4 27 4.5 22.1 4.5 15.2V4.4Q4.5 2.5 6.4 2.5ZM9.5 7.1H22.5V8.7H9.5ZM10.3 11.4H13V17.1A3 3 0 0 0 19 17.1V11.4H21.7V17.1A5.7 5.7 0 0 1 10.3 17.1Z'/%3E%3C/svg%3E");
 }
 
 html.dark:root,
 :root:root.dark {
   --agent-kit-composer-surface: hsl(var(--card));
-  --agent-kit-subtle-surface: hsl(222 26% 14%);
-  --agent-kit-composer-border-color: hsl(var(--border));
-  --agent-kit-composer-elevation: 0 1px 0 hsl(0 0% 100% / 0.03) inset, 0 20px 50px -22px hsl(222 60% 2% / 0.9);
-  --agent-kit-control-elevation: 0 1px 2px hsl(222 60% 2% / 0.5);
-  --agent-kit-overlay-elevation: 0 24px 60px -20px hsl(222 60% 2% / 0.9), 0 0 0 1px hsl(0 0% 100% / 0.04);
-  --agent-kit-composer-focus-border-color: hsl(var(--ur-blue) / 0.6);
+  --agent-kit-shadow-color: 0 0% 0%;
+  --ur-crest-uri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23FAFAFA' fill-rule='evenodd' d='M6.4 2.5H25.6Q27.5 2.5 27.5 4.4V15.2C27.5 22.1 22.6 27 16 30.2C9.4 27 4.5 22.1 4.5 15.2V4.4Q4.5 2.5 6.4 2.5ZM9.5 7.1H22.5V8.7H9.5ZM10.3 11.4H13V17.1A3 3 0 0 0 19 17.1V11.4H21.7V17.1A5.7 5.7 0 0 1 10.3 17.1Z'/%3E%3C/svg%3E");
+  --agent-kit-subtle-surface: hsl(0 0% 9%);
+  --agent-kit-composer-border-color: hsl(0 0% 100% / 0.1);
+  --agent-kit-composer-elevation: 0 1px 0 hsl(0 0% 100% / 0.05) inset, 0 20px 50px -22px #000;
+  --agent-kit-control-elevation: 0 1px 2px hsl(0 0% 0% / 0.6);
+  --agent-kit-overlay-elevation: 0 24px 60px -20px #000, 0 0 0 1px hsl(0 0% 100% / 0.08);
+  --agent-kit-composer-focus-border-color: hsl(0 0% 100% / 0.28);
 }
 
 /* ---------- Canvas ---------- */
@@ -56,11 +60,25 @@ html.dark:root,
   isolation: isolate;
 }
 
-.ur-chat-welcome__mascot {
-  position: relative;
-  width: clamp(96px, 16vw, 132px);
-  height: clamp(96px, 16vw, 132px);
-  margin-bottom: 0.25rem;
+/* Brand crest on a glass tile (replaces the old mascot). */
+.ur-chat-welcome__crest {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 0.75rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 20px;
+  background: linear-gradient(180deg, hsl(var(--card)), hsl(var(--background)));
+  box-shadow: var(--ur-shadow);
+  color: hsl(var(--foreground));
+}
+.dark .ur-chat-welcome__crest {
+  border-color: hsl(0 0% 100% / 0.1);
+  background: linear-gradient(180deg, hsl(0 0% 100% / 0.07), hsl(0 0% 100% / 0.015));
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.08),
+    0 0 48px -8px hsl(0 0% 100% / 0.14);
 }
 .ur-chat-welcome__shadow {
   position: absolute;
@@ -156,7 +174,7 @@ html.dark:root,
   display: block;
   border-radius: 4px;
   opacity: 0.85;
-  box-shadow: 0 24px 50px -28px hsl(220 40% 20% / 0.5);
+  box-shadow: 0 24px 50px -28px hsl(0 0% 10% / 0.5);
 }
 .ur-chat-welcome__tile--a {
   left: 2%;
@@ -181,9 +199,9 @@ html.dark:root,
   --ur-delay: 0.6s;
   background:
     radial-gradient(48% 40% at 18% 14%, #f3b46a 0%, #f3b46a00 100%),
-    radial-gradient(60% 55% at 78% 22%, #8eaee6 0%, #8eaee600 100%),
+    radial-gradient(60% 55% at 78% 22%, #e6c68e 0%, #e6c68e00 100%),
     radial-gradient(62% 55% at 36% 82%, #3f7a40 0%, #3f7a4000 100%),
-    linear-gradient(140deg, #dfe5ec, #b5c8df);
+    linear-gradient(140deg, #e9e6e2, #dfd0b5);
 }
 .ur-chat-welcome__tile--c {
   right: 14%;
@@ -195,8 +213,8 @@ html.dark:root,
   --ur-delay: 1.2s;
   background:
     radial-gradient(55% 55% at 28% 38%, #ff7a45 0%, #ff7a4500 100%),
-    radial-gradient(65% 60% at 76% 64%, #8b9cf2 0%, #8b9cf200 100%),
-    linear-gradient(140deg, #d9c9ea, #b9b3e6);
+    radial-gradient(65% 60% at 76% 64%, #f2cc8b 0%, #f2cc8b00 100%),
+    linear-gradient(140deg, #eac9da, #e6b3cc);
 }
 .dark .ur-chat-welcome__tile {
   opacity: 0.6;
@@ -301,7 +319,7 @@ html.dark:root,
 
 .dark .agentkit-message[data-role="user"] .agentkit-message-content {
   border-color: hsl(var(--border));
-  background: hsl(222 26% 14%);
+  background: hsl(0 0% 9%);
   box-shadow: none;
 }
 
@@ -319,7 +337,7 @@ html.dark:root,
   margin-bottom: 0.25rem;
   padding-left: 2.25rem;
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5l3.1 2.6 4-.6 1.5 3.8 3.8 1.5-.6 4 2.6 3.1-2.6 3.1.6 4-3.8 1.5-1.5 3.8-4-.6L16 29.5l-3.1-2.6-4 .6-1.5-3.8-3.8-1.5.6-4L1.6 16l2.6-3.1-.6-4 3.8-1.5 1.5-3.8 4 .6z' fill='%23467BEB'/%3E%3Ccircle cx='12.4' cy='14.6' r='1.7' fill='%23fff'/%3E%3Ccircle cx='19.6' cy='14.6' r='1.7' fill='%23fff'/%3E%3Cpath d='M12.6 19.4c1.9 1.6 4.9 1.6 6.8 0' stroke='%23fff' stroke-width='1.6' stroke-linecap='round' fill='none'/%3E%3C/svg%3E")
+    var(--ur-crest-uri)
       left center / 1.75rem 1.75rem no-repeat;
   color: hsl(var(--foreground));
   font-size: 0.875rem;
@@ -471,7 +489,7 @@ html.dark:root,
 
 .dark .agentkit-code-block,
 .dark .agentkit-markdown pre {
-  background: hsl(222 30% 9%);
+  background: hsl(0 0% 7%);
 }
 
 /* Message actions (copy, thumbs): quiet until hover. */
@@ -526,7 +544,7 @@ html.dark:root,
   border: 1px solid hsl(var(--border));
   border-radius: 0.875rem;
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5l3.1 2.6 4-.6 1.5 3.8 3.8 1.5-.6 4 2.6 3.1-2.6 3.1.6 4-3.8 1.5-1.5 3.8-4-.6L16 29.5l-3.1-2.6-4 .6-1.5-3.8-3.8-1.5.6-4L1.6 16l2.6-3.1-.6-4 3.8-1.5 1.5-3.8 4 .6z' fill='%23467BEB'/%3E%3Ccircle cx='12.4' cy='14.6' r='1.7' fill='%23fff'/%3E%3Ccircle cx='19.6' cy='14.6' r='1.7' fill='%23fff'/%3E%3Cpath d='M12.6 19.4c1.9 1.6 4.9 1.6 6.8 0' stroke='%23fff' stroke-width='1.6' stroke-linecap='round' fill='none'/%3E%3C/svg%3E")
+    var(--ur-crest-uri)
       center / 1.75rem no-repeat,
     hsl(var(--card));
   box-shadow: var(--ur-shadow);

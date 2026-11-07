@@ -281,9 +281,9 @@ export function PetitionEditor({ id }: { id: string }) {
       </Reveal>
 
       <div className="grid flex-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px] xl:gap-12">
-        {/* Document inside a window, mascot perched on top */}
+        {/* Document inside a window */}
         <Reveal delay={80} className="order-2 min-w-0 lg:order-1">
-          <Perch pose="write" color="blue" size={112}>
+          <Perch>
             <Window
               title={
                 <WindowTitle icon={<IconFileText className="size-3.5 shrink-0" />}>
@@ -339,7 +339,7 @@ export function PetitionEditor({ id }: { id: string }) {
         </Reveal>
 
         {/* Ready-to-file card + agent note */}
-        <Reveal delay={140} className="order-1 space-y-5 lg:sticky lg:top-6 lg:order-2 lg:mt-[98px]">
+        <Reveal delay={140} className="order-1 space-y-5 lg:sticky lg:top-6 lg:order-2">
           <Checklist items={data.checklist} />
           <div className="hidden lg:block">{agentNote}</div>
         </Reveal>

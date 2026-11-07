@@ -6,11 +6,10 @@ import {
   IconFileAlert,
   IconGavel,
   IconSearch,
+  IconShieldOff,
 } from "@tabler/icons-react";
 
 import { cn } from "@/lib/utils";
-
-import { Mascot } from "./mascots";
 
 import { prettyRefId, whyItCounts } from "./board/plain";
 import { compactYears, fmtDate } from "./format";
@@ -26,8 +25,10 @@ const KIND_META = {
 export function CoveragePanel({ refs }: { refs: CoverageRef[] }) {
   if (!refs.length) {
     return (
-      <div className="ur-reveal flex flex-col items-center gap-6 rounded-[24px] border border-dashed border-ur-uncovered/40 bg-ur-uncovered/[0.05] px-6 py-10 text-center sm:flex-row sm:text-left">
-        <Mascot pose="alert" color="coral" className="ur-float h-auto w-24 shrink-0" />
+      <div className="ur-reveal flex flex-col items-center gap-6 rounded-[24px] border border-ur-uncovered/30 bg-ur-uncovered/[0.04] px-6 py-10 text-center sm:flex-row sm:text-left">
+        <span className="ur-icon-tile shrink-0 text-ur-uncovered" aria-hidden="true">
+          <IconShieldOff />
+        </span>
         <div>
           <h3 className="rp-h3">Nothing covers this problem</h3>
           <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
@@ -51,13 +52,8 @@ export function CoveragePanel({ refs }: { refs: CoverageRef[] }) {
             className="ur-reveal group flex h-full flex-col overflow-hidden rounded-[18px] border border-border bg-card shadow-[var(--ur-shadow)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--ur-shadow-lg)]"
             style={{ ["--ur-delay" as string]: `${120 + i * 70}ms` }}
           >
-            <div className="flex h-9 items-center gap-2.5 border-b border-border bg-foreground/[0.035] px-3.5 text-[12px] text-muted-foreground">
-              <span className="flex gap-1.5" aria-hidden="true">
-                <i className="block size-2.5 rounded-full bg-[#ff5f57]" />
-                <i className="block size-2.5 rounded-full bg-[#febc2e]" />
-                <i className="block size-2.5 rounded-full bg-[#28c840]" />
-              </span>
-              <span className="min-w-0 truncate font-medium">
+            <div className="flex h-10 items-center gap-2.5 border-b border-border px-5 text-[11.5px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+              <span className="min-w-0 truncate">
                 {kind.label}
                 {showId ? <span className="ur-num"> · {prettyRefId(r.kind, r.id)}</span> : null}
               </span>

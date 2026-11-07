@@ -1,23 +1,37 @@
 // Shared premium building blocks (OpenTag-inspired). Styles live in app/global.css (.ur-*).
-import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useId, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-/** Brand mark: a soft rounded "seal" shape with a check-gap, in the accent blue. */
+/** Shield silhouette shared by the mark and the favicons (32×32 grid). */
+const CREST = "M6.4 2.5H25.6Q27.5 2.5 27.5 4.4V15.2C27.5 22.1 22.6 27 16 30.2C9.4 27 4.5 22.1 4.5 15.2V4.4Q4.5 2.5 6.4 2.5Z";
+/** Right half of the crest: drawn a touch lighter so the shield reads as faceted metal. */
+const CREST_RIGHT = "M16 2.5H25.6Q27.5 2.5 27.5 4.4V15.2C27.5 22.1 22.6 27 16 30.2Z";
+/** The "bar": a level line across the crest (law, and the road's horizon). */
+const BAR = "M9.5 7.1H22.5V8.7H9.5Z";
+/** Monogram U: two upright strokes joined by a single arc. */
+const U = "M10.3 11.4H13V17.1A3 3 0 0 0 19 17.1V11.4H21.7V17.1A5.7 5.7 0 0 1 10.3 17.1Z";
+
+/**
+ * Brand mark: a monochrome crest. A shield with a level bar (the law, and the
+ * horizon of the road) over a monogram U, cut out of the metal. Inherits
+ * `currentColor`, so it is ink on paper and white on black.
+ */
 export function BrandMark({ className }: { className?: string }) {
+  const id = `ur-crest-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   return (
-    <svg viewBox="0 0 32 32" className={cn("size-7", className)} aria-hidden="true">
-      <rect x="1" y="1" width="30" height="30" rx="9" fill="hsl(var(--ur-blue))" />
-      {/* scales on the roof */}
-      <path d="M16 10.4V5.6M11.2 6.2h9.6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M9.4 8.6h3.6q-.5 1.7-1.8 1.7t-1.8-1.7zM19 8.6h3.6q-.5 1.7-1.8 1.7T19 8.6z" fill="#F2B33D" />
-      {/* car front */}
-      <path d="M10.2 16.6l1.5-4.3q.5-1.3 1.9-1.3h4.8q1.4 0 1.9 1.3l1.5 4.3z" fill="#fff" fillOpacity="0.55" />
-      <rect x="7.4" y="16" width="17.2" height="8" rx="3.2" fill="#fff" />
-      <circle cx="11.3" cy="19.8" r="1.8" fill="hsl(var(--ur-blue))" />
-      <circle cx="20.7" cy="19.8" r="1.8" fill="hsl(var(--ur-blue))" />
-      <rect x="9" y="24" width="3" height="2.8" rx="1" fill="#fff" />
-      <rect x="20" y="24" width="3" height="2.8" rx="1" fill="#fff" />
+    <svg viewBox="0 0 32 32" className={cn("size-7 shrink-0 text-foreground", className)} aria-hidden="true">
+      <defs>
+        <mask id={id} maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+          <rect width="32" height="32" fill="#fff" />
+          <path d={BAR} fill="#000" />
+          <path d={U} fill="#000" />
+        </mask>
+      </defs>
+      <g mask={`url(#${id})`}>
+        <path d={CREST} fill="currentColor" />
+        <path d={CREST_RIGHT} fill="hsl(var(--background))" fillOpacity="0.12" />
+      </g>
     </svg>
   );
 }

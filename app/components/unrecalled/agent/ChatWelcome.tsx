@@ -1,10 +1,10 @@
-// Empty state for the full /chat page, styled like an OpenTag hero: a waving
-// mascot, a big serif question, a short lede and suggestion chips that hand a
+// Empty state for the full /chat page: the brand crest on a glass tile, a big
+// serif question, a short lede and suggestion chips that hand a
 // prompt to the composer and send it.
 import { IconFileText, IconMessage2, IconSearch } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 
-import { Mascot } from "@/components/unrecalled/mascots";
+import { BrandMark } from "@/components/unrecalled/premium";
 
 export const AGENT_SUGGESTIONS = [
   "Find gaps for the 2021–2023 Jeep Wrangler",
@@ -52,16 +52,11 @@ export function sendToComposer(text: string, scope?: Element | null) {
 export function ChatWelcome() {
   return (
     <div className="ur-chat-welcome agentkit-chat-empty-copy">
-      <div className="ur-chat-welcome__tiles" aria-hidden="true">
-        <span className="ur-chat-welcome__tile ur-chat-welcome__tile--a ur-float" />
-        <span className="ur-chat-welcome__tile ur-chat-welcome__tile--b ur-float" />
-        <span className="ur-chat-welcome__tile ur-chat-welcome__tile--c ur-float" />
-      </div>
       <div
-        className="ur-chat-welcome__mascot ur-pop"
+        className="ur-chat-welcome__crest ur-pop"
         style={{ ["--ur-delay" as string]: "0ms" }}
       >
-        <Mascot pose="wave" color="blue" className="ur-float size-full [--ur-dur:6s]" />
+        <BrandMark className="size-9" />
       </div>
       <h1
         className="ur-display ur-reveal"

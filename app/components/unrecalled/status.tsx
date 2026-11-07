@@ -23,6 +23,8 @@ interface StatusMeta {
   tint: string;
   /** css colour for svg */
   color: string;
+  /** dark-mode treatment for small solid pills: tinted glass + coloured text */
+  pillDark: string;
 }
 
 export const STATUS_META: Record<CoverageStatus, StatusMeta> = {
@@ -34,6 +36,7 @@ export const STATUS_META: Record<CoverageStatus, StatusMeta> = {
     fill: "bg-ur-uncovered",
     tint: "bg-ur-uncovered/10 border-ur-uncovered/25",
     color: "hsl(var(--ur-uncovered))",
+    pillDark: "dark:bg-ur-uncovered/20 dark:text-ur-uncovered dark:ring-1 dark:ring-inset dark:ring-ur-uncovered/25",
   },
   under_investigation: {
     label: "Under investigation",
@@ -43,6 +46,7 @@ export const STATUS_META: Record<CoverageStatus, StatusMeta> = {
     fill: "bg-ur-investigation",
     tint: "bg-ur-investigation/12 border-ur-investigation/30",
     color: "hsl(var(--ur-investigation))",
+    pillDark: "dark:bg-ur-investigation/20 dark:text-ur-investigation dark:ring-1 dark:ring-inset dark:ring-ur-investigation/25",
   },
   settlement: {
     label: "Class settlement",
@@ -52,6 +56,7 @@ export const STATUS_META: Record<CoverageStatus, StatusMeta> = {
     fill: "bg-ur-settlement",
     tint: "bg-ur-settlement/12 border-ur-settlement/30",
     color: "hsl(var(--ur-settlement))",
+    pillDark: "dark:bg-ur-settlement/20 dark:text-ur-settlement dark:ring-1 dark:ring-inset dark:ring-ur-settlement/25",
   },
   recalled: {
     label: "Recalled",
@@ -61,6 +66,7 @@ export const STATUS_META: Record<CoverageStatus, StatusMeta> = {
     fill: "bg-ur-recalled",
     tint: "bg-ur-recalled/12 border-ur-recalled/30",
     color: "hsl(var(--ur-recalled))",
+    pillDark: "dark:bg-ur-recalled/20 dark:text-ur-recalled dark:ring-1 dark:ring-inset dark:ring-ur-recalled/25",
   },
   closed_no_recall: {
     label: "Investigated – closed, no recall",
@@ -70,6 +76,7 @@ export const STATUS_META: Record<CoverageStatus, StatusMeta> = {
     fill: "bg-ur-closed",
     tint: "bg-ur-closed/12 border-ur-closed/30",
     color: "hsl(var(--ur-closed))",
+    pillDark: "dark:bg-ur-closed/20 dark:text-ur-closed dark:ring-1 dark:ring-inset dark:ring-ur-closed/25",
   },
 };
 

@@ -3,7 +3,7 @@ import {
   useActionMutation,
   useActionQuery,
 } from "@agent-native/core/client/hooks";
-import { IconArrowUpRight } from "@tabler/icons-react";
+import { IconArrowUpRight, IconCar } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -13,7 +13,6 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 import { fmtInt, fmtRelative, yearRange } from "./format";
-import { Mascot } from "./mascots";
 import { CountUp } from "./premium";
 import type { ListVehiclesResult, VehicleSummary } from "./types";
 
@@ -23,14 +22,14 @@ export function VehicleList() {
   const vehicles = data?.vehicles ?? [];
 
   return (
-    <section className="lp-section" aria-labelledby="lp-vehicles">
+    <section className="lp-section lp-vehicles pt-0" aria-labelledby="lp-vehicles">
       <div className="lp-container">
-        <div className="lp-reveal is-in flex flex-wrap items-end justify-between gap-6">
+        <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <h2 id="lp-vehicles" className="lp-h2">
+            <h2 id="lp-vehicles" className="lp-h3">
               Scanned vehicles
             </h2>
-            <p className="lp-body mt-4 max-w-[34rem]">
+            <p className="lp-body mt-3 max-w-[34rem]">
               Every car scanned so far. Open one to see its gaps, or watch it weekly.
             </p>
           </div>
@@ -49,7 +48,9 @@ export function VehicleList() {
             </p>
           ) : vehicles.length === 0 ? (
             <div className="ur-panel flex flex-col items-center px-6 py-14 text-center">
-              <Mascot pose="sit" color="blue" className="size-24" />
+              <span className="flex size-14 items-center justify-center rounded-2xl border border-border text-muted-foreground">
+                <IconCar className="size-7" stroke={1.5} />
+              </span>
               <p className="lp-h4 mt-4">Nothing scanned yet</p>
               <p className="mt-1.5 max-w-sm text-[15px] text-muted-foreground">
                 Pick a car above and Unrecalled will read what owners are

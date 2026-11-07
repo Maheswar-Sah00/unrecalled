@@ -19,12 +19,11 @@ import { cn } from "@/lib/utils";
 import { EmptyState } from "./board/EmptyState";
 import { Frame, Msg } from "./board/Frame";
 import { HowCalculated } from "./board/HowCalculated";
-import { channelSlug, splitModeName, splitVehicleLabel } from "./board/plain";
+import { splitModeName, splitVehicleLabel } from "./board/plain";
 import { Shimmer } from "./board/Shimmer";
 import { CoverageStrip, Sparkline } from "./charts-small";
 import { DraftPetitionDialog } from "./DraftPetitionDialog";
 import { compactYears, fmtInt, fmtMonth, fmtRatio, fmtRelative } from "./format";
-import { Mascot } from "./mascots";
 import { useCrumbs } from "./page";
 import { PostRecallNote } from "./PostRecallNote";
 import { CountUp } from "./premium";
@@ -99,8 +98,6 @@ export function GapBoard({ vehicleId }: { vehicleId: string }) {
     return (
       <div className="rp-wrap">
         <EmptyState
-          pose="alert"
-          color="coral"
           title="We couldn’t load this report"
           action={
             <Link to="/gaps" className="ur-btn">
@@ -170,7 +167,7 @@ export function GapBoard({ vehicleId }: { vehicleId: string }) {
           </div>
         </div>
 
-        <div className="ur-reveal relative min-w-0 pt-24 lg:pt-28" style={{ ["--ur-delay" as string]: "160ms" }}>
+        <div className="ur-reveal relative min-w-0" style={{ ["--ur-delay" as string]: "160ms" }}>
           <div className="rp-glow" aria-hidden="true" />
           <AgentSummary
             vehicleId={vehicleId}
@@ -258,8 +255,6 @@ export function GapBoard({ vehicleId }: { vehicleId: string }) {
         <div className="mt-6" role="tabpanel" aria-label={tab.label}>
           {rows.length === 0 ? (
             <EmptyState
-              pose={show === "uncovered" ? "sit" : "watch"}
-              color={show === "uncovered" ? "teal" : "blue"}
               title={
                 show === "uncovered"
                   ? "Every problem is covered"
@@ -356,9 +351,8 @@ function AgentSummary({
   return (
     <Frame
       search={`Search ${carName}`}
-      channel={`# ${channelSlug(carName)}`}
+      channel={carName}
       sub="Safety gap report"
-      perch={<Mascot pose="watch" color="blue" title="Unrecalled mascot keeping watch" />}
     >
       <div className="py-3">
         <Msg agent name="Unrecalled" time={updated ? fmtRelative(updated) : undefined}>
@@ -539,7 +533,7 @@ export function SignalBadge({ c }: { c: Pick<ClusterRow, "signalFired" | "signal
     <Tooltip>
       <TooltipTrigger asChild>
         <span className="relative z-10 inline-flex flex-col items-start gap-1">
-          <span className="inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-full bg-ur-uncovered px-2.5 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-8px_hsl(var(--ur-uncovered))]">
+          <span className="inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-full bg-ur-uncovered px-2.5 text-[12.5px] font-semibold text-white dark:bg-ur-uncovered/15 dark:text-ur-uncovered dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-ur-uncovered/30 shadow-[0_6px_16px_-8px_hsl(var(--ur-uncovered))]">
             <IconBellRinging className="size-3.5" aria-hidden="true" />
             Since {fmtMonth(c.signalFiredAt)}
           </span>

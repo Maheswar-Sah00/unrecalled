@@ -31,9 +31,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 import { GradientTile, PillTabs, type Tone } from "./docs/shared";
-import { Mascot } from "./mascots";
 import { Page, useCrumbs } from "./page";
-import { Reveal } from "./premium";
+import { BrandMark, Reveal } from "./premium";
 import type { FailureMode } from "./types";
 
 type ListKey = "include" | "exclude" | "coverageTerms";
@@ -80,12 +79,12 @@ function regexErrors(s: string): { line: number; message: string }[] {
 type AreaId = "steering" | "brakes" | "engine" | "electrical" | "airbags" | "body" | "assist" | "other";
 
 const AREAS: { id: AreaId; label: string; tone: Tone; icon: ReactNode; accent: string; test: RegExp }[] = [
-  { id: "assist", label: "Driver assist", tone: "dusk", icon: <IconRadar />, accent: "#8b9cf2", test: /LANE|FORWARD COLLISION|PHANTOM|DRIVER.?ASSIST|ADAPTIVE CRUISE/ },
+  { id: "assist", label: "Driver assist", tone: "dusk", icon: <IconRadar />, accent: "#f2cc8b", test: /LANE|FORWARD COLLISION|PHANTOM|DRIVER.?ASSIST|ADAPTIVE CRUISE/ },
   { id: "airbags", label: "Airbags & belts", tone: "rose", icon: <IconShieldHalf />, accent: "#e0708f", test: /AIR ?BAG|SEAT ?BELT|SRS/ },
-  { id: "body", label: "Body & glass", tone: "steel", icon: <IconWindow />, accent: "#7f95ab", test: /WINDSHIELD|SUNROOF|LATCH|DOOR|WIPER|GLASS|ROOF/ },
+  { id: "body", label: "Body & glass", tone: "steel", icon: <IconWindow />, accent: "#a0968a", test: /WINDSHIELD|SUNROOF|LATCH|DOOR|WIPER|GLASS|ROOF/ },
   { id: "brakes", label: "Brakes", tone: "peach", icon: <IconHandStop />, accent: "#ff9152", test: /BRAKE|ROLLAWAY|PARK/ },
-  { id: "steering", label: "Steering & suspension", tone: "meadow", icon: <IconSteeringWheel />, accent: "#6f9ad8", test: /STEERING|SUSPENSION|WOBBLE|TIRE|WHEEL/ },
-  { id: "electrical", label: "Electrical & screens", tone: "ocean", icon: <IconDeviceDesktop />, accent: "#4f86d9", test: /DISPLAY|CAMERA|HEADLIGHT|LIGHTING|INFOTAINMENT|BACK OVER|SCREEN/ },
+  { id: "steering", label: "Steering & suspension", tone: "meadow", icon: <IconSteeringWheel />, accent: "#d8b26f", test: /STEERING|SUSPENSION|WOBBLE|TIRE|WHEEL/ },
+  { id: "electrical", label: "Electrical & screens", tone: "ocean", icon: <IconDeviceDesktop />, accent: "#d9a64f", test: /DISPLAY|CAMERA|HEADLIGHT|LIGHTING|INFOTAINMENT|BACK OVER|SCREEN/ },
   { id: "engine", label: "Engine & power", tone: "sand", icon: <IconEngine />, accent: "#e7a75a", test: /ENGINE|POWER TRAIN|FUEL|ACCELERAT|TRANSMISSION|STALL|FIRE|12V|ICCU|SPEED CONTROL|OIL/ },
 ];
 const OTHER = { id: "other" as const, label: "Other", tone: "sage" as Tone, icon: <IconCar />, accent: "#8fae7e" };
@@ -126,19 +125,9 @@ export function RulesEditor() {
     <Page wide className="max-w-[1240px]">
       {/* Hero */}
       <section className="relative pb-14 pt-6 text-center md:pb-16 md:pt-14">
-        <div className="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden="true">
-          <GradientTile tone="meadow" icon={<IconSteeringWheel />} float className="absolute left-[3%] top-[12%] size-[118px]" style={{ ["--ur-dur" as string]: "9s", ["--ur-rot" as string]: "-4deg" }} />
-          <GradientTile tone="peach" icon={<IconHandStop />} float className="absolute left-[12%] top-[62%] size-[84px]" style={{ ["--ur-dur" as string]: "7s", ["--ur-delay" as string]: "0.6s" }} />
-          <GradientTile tone="dusk" icon={<IconRadar />} float className="absolute right-[4%] top-[8%] size-[132px]" style={{ ["--ur-dur" as string]: "8s", ["--ur-rot" as string]: "4deg" }} />
-          <GradientTile tone="rose" icon={<IconShieldHalf />} float className="absolute right-[13%] top-[64%] size-[80px]" style={{ ["--ur-dur" as string]: "10s", ["--ur-delay" as string]: "1s" }} />
-        </div>
         <div className="relative">
           <Reveal>
-            <h1 className="ur-display ur-hero-xl">
-              Problem
-              <Mascot pose="read" color="violet" className="ur-hero-mascot ur-float [--ur-dur:6s]" />
-              types
-            </h1>
+            <h1 className="ur-display ur-hero-xl">Problem types</h1>
           </Reveal>
           <Reveal delay={80}>
             <p className="ur-lede mx-auto mt-6 max-w-2xl text-[1.125rem] md:text-[1.25rem]">
@@ -181,7 +170,9 @@ export function RulesEditor() {
         </div>
       ) : modes.length === 0 ? (
         <div className="ur-panel flex flex-col items-center gap-3 p-12 text-center text-sm text-muted-foreground">
-          <Mascot pose="sit" color="violet" className="size-20" />
+          <span className="ur-icon-tile" aria-hidden="true">
+            <BrandMark className="size-6" />
+          </span>
           No problem types defined yet.
         </div>
       ) : (

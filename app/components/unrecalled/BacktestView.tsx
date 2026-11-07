@@ -2,11 +2,9 @@ import { actionErrorMessage, useActionQuery } from "@agent-native/core/client/ho
 import {
   IconAlertTriangle,
   IconBell,
-  IconCalendarEvent,
   IconCar,
   IconChartLine,
   IconChevronDown,
-  IconEngine,
   IconExternalLink,
   IconFileText,
   IconInfoCircle,
@@ -25,7 +23,6 @@ import { cn } from "@/lib/utils";
 import { BacktestChart } from "./BacktestChart";
 import { GradientTile, Perch, WindowTitle } from "./docs/shared";
 import { compactYears, fmtDate, fmtInt, fmtMonth, fmtPct, fmtRatio, nhtsaComplaintUrl } from "./format";
-import { Mascot } from "./mascots";
 import { Page, useCrumbs } from "./page";
 import { AgentMessage, CountUp, Reveal, Window } from "./premium";
 import type { BacktestResult } from "./types";
@@ -57,14 +54,6 @@ function earlierRecall(notes: string[] | undefined) {
   const vehicle = note.match(/^(.+?) is excluded/i)?.[1] ?? null;
   return { note, campaign, lead: Number.isFinite(lead) ? lead : null, date, vehicle };
 }
-
-/** Floating gradient tiles around the hero (desktop only). */
-const FLOATS = [
-  { tone: "steel", icon: <IconEngine />, cls: "left-[2%] top-[6%] size-[132px]", dur: "9s", rot: "-4deg", delay: "0s" },
-  { tone: "peach", icon: <IconBell />, cls: "left-[11%] top-[56%] size-[92px]", dur: "7s", rot: "5deg", delay: "0.8s" },
-  { tone: "meadow", icon: <IconChartLine />, cls: "right-[3%] top-[2%] size-[150px]", dur: "8s", rot: "3deg", delay: "0.3s" },
-  { tone: "dusk", icon: <IconCalendarEvent />, cls: "right-[12%] top-[60%] size-[96px]", dur: "10s", rot: "-6deg", delay: "1.2s" },
-] as const;
 
 export function BacktestView() {
   useCrumbs([{ label: "Backtest" }]);
@@ -144,7 +133,7 @@ export function BacktestView() {
       icon: <IconBell />,
       title: "Our signal fires",
       body: (
-        <AgentMessage time={fmtMonth(data.signalFiredAt)} className="mt-1 rounded-xl bg-ur-blue/[0.06] p-3">
+        <AgentMessage time={fmtMonth(data.signalFiredAt)} className="mt-1 rounded-xl border border-border bg-foreground/[0.03] p-3">
           <p className="mt-0.5 text-[14px] leading-relaxed">
             Engine-failure complaints for these cars are running{" "}
             <b className="ur-num">{ratio != null ? fmtRatio(ratio) : "far"}</b> above similar cars.
@@ -179,18 +168,6 @@ export function BacktestView() {
     <Page wide className="max-w-[1240px]">
       {/* Hero */}
       <section className="relative pb-16 pt-4 text-center md:pb-24 md:pt-12">
-        <div className="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden="true">
-          {FLOATS.map((f, i) => (
-            <GradientTile
-              key={i}
-              tone={f.tone}
-              icon={f.icon}
-              float
-              className={cn("absolute", f.cls)}
-              style={{ ["--ur-dur" as string]: f.dur, ["--ur-rot" as string]: f.rot, ["--ur-delay" as string]: f.delay }}
-            />
-          ))}
-        </div>
         <div className="relative">
           <Reveal>
             <span className="ur-chip h-9 px-4 text-[13.5px]">
@@ -200,8 +177,7 @@ export function BacktestView() {
           </Reveal>
           <Reveal delay={60}>
             <h1 className="ur-display ur-hero-lg mx-auto mt-8 max-w-[21ch]">
-              Flagged
-              <Mascot pose="alert" color="amber" className="ur-hero-mascot ur-float [--ur-dur:5s]" />
+              Flagged{" "}
               <span className="ur-hl">{data.leadMonths} months</span> before the recall
             </h1>
           </Reveal>
@@ -284,7 +260,7 @@ export function BacktestView() {
           </p>
         </Reveal>
         <Reveal delay={100}>
-          <Perch pose="watch" color="teal" size={100} className="mt-4">
+          <Perch className="mt-10">
             <Window
               title={
                 <WindowTitle icon={<IconChartLine className="size-3.5 shrink-0" />}>
