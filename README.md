@@ -8,6 +8,10 @@
 
 *Unrecalled finds the car defects owners keep reporting to NHTSA that no recall, investigation or settlement covers, and its agent drafts the petition that asks NHTSA to investigate.*
 
+**[▶ Watch the demo (3 min)](https://clips.agent-native.com/r/B1ITwyPccK9A)** · **[Try it live, no sign-in](https://unrecalled.onrender.com/)** · **[Slides](https://maheswar-sah00.github.io/unrecalled/slides/)**
+
+<sub>Free hosting: the first load can take up to a minute while the server wakes up.</sub>
+
 ![Agent-Native](https://img.shields.io/badge/%40agent--native%2Fcore-0.224.0-1e1e1e)
 ![React Router](https://img.shields.io/badge/React%20Router-8-c92a2a?logo=reactrouter&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-5c5752?logo=typescript&logoColor=white)
@@ -281,7 +285,8 @@ Providers with a small tokens-per-minute cap, such as the Groq free tier (8k TPM
 about 20k tokens.
 
 **Hosting.** `pnpm build` and `pnpm start` need a hosted Postgres `DATABASE_URL`; the production server refuses
-local PGlite.
+local PGlite. The [live demo](https://unrecalled.onrender.com/) runs on Render's free tier with Neon Postgres
+(`render.yaml`).
 
 ## 8. Demo in three minutes
 
